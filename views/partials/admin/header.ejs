@@ -1,0 +1,125 @@
+<!-- head -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soleus Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Quantico', sans-serif;
+        }
+        .sidebar-item.active {
+            background-color: #FFC107 !important;
+            color: black !important;
+        }
+        .active {
+            background-color: #FFC107;
+            color: black;
+        }
+        .sidebar-item:hover {
+            background-color: #e5e7eb;
+        }
+        /* Make navbar sticky */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        /* Make sidebar sticky and full height */
+        .sticky-sidebar {
+            position: sticky;
+            top: 68px; 
+            height: calc(100vh - 68px); 
+            overflow-y: auto;
+        }
+        /* Main content area */
+        .main-content {
+            min-height: calc(100vh - 68px); 
+        }
+    </style>
+</head>
+<body class="bg-white text-white">
+    <!-- Top Navbar (sticky) -->
+    <nav class="sticky-nav bg-black p-4 flex justify-between items-center border-b-2 border-[#FFC107]">
+        <div class="flex items-center space-x-4">
+            <button id="hamburgerButton" class="text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h1 class="text-2xl md:text-3xl font-bold text-[#FFC107]">SOLEUS</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-user-circle text-2xl text-white"></i>
+            <button onclick="window.location.href = '/admin/logout'" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-md w-full sm:w-auto text-center">
+                LOGOUT
+            </button>
+        </div>
+        
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar (sticky) -->
+        <div id="sidebar" class="sticky-sidebar bg-cyan-100 text-black w-64 flex-shrink-0 transition-all duration-300">
+            <nav class="mt-4">
+                <a href="/admin" class="flex items-center p-4 sidebar-item active border border-black">
+                    <i class="fas fa-tachometer-alt w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">DASHBOARD</span>
+                </a>
+                <a href="/admin/addProducts" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-plus-circle w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">ADD PRODUCT</span>
+                </a>
+                <a href="/admin/category" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fa fa-th-large w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">CATEGORY</span>
+
+                <a href="/admin/brands" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-star w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">BRAND</span>
+
+                <a href="/admin/productlist" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-shopping-bag w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">PRODUCT LIST</span>
+                </a>
+                <a href="/admin/orders" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-clipboard-list w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">ORDERS</span>
+                </a>
+                <a href="/admin/users" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-users w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">CUSTOMERS</span>
+                </a>
+                <a href="/admin/inventory" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-boxes w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">INVENTORY</span>
+                </a>
+                <a href="/admin/coupon" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-tag w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">COUPON</span>
+                </a>
+                <a href="/admin/offers" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-percentage w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">OFFERS</span>
+                </a>
+                <a href="/admin/banner" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-image w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">BANNER</span>
+                </a>
+                <a href="/admin/settings" class="flex items-center p-4 sidebar-item border border-black">
+                    <i class="fas fa-cog w-6 text-center"></i>
+                    <span class="ml-4 sidebar-text">SETTINGS</span>
+                </a>
+            </nav>
+        </div>
+        

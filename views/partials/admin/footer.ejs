@@ -1,0 +1,53 @@
+<!-- foooter -->
+
+</div>
+
+<script>
+    const hamburgerButton = document.getElementById('hamburgerButton');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+
+    // Toggle sidebar
+    hamburgerButton.addEventListener('click', () => {
+        sidebar.classList.toggle('w-64');
+        sidebar.classList.toggle('w-16');
+        
+        sidebarTexts.forEach(text => {
+            text.classList.toggle('hidden');
+        });
+    });
+
+    // Highlight the active sidebar item based on the current URL
+    document.addEventListener('DOMContentLoaded', () => {
+        // Normalize the current URL path (remove trailing slash for consistency)
+        let currentPath = window.location.pathname;
+        if (currentPath.endsWith('/')) {
+            currentPath = currentPath.slice(0, -1); // Remove trailing slash
+        }
+
+        // Remove active class from all sidebar items
+        sidebarItems.forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Find the matching sidebar item and apply the active class
+        sidebarItems.forEach(item => {
+            let itemPath = item.getAttribute('href');
+            if (itemPath.endsWith('/')) {
+                itemPath = itemPath.slice(0, -1); // Remove trailing slash from href
+            }
+
+            // Special handling for dashboard route
+            if (currentPath === '' || currentPath === '/admin') {
+                if (itemPath === '/admin') {
+                    item.classList.add('active');
+                }
+            } else if (currentPath === itemPath) {
+                item.classList.add('active');
+            }
+        });
+    });
+</script>
+</body>
+</html>

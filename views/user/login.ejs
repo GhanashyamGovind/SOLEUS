@@ -1,0 +1,50 @@
+<%- include('../../views/partials/user/header', {title: 'Login'}) %>  
+<!-- Main Content -->
+<main class="flex justify-center items-center min-h-screen">
+    <div class="bg-yellow-200 p-8 rounded-3xl shadow-lg w-full max-w-md">
+        <h1 class="text-4xl font-bold text-center mb-6">LOGIN</h1>
+        <form action="/login" method="POST">
+            <div class="space-y-4">
+                <input type="email" name="email" placeholder="Email" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+                <input type="password" name="password" placeholder="Password" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+            </div>
+            <br>
+            <% if (locals.message && message.length > 0) { %>
+                <div id="alert-message" class="bg-red-200 border-l-4 border-red-500 text-center text-red-700 p-4 rounded-lg mb-6 " role="alert">
+                    <%= message %>
+                </div>
+            <% } %>
+
+            <div class="text-center mt-4">
+                <a href="#" class="text-sm underline hover:text-yellow-600">FORGOT PASSWORD ?</a>
+            </div>
+            <button type="submit" class="w-full bg-black text-white p-3 rounded-lg mt-6 hover:bg-gray-800">SUBMIT</button>
+
+            <div class="text-center mt-4 ">
+                <a href="/auth/google" class="w-full bg-white text-black p-3 rounded-lg border border-gray-300 flex items-center justify-center hover:ring-2 hover:ring-white-400 hover:bg-black hover:text-white transition-colors">
+                    <img src="https://www.google.com/favicon.ico" alt="Google Logo" class="h-5 mr-2">
+                    Login with your GOOGLE account
+                </a>
+            </div>
+
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-sm">YOU DON'T HAVE AN ACCOUNT ?</p>
+            <button onclick="window.location.href='/signup'" class="w-full bg-gray-800 text-white p-3 rounded-lg mt-2 hover:bg-gray-700">CREATE ACCOUNT</button>
+        </div>
+    </div>
+</main>
+<%- include('../../views/partials/user/footer') %>
+
+<script>
+
+    const alertDiv = document.getElementById('alert-message');
+
+    if(alertDiv) {
+        setTimeout(() => {
+            alertDiv.style.display = "none"
+        }, 6000);
+    }
+
+</script>

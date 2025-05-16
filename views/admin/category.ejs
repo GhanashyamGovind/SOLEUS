@@ -1,0 +1,230 @@
+<%- include('../../views/partials/admin/header', {title: 'Category'}) %>
+
+<link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Quantico', sans-serif;
+  }
+  .hidden {
+    display: none;
+  }
+</style>
+
+<!-- Main Content -->
+<div class="w-full md:w-4/5 p-4 md:p-6 bg-white">
+  <!-- Header -->
+  <div class="text-black flex justify-between items-center mb-4 md:mb-6">
+    <h1 class="text-2xl md:text-3xl font-bold">Category</h1>
+  </div>
+
+  <!-- Form -->
+  <form action="/admin/addCategory" method="POST" onsubmit="return handleFormSubmit(event)" class="mb-4">
+    <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4 mb-3 md:mb-4">
+      <div class="w-full">
+        <label class="block text-black text-sm md:text-base">Name</label>
+        <input name="name" type="text" class="border rounded px-3 py-2 w-full text-black" placeholder="Name">
+        <p class="text-red-600 error-message hidden" id="name-error"></p>
+      </div>
+      <div class="w-full">
+        <label class="block text-black text-sm md:text-base">Description</label>
+        <input name="description" type="text" class="border rounded px-3 py-2 w-full text-black" placeholder="Description" id="descriptionId">
+        <p class="text-red-600 error-message hidden" id="description-error"></p>
+      </div>
+      <div class="flex items-end w-full">
+        <button type="submit" class="bg-gray-500 text-white px-4 py-2 rounded w-full md:w-auto text-sm md:text-base">Add</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Search Bar -->
+  <div class="flex justify-end mb-3 md:mb-4">
+    <div class="flex items-center w-full md:w-64">
+      <input type="text" class="border rounded-full px-3 py-2 w-full text-black" placeholder="Search">
+      <span class="ml-2 text-gray-500">🔍</span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white shadow rounded overflow-x-auto text-black">
+    <table class="min-w-full text-center">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="p-2 md:p-3 text-sm md:text-base">Name</th>
+          <th class="p-2 md:p-3 text-sm md:text-base">Description</th>
+          <th class="p-2 md:p-3 text-sm md:text-base">Offer Price</th>
+          <th class="p-2 md:p-3 text-sm md:text-base">Offer</th>
+          <th class="p-2 md:p-3 text-sm md:text-base">Status</th>
+          <th class="p-2 md:p-3 text-sm md:text-base">List/Unlist</th>
+          <th class="p-2 md:p-3 text-sm md:text-base">Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% cat.reverse().forEach((category, index) => { %>
+          <tr>
+            <td class="p-2 md:p-3 text-sm md:text-base"><%= category.name %></td>
+
+            <td class="p-2 md:p-3 text-sm md:text-base"><%= category.description %></td>
+
+            <td class="p-2 md:p-3 text-sm md:text-base">
+                <% if (category.categoryOffer) { %>
+                  <%= category.Offer %>
+                <% }else { %>
+                    0%
+                <% } %>          
+            </td>
+
+            <td class="p-2 md:p-3">
+              <div class="flex justify-center space-x-1 md:space-x-2">
+                <% if (category.categoryOffer === 0) { %>
+                    <button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
+                        <a href="" class="text-white" onclick="addOffer('<%= category._id %>')">Add</a>
+                    </button>
+                <% }else { %>
+                <button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
+                        <a href="" class="text-white" onclick="removeOffer('<%= category._id %>')">Remove</a>
+                </button>
+                <% } %>
+              </div>
+            </td>
+
+            <td class="p-2 md:p-3">
+              <% if (category.isListed) { %>
+              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm  bg-green-200 text-green-800 ">
+                Listed
+              </span>
+              <% }else { %>
+              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm  bg-red-200 text-red-800 %>">
+                Unlisted
+              </span>
+              <% } %>
+            </td>
+
+            <td class="p-2 md:p-3">
+              <% if (category.isListed) { %>
+              <button class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-red-500 text-white">
+                <a href="/admin/listCategory?id=<%= category._id %>" class="text-white">UNLIST</a>
+              </button>
+              <% }else{ %>
+              <button class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-green-500 text-white">
+                <a href="/admin/unlistCategory?id=<%= category._id %>" class="text-white">LIST</a>
+              </button>
+              <% } %>
+            </td>
+
+            <td class="p-2 md:p-3">
+              <button class="bg-blue-300 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
+                <a href="/admin/editCategory?id=<%= category._id %>" class="text-white">Edit</a>
+              </button>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container flex justify-center space-x-2 mt-4">
+    <% if (currentPage > 1) { %>
+      <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded">« Previous</a>
+    <% } %>
+
+    <% for (let i = 1; i <= totalPage; i++) { %>
+      <% if (i === currentPage) { %>
+        <span class="current-page px-3 py-1 bg-yellow-500 text-white rounded"><%= i %></span>
+      <% } else { %>
+        <a href="?page=<%= i %>" class="px-3 py-1 bg-gray-200 rounded"><%= i %></a>
+      <% } %>
+    <% } %>
+
+    <% if (currentPage < totalPage) { %>
+      <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded">Next »</a>
+    <% } %>
+  </div>
+</div>
+
+<script>
+function handleFormSubmit(event) {
+    event.preventDefault();
+    if (!validateForm()) {
+        return;
+    }
+
+    const name = document.getElementsByName("name")[0].value.trim();
+    const description = document.getElementById("descriptionId").value.trim();
+
+    fetch('/admin/addCategory', {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json'
+        },
+        body: JSON.stringify({ name, description })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        location.reload();
+    })
+    .catch(error => {
+        if (error.message === "Category already exist !") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: "Category already exist !"
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: "Oops...",
+                text: "An error occurred while adding the category"
+            });
+        }
+    });
+}
+
+function validateForm() {
+    clearErrorMessage();
+    const name = document.getElementsByName("name")[0].value.trim();
+    const description = document.getElementById("descriptionId").value.trim();
+    let isValid = true;
+
+    if (name === "") {
+        displayErrorMessage("name-error", "Please enter a name");
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(name)) {
+        displayErrorMessage("name-error", "Name should only contain alphabetic characters");
+        isValid = false;
+    }
+
+    if (description === "") {
+        displayErrorMessage("description-error", "Please enter a description");
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function displayErrorMessage(elementId, message) {
+    const errorElement = document.getElementById(elementId);
+    errorElement.innerText = message;
+    errorElement.style.display = "block";
+}
+
+function clearErrorMessage() {
+    const errorElements = document.getElementsByClassName("error-message");
+    Array.from(errorElements).forEach((element) => {
+        element.innerText = "";
+        element.style.display = "none";
+    });
+}
+
+
+
+</script>
+
+<%- include('../../views/partials/admin/footer') %>

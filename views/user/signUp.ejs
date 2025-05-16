@@ -1,0 +1,173 @@
+<%- include('../../views/partials/user/header', {title: 'SignUp'}) %>
+
+    <!-- Main Content -->
+    <main class="flex justify-center items-center min-h-screen">
+        <div class="bg-yellow-200 p-8 rounded-3xl shadow-lg w-full max-w-md">
+            <h1 class="text-4xl font-bold text-center mb-6">REGISTER</h1>
+
+            <form action="/signUp" method="POST" id="signform">
+                <div class="space-y-4">
+                    <input type="text" name="name" placeholder="User name" id="name" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
+                    <div id="error1" class="text-red-500 text-center"></div>
+
+                    <input type="email" name="email" placeholder="Email" id="email" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
+                    <div id="error2" class="text-red-500 text-center"></div>
+
+                    <input type="tel" name="phone" placeholder="Mobile number" id="phone" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
+                    <div id="error3" class="text-red-500 text-center"></div>
+
+                    <input type="password" name="password" placeholder="Password" id="password" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2-black focus:ring-yellow-400" >
+                    <div id="error4" class="text-red-500 text-center"></div>
+
+                    <input type="password" name="confirmPassword" placeholder="Confirm password" id="confirmPassword" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
+                    <div id="error5" class="text-red-500 text-black"></div>
+                </div>
+                <br>
+                <% if (locals.message && message.length > 0) { %>
+                    <div id="alert-message" class="bg-red-200 border-l-4 border-red-500 text-center text-red-700 p-4 rounded-lg mb-6 " role="alert">
+                        <%= message %>
+                    </div>
+                <% } %>
+                <button type="submit" class="w-full bg-black text-white p-3 rounded-lg mt-6 hover:bg-white hover:text-black hover:ring-2 hover:ring-black">CREATE</button>
+            </form>
+
+            <div class="text-center mt-4 ">
+                <a href="/auth/google" class="w-full bg-white text-black p-3 rounded-lg border border-gray-300 flex items-center justify-center hover:ring-2 hover:ring-white-400 hover:bg-black hover:text-white transition-colors">
+                    <img src="https://www.google.com/favicon.ico" alt="Google Logo" class="h-5 mr-2">
+                    Continue with your GOOGLE account
+                </a>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-sm">ALREADY HAVE AN ACCOUNT ? <a href="/login" class="underline hover:text-yellow-600">/Login</a></p>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../../views/partials/user/footer') %>
+
+
+    <script>
+        // getting elements
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
+        const phone = document.getElementById('phone');
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+
+        const error1 = document.getElementById('error1');
+        const error2 = document.getElementById('error2');
+        const error3 = document.getElementById('error3');
+        const error4 = document.getElementById('error4');
+        const error5 = document.getElementById('error5');
+
+        const signform = document.getElementById('signform');
+
+
+        //fn to show alert and hide it after some secondss
+        function showError(element, message){
+            element.style.display = "block";
+            element.innerHTML = message;
+
+            setTimeout(() => {
+                element.style.display = "none";
+            }, 4000);
+        }
+
+        //defining their fucntions and rules
+        function nameValidateChecking(e){
+            const nameVal = name.value;
+            const namePatter = /^[a-zA-Z ]{4,20}$/;
+
+            if(nameVal.trim() === ""){
+                showError(error1, "Please enter a valid Name !");
+            }else if(!namePatter.test(nameVal)){
+                showError(error1, "Name can only have Alphabets and space");
+            }else if(nameVal.length < 4 || nameVal.length > 20){
+                showError(error1, "name length must 4-20");
+            }else{
+                error1.style.display = 'none';
+                error1.innerHTML = "";
+            }
+        }
+
+
+        function emailValidateChecking(e){
+            const emailVal = email.value;
+            const emailPattern = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]{2,}$/;
+
+            if(emailVal.trim() === ""){
+                showError(error2, "Pleae enter Eamil !");
+            }else if(!emailPattern.test(emailVal)){
+                showError(error2, "Invalid Format");
+            }else{
+                error2.style.display = "none";
+                error2.innerHTML = "";
+            }
+        }
+
+
+        function phoneValidateChecking(e){
+            const phoneVal = phone.value;
+            
+            if(phoneVal.trim() === ""){
+                showError(error3, "Enter valid phone number");
+            }else if(phoneVal.length !== 10){
+                showError(error3, "Enter 10 digit");
+            }else{
+                error3.style.display = 'none';
+                error3.innerHTML = "";
+            }
+        }
+
+        function passwordValidateChecking(e) {
+            const passwordVal = password.value;
+            const confirmPasswordVal = confirmPassword.value;
+            const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+            if(passwordVal.length < 8){
+                showError(error4, "password is short minimum lenght 8");
+            }else if(!passwordPattern.test(passwordVal)){
+                showError(error4, "Should contain numbers, alphabet and symbol");
+            }else {
+                error4.style.display = 'none';
+                error4.innerHTML = ""
+            }
+            //pswd matching
+            if(passwordVal !== confirmPasswordVal){
+                showError(error5, "Password is not matching");
+            }else{
+                error5.style.display = 'none';
+                error5.innerHTML = "";
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            signform.addEventListener('submit', function(e){
+
+                nameValidateChecking();
+                emailValidateChecking();
+                phoneValidateChecking();
+                passwordValidateChecking();
+
+                // if(!name || !email || !phone || !password || !error1 || !error2 || !error3 || !error4 || !error5 || !signform){
+                //     console.error("One or more element are missing")
+                // }
+                
+                if(error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML){
+                    e.preventDefault() // form submition block cheyyunu
+                }
+
+            })
+        })
+
+        const alertDiv = document.getElementById('alert-message');
+
+        if(alertDiv) {
+            setTimeout(() => {
+                alertDiv.style.display = "none"
+            }, 6000);
+        }
+    </script>
+
+    

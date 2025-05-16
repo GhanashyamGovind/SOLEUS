@@ -1,0 +1,74 @@
+<%- include('../../views/partials/admin/header', {title: 'Customers'}) %>
+
+<!-- Main Section -->
+<main class="flex-1 p-4">
+    <div class="bg-white rounded-lg shadow-lg border border-gray-200">
+        <div class="p-4 border-b border-gray-300 flex justify-between items-center text-black bg-gradient-to-r from-gray-50 to-gray-100">
+            <h2 class="text-2xl font-bold text-gray-800">CUSTOMERS</h2>
+            <div class="relative w-full max-w-xs">
+                <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white shadow-sm">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+        <div class="p-4">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 shadow-inner">
+                            <th class="p-3 border-b border-gray-400">ID</th>
+                            <th class="p-3 border-b border-gray-400">NAME</th>
+                            <th class="p-3 border-b border-gray-400">EMAIL</th>
+                            <th class="p-3 border-b border-gray-400">JOIN DATE</th>
+                            <th class="p-3 border-b border-gray-400">ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for( let i = 0; i < data.length; i++ ) { %>
+                        <tr class="border-b border-gray-200 text-gray-700 hover:bg-gray-50">
+                            <td class="p-3"><%= data[i]._id %></td>
+                            <td class="p-3 font-medium"><%= data[i].name %></td>
+                            <td class="p-3"><%= data[i].email %></td>
+                            <td class="p-3"><%= data[i].createdOn %></td>
+                            <td class="p-3 flex space-x-2">
+                                <% if(data[i].isBlocked === false) {%>
+                                <a href="/admin/blockCustomer?id=<%= data[i]._id %>" class="bg-gradient-to-b from-orange-400 to-orange-500 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
+                                    BLOCK
+                                </a>
+                                <% } else { %>
+                                <a href="/admin/unblockCustomer?id=<%= data[i]._id %>" class="bg-gradient-to-b from-green-500 to-green-600 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
+                                    UNBLOCK
+                                </a>
+                                <% } %>
+                                <a href="/admin/deleteCustomer?id=<%= data[i]._id %>" class="bg-gradient-to-b from-red-500 to-red-600 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
+                                    DELETE
+                                </a>
+                            </td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+            <div class="container mx-auto px-4 py-6">
+                <nav aria-label="Page navigation ">
+                    <ul class="flex items-center justify-center gap-1 ">
+                        <% for(let i = 0; i < totalPage.length; i++) { %>
+                        <li>
+                            <a 
+                                href="?page=<%= i + 1   %>"
+                                class="flex h-10 w-10 items-center justify-center rounded-full border <%= i === currentPage ? 'border-yellow-500 bg-gradient-to-b from-yellow-400 to-yellow-500 text-black font-bold shadow-inner' : 'border-gray-300 bg-gradient-to-b from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-800 shadow' %> transition-all"
+                                <%= i === currentPage ? 'aria-current="page"' : '' %>
+                            >
+                                <%= i + 1 %>
+                            </a>
+                        </li>
+                        <% } %>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</main>
+
+<%- include('../../views/partials/admin/footer') %>

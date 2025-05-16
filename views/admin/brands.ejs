@@ -1,0 +1,145 @@
+<%- include('../../views/partials/admin/header', {title: 'Brands'}) %>
+
+
+ <!-- Main Content Area -->
+    <main class="flex-1 p-4 md:p-6 bg-white relative min-h-[calc(100vh-64px)]">
+      <!-- Cancel Button -->
+      <button id="cancelButton" class="absolute top-4 right-4 md:top-6 md:right-6 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition duration-200 flex items-center space-x-1">
+        <i class="fas fa-times"></i>
+        <span class="hidden md:inline">CANCEL</span>
+      </button>
+      
+      <div class="max-w-7xl mx-auto">
+        <h2 class="text-2xl font-bold mb-4 md:mb-6 text-black">BRAND MANAGEMENT</h2>
+        
+        <!-- Form to Add Brand -->
+        <div class="bg-gray-50 p-4 md:p-6 rounded-lg shadow-sm mb-6">
+          <h3 class="text-lg font-semibold mb-4 text-gray-700">ADD NEW BRAND</h3>
+          <form  method="POST" action="/admin/addBrand" enctype="multipart/form-data" id="addBrandForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Brand Name -->
+              <div>
+                <label for="brandName" class="block text-sm font-medium text-gray-700 mb-1">BRAND NAME</label>
+                <input type="text" id="brandName" name="name" 
+                  class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition duration-200 text-black" 
+                  placeholder="Enter brand name" required>
+              </div>
+              <!-- Brand Logo -->
+              <div>
+                <label for="brandLogo" class="block text-sm font-medium text-gray-700 mb-1">BRAND LOGO</label>
+                <div class="flex items-center space-x-2">
+                  <img src="" alt="">
+                  <input type="file" id="brandLogo" name="image"  class="text-black">
+                </div>
+              </div>
+            </div>
+            <div class="pt-2">
+              <button type="submit" 
+                class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded transition duration-200 flex items-center space-x-2">
+                <i class="fas fa-plus"></i>
+                <span>ADD BRAND</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Table to Display Brands -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table id="brandTable" class="w-full border-collapse">
+              <thead>
+                <tr class="bg-gray-800 text-white">
+                  <th class="p-3 text-left">LOGO</th>
+                  <th class="p-3 text-left">BRAND</th>
+                  <th class="p-3 text-left">STATUS</th>
+                  <th class="p-3 text-left">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="brandTableBody" class="divide-y divide-gray-200 text-black">
+
+                <% data.reverse().forEach((brand, index) => { %>
+                 
+                <tr class="hover:bg-gray-50 transition duration-150">
+                  <td class="p-3"><img src="/uploads/re-image/<%= brand.brandImage[0] %>" alt="<%= brand.brandName %>" class="w-10 h-10 object-cover rounded-full"></td>
+                  <td name="name" class="p-3 font-medium"><%= brand.brandName %></td>
+                  <td class="p-3">
+
+                    <% if (brand.isBlocked) { %>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      BLOCKED
+                    </span>
+                    <% } else { %>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      ACTIVE
+                    </span>
+                    <% } %>
+
+                  </td>
+                  <td class="p-3 space-x-4">
+
+                    <% if (brand.isBlocked === false) { %>
+                    <button class="bg-red-400 text-red-800 px-3 py-1 rounded text-sm transition duration-200">
+                      <i class="fas fa-ban mr-1"></i> <a href="/admin/blockBrand?id=<%= brand._id %>">Block</a>
+                    </button>
+                    <% }else{ %>
+                    <button class="bg-green-400 text-green-800 px-3 py-1 rounded text-sm transition duration-200">
+                      <i class="fas fa-check-circle mr-1"></i> <a href="/admin/unBlockBrand?id=<%= brand._id %>">Unblock</a>
+                    </button>
+                    <% } %>
+
+                    <button onclick="confirmDelete('<%= brand._id %>')" class="bg-gray-200 hover:bg-gray-500 text-gray-800 px-2 py-1 rounded text-sm transition duration-200">
+                      <i class="fas fa-trash mr-1"></i>Delete
+                    </button>
+                  </td>
+                </tr>
+
+                <% }) %>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Pagination -->
+  <div class="pagination-container flex justify-center space-x-2 mt-4">
+    <% if (currentPage > 1) { %>
+      <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded">« Previous</a>
+    <% } %>
+
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <% if (i === currentPage) { %>
+        <span class="current-page px-3 py-1 bg-yellow-500 text-white rounded"><%= i %></span>
+      <% } else { %>
+        <a href="?page=<%= i %>" class="px-3 py-1 bg-gray-200 rounded"><%= i %></a>
+      <% } %>
+    <% } %>
+
+    <% if (currentPage < totalPages) { %>
+      <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded">Next »</a>
+    <% } %>
+      </div>
+    </main>
+
+    <script>
+
+      function confirmDelete(brandId){
+        Swal.fire({
+          title: 'Are you sure?',
+          text: "You wont able to revert this !",
+          icon: 'warning',
+          showCancelButton: true, 
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, delete it!',
+          cancelButtonText: 'Cancel' 
+        }).then((result) => {
+          if(result.isConfirmed) {
+            window.location.href = `/admin/deleteBrand?id=${brandId}`
+          }
+        })
+
+      }
+      
+    </script>
+
+<%- include('../../views/partials/admin/footer') %>

@@ -1,0 +1,94 @@
+<%- include('../../views/partials/admin/header', {title: 'Edit-Category'}) %>
+
+<main class="flex-1 p-6 bg-white relative">
+  <a href="/admin/category" id="cancelButton" class="absolute top-6 right-6 bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600">CANCEL</a>
+  
+  <h2 class="text-2xl font-bold mb-6">EDIT-CATEGORY</h2>
+  <form id="editCategoryForm" method="POST" action="/admin/editCategory/<%= category._id %>" class="space-y-6">
+    <div class="text-black">
+      <label for="name" class="block text-sm font-medium text-gray-700">NAME</label>
+      <input type="text" id="name" name="categoryName" value="<%= category.name %>" class="mt-1 block w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+    </div>
+    
+    <div class="text-black">
+      <label for="description" class="block text-sm font-medium text-gray-700">DESCRIPTION</label>
+      <textarea id="description" name="description" rows="4" class="mt-1 block w-full border border-gray-300 rounded p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"><%= category.description %></textarea>
+    </div>
+    
+    <div class="flex space-x-4">
+      <button id="submitbtn" type="submit" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">UPDATE</button>
+      <button type="reset" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">CLEAR</button>
+    </div>
+  </form>
+</main>
+
+
+<script>
+  const form = document.getElementById('editCategoryForm');
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault(); 
+
+    
+    const formData = new FormData(form);
+    const data = {
+      categoryName: formData.get('categoryName'),
+      description: formData.get('description')
+    };
+
+    try {
+      
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        
+        await Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: result.message,
+          confirmButtonText: 'OK'
+        });
+        window.location.href = '/admin/category'; // Redirect to category list
+      } else {
+        
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: result.message,
+          confirmButtonText: 'OK'
+        });
+      }
+    } catch (error) {
+      
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Something went wrong!',
+        confirmButtonText: 'OK'
+      });
+    }
+  });
+
+ const submitButton = document.getElementById('submitbtn');
+  submitButton.addEventListener('click', () => {
+    history.replaceState(result, '', '/admin/category')
+    window.location.href = '/admin/category';
+  }) 
+
+  const cancelButton = document.getElementById('cancelButton');
+  cancelButton.addEventListener('click', () => {
+    form.reset();
+    history.replaceState(null, '', '/admin/category');
+    window.location.href = '/admin/category';
+  });
+
+</script>
+
+<%- include('../../views/partials/admin/footer') %>
