@@ -1,9 +1,31 @@
 <%- include('../../views/partials/admin/header', {title: 'Add Products'}) %>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" />
 
+<!-- CSS for toggling display -->
+<style>
+    .display-flex { display: flex; }
+    .display-none { display: none; }
+</style>
+
+<!-- Compute display classes for each size -->
+<% 
+  const displayClasses = {};
+  for (let size = 6; size <= 12; size++) {
+    displayClasses[size] = (formData && formData.sizes && formData.sizes.includes(String(size))) ? 'display-flex' : 'display-none';
+  }
+%>
+
 <!-- Main Content -->
 <main class="flex-1 p-4 md:p-6 bg-white text-black">
     <h2 class="text-2xl md:text-3xl font-bold mb-6">ADD ITEMS</h2>
+
+    <!-- Server-Side Success/Error Messages -->
+    <% if (typeof success !== 'undefined' && success) { %>
+        <div class="text-green-500 mb-4"><%= success %></div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="text-red-500 mb-4"><%= error %></div>
+    <% } %>
 
     <!-- Error Message (Client-Side) -->
     <div id="error-message" class="hidden text-red-500 mb-4"></div>
@@ -14,14 +36,15 @@
             <div>
                 <label for="productName" class="block text-sm font-medium text-gray-700 mb-1">PRODUCT NAME</label>
                 <input type="text" id="productName" name="productName" required
+                    value="<%= formData && formData.productName ? formData.productName : '' %>"
                     class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <div id="productName-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
+                <div id="productName-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
             </div>
             <div>
                 <label for="productDescription" class="block text-sm font-medium text-gray-700 mb-1">PRODUCT DESCRIPTION</label>
-                <textarea id="descriptionid" name="description" rows="3"
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"></textarea>
-                <div id="description-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
+                <textarea id="descriptionid" name="description" rows="3" required
+                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"><%= formData && formData.description ? formData.description : '' %></textarea>
+                <div id="description-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
             </div>
         </div>
 
@@ -30,97 +53,73 @@
                 <label for="brand" class="block text-sm font-medium text-gray-700 mb-1">BRAND</label>
                 <select id="brand" name="brand" required
                     class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                    <option value="" disabled selected>--SELECT--</option>
-                    <% for( let i = 0; i < brand.length; i++ ) { %>
-                    <option value="<%= brand[i].brandName %>">
-                        <%= brand[i].brandName %>
-                    </option>
-                    <% } %>
+                    <option value="" disabled <%= !formData || !formData.brand ? 'selected' : '' %>>--SELECT--</option>
+                    <% (brands || []).forEach(b => { %>
+                        <option value="<%= b._id %>" <%= formData && formData.brand === b._id.toString() ? 'selected' : '' %>><%= b.brandName %></option>
+                    <% }) %>
                 </select>
-                <div id="brand-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
+                <div id="brand-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
             </div>
             <div>
                 <label for="category" class="block text-sm font-medium text-gray-700 mb-1">CATEGORY</label>
                 <select id="category" name="category" required
                     class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                    <option value="" disabled selected>--SELECT--</option>
-                    <% for( let i = 0; i < cat.length; i++ ) { %>
-                    <option value="<%= cat[i].name %>">
-                        <%= cat[i].name %>
-                    </option>
-                    <% } %>
+                    <option value="" disabled <%= !formData || !formData.category ? 'selected' : '' %>>--SELECT--</option>
+                    <% (categories || []).forEach(c => { %>
+                        <option value="<%= c._id %>" <%= formData && formData.category === c._id.toString() ? 'selected' : '' %>><%= c.name %></option>
+                    <% }) %>
                 </select>
-                <div id="category-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="regularPrice" class="block text-sm font-medium text-gray-700 mb-1">REGULAR PRICE</label>
-                <input type="number" id="regularPrice" name="regularPrice" required
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <div id="regularPrice-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
-            </div>
-            <div>
-                <label for="salePrice" class="block text-sm font-medium text-gray-700 mb-1">SALE PRICE</label>
-                <input type="number" id="salePrice" name="salePrice"
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <div id="salePrice-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">QUANTITY</label>
-                <input type="number" id="quantity" name="quantity" required
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <div id="quantity-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
-            </div>
-            <div>
-                <label for="color" class="block text-sm font-medium text-gray-700 mb-1">COLOUR</label>
-                <input type="text" id="colour" name="color"
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-                <div id="color-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
+                <div id="category-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
             </div>
         </div>
 
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">PRODUCT SIZE</label>
-            <div class="flex flex-wrap gap-2">
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="5" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">5</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="6" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">6</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="7" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">7</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="8" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">8</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="9" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">9</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="10" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">10</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="11" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">11</span>
-                </label>
-                <label class="inline-flex items-center">
-                    <input type="checkbox" name="sizes" value="12" class="form-checkbox h-5 w-5 text-yellow-400">
-                    <span class="ml-2">12</span>
-                </label>
+            <label for="color" class="block text-sm font-medium text-gray-700 mb-1">COLOUR</label>
+            <input type="text" id="colour" name="color" required
+                value="<%= formData && formData.color ? formData.color : '' %>"
+                class="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+            <div id="color-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">VARIANTS (SIZES 6 TO 12)</label>
+            <div class="space-y-2">
+                <% for(let size = 6; size <= 12; size++) { %>
+                    <div class="variant-row flex items-center space-x-4">
+                        <input type="checkbox" name="sizes" value="<%= size %>" id="size-<%= size %>"
+                            <%= formData && formData.sizes && formData.sizes.includes(String(size)) ? 'checked' : '' %>
+                            class="form-checkbox h-5 w-5 text-yellow-400" onchange="toggleVariantInputs(this, '<%= size %>')">
+                        <label for="size-<%= size %>" class="text-sm font-medium text-gray-700">Size <%= size %></label>
+                        <div id="inputs-size-<%= size %>" class="flex space-x-4 <%= displayClasses[size] %>">
+                            <div>
+                                <label for="regularPrice-<%= size %>" class="text-sm font-medium text-gray-700">Regular Price:</label>
+                                <input type="number" name="regularPrice-<%= size %>" id="regularPrice-<%= size %>"
+                                    value="<%= formData && formData[`regularPrice-${size}`] ? formData[`regularPrice-${size}`] : '' %>"
+                                    class="w-24 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                    placeholder="Regular" min="0" step="0.01">
+                                <div id="regularPrice-<%= size %>-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
+                            </div>
+                            <div>
+                                <label for="salePrice-<%= size %>" class="text-sm font-medium text-gray-700">Sale Price:</label>
+                                <input type="number" name="salePrice-<%= size %>" id="salePrice-<%= size %>"
+                                    value="<%= formData && formData[`salePrice-${size}`] ? formData[`salePrice-${size}`] : '' %>"
+                                    class="w-24 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                    placeholder="Sale" min="0" step="0.01">
+                                <div id="salePrice-<%= size %>-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
+                            </div>
+                            <div>
+                                <label for="stock-<%= size %>" class="text-sm font-medium text-gray-700">Stock:</label>
+                                <input type="number" name="stock-<%= size %>" id="stock-<%= size %>"
+                                    value="<%= formData && formData[`stock-${size}`] ? formData[`stock-${size}`] : '' %>"
+                                    class="w-24 border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                                    placeholder="Stock" min="0">
+                                <div id="stock-<%= size %>-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
             </div>
-            <div id="sizes-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
+            <div id="variants-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
         </div>
 
         <div>
@@ -131,7 +130,7 @@
                         <input type="file" name="images" id="input1" accept="image/*" onchange="viewImage(event, 1)"
                             class="block w-full text-sm text-gray-700 file:bg-blue-600 file:text-white file:py-2 file:px-4 file:rounded file:border-0 file:cursor-pointer hover:file:bg-blue-700">
                     </div>
-                    <img src="" alt="Preview" id="imgView1" class="w-32 h-32 object-contain rounded border mt-2" style="display: none; max-width: 128px; max-height: 128px;">
+                    <img src="" alt="Preview" id="imgView1" class="w-32 h-32 object-contain rounded border mt-2 display-none" style="max-width: 128px; max-height: 128px;">
                     <span id="status1" class="text-sm text-gray-600">No image selected</span>
                     <div id="imageCropper1" class="hidden flex-col items-center" style="width: 400px; height: 400px; border: 1px solid #ccc; padding: 10px;">
                         <img src="" id="cropperImg1" alt="Crop Preview" class="w-full h-full object-contain">
@@ -146,7 +145,7 @@
                         <input type="file" name="images" id="input2" accept="image/*" onchange="viewImage(event, 2)"
                             class="block w-full text-sm text-gray-700 file:bg-blue-600 file:text-white file:py-2 file:px-4 file:rounded file:border-0 file:cursor-pointer hover:file:bg-blue-700">
                     </div>
-                    <img src="" alt="Preview" id="imgView2" class="w-32 h-32 object-contain rounded border mt-2" style="display: none; max-width: 128px; max-height: 128px;">
+                    <img src="" alt="Preview" id="imgView2" class="w-32 h-32 object-contain rounded border mt-2 display-none" style="max-width: 128px; max-height: 128px;">
                     <span id="status2" class="text-sm text-gray-600">No image selected</span>
                     <div id="imageCropper2" class="hidden flex-col items-center" style="width: 400px; height: 400px; border: 1px solid #ccc; padding: 10px;">
                         <img src="" id="cropperImg2" alt="Crop Preview" class="w-full h-full object-contain">
@@ -161,7 +160,7 @@
                         <input type="file" name="images" id="input3" accept="image/*" onchange="viewImage(event, 3)"
                             class="block w-full text-sm text-gray-700 file:bg-blue-600 file:text-white file:py-2 file:px-4 file:rounded file:border-0 file:cursor-pointer hover:file:bg-blue-700">
                     </div>
-                    <img src="" alt="Preview" id="imgView3" class="w-32 h-32 object-contain rounded border mt-2" style="display: none; max-width: 128px; max-height: 128px;">
+                    <img src="" alt="Preview" id="imgView3" class="w-32 h-32 object-contain rounded border mt-2 display-none" style="max-width: 128px; max-height: 128px;">
                     <span id="status3" class="text-sm text-gray-600">No image selected</span>
                     <div id="imageCropper3" class="hidden flex-col items-center" style="width: 400px; height: 400px; border: 1px solid #ccc; padding: 10px;">
                         <img src="" id="cropperImg3" alt="Crop Preview" class="w-full h-full object-contain">
@@ -176,7 +175,7 @@
                         <input type="file" name="images" id="input4" accept="image/*" onchange="viewImage(event, 4)"
                             class="block w-full text-sm text-gray-700 file:bg-blue-600 file:text-white file:py-2 file:px-4 file:rounded file:border-0 file:cursor-pointer hover:file:bg-blue-700">
                     </div>
-                    <img src="" alt="Preview" id="imgView4" class="w-32 h-32 object-contain rounded border mt-2" style="display: none; max-width: 128px; max-height: 128px;">
+                    <img src="" alt="Preview" id="imgView4" class="w-32 h-32 object-contain rounded border mt-2 display-none" style="max-width: 128px; max-height: 128px;">
                     <span id="status4" class="text-sm text-gray-600">No image selected</span>
                     <div id="imageCropper4" class="hidden flex-col items-center" style="width: 400px; height: 400px; border: 1px solid #ccc; padding: 10px;">
                         <img src="" id="cropperImg4" alt="Crop Preview" class="w-full h-full object-contain">
@@ -187,7 +186,7 @@
                     </div>
                 </div>
             </div>
-            <div id="images-error" class="error-message text-red-500 text-sm mt-1" style="display: none;"></div>
+            <div id="images-error" class="error-message text-red-500 text-sm mt-1 display-none"></div>
         </div>
 
         <div class="flex justify-center">
@@ -199,281 +198,322 @@
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
 
 <script>
-    let croppers = {}; // Store cropper instances
-    let isCropped = { 1: false, 2: false, 3: false, 4: false }; // Track cropping status
+let croppers = {}; // Store cropper instances
+let isCropped = { 1: false, 2: false, 3: false, 4: false }; // Track cropping status
 
-    // Check if Cropper.js is loaded
-    window.addEventListener('load', () => {
-        if (typeof Cropper === 'undefined') {
-            console.error('Cropper.js failed to load. Check the CDN URL or network connection.');
-            displayErrorMessage('images-error', 'Image cropping library failed to load. Please try again later.');
-        } else {
-            console.log('Cropper.js loaded successfully.');
-        }
-    });
+// Check if Cropper.js is loaded
+window.addEventListener('load', () => {
+    if (typeof Cropper === 'undefined') {
+        console.error('Cropper.js failed to load. Check the CDN URL or network connection.');
+        displayErrorMessage('images-error', 'Image cropping library failed to load. Please try again later.');
+    } else {
+        console.log('Cropper.js loaded successfully.');
+    }
+});
 
-    function validateAndSubmit() {
-        if (validateForm()) {
-            document.getElementById('add-product-form').submit();
-        }
+function toggleVariantInputs(checkbox, size) {
+    const inputsDiv = document.getElementById(`inputs-size-${size}`);
+    if (checkbox.checked) {
+        inputsDiv.classList.remove('display-none');
+        inputsDiv.classList.add('display-flex');
+        inputsDiv.querySelectorAll('input').forEach(input => input.setAttribute('required', 'true'));
+    } else {
+        inputsDiv.classList.remove('display-flex');
+        inputsDiv.classList.add('display-none');
+        inputsDiv.querySelectorAll('input').forEach(input => {
+            input.removeAttribute('required');
+            input.value = ''; // Clear inputs when unchecked
+        });
+    }
+}
+
+function validateAndSubmit() {
+    if (validateForm()) {
+        document.getElementById('add-product-form').submit();
+    }
+}
+
+function viewImage(event, index) {
+    console.log(`viewImage called for input${index}`);
+    const input = event.target;
+    const cropperContainer = document.getElementById(`imageCropper${index}`);
+    const cropperImg = document.getElementById(`cropperImg${index}`);
+    const saveButton = document.getElementById(`saveButton${index}`);
+    const cancelButton = document.getElementById(`cancelButton${index}`);
+    const imgView = document.getElementById(`imgView${index}`);
+    const status = document.getElementById(`status${index}`);
+
+    // Clear previous cropper instance
+    if (croppers[index]) {
+        console.log(`Destroying existing cropper for input${index}`);
+        croppers[index].destroy();
+        delete croppers[index];
     }
 
-    function viewImage(event, index) {
-        console.log(`viewImage called for input${index}`);
-        const input = event.target;
-        const cropperContainer = document.getElementById(`imageCropper${index}`);
-        const cropperImg = document.getElementById(`cropperImg${index}`);
-        const saveButton = document.getElementById(`saveButton${index}`);
-        const cancelButton = document.getElementById(`cancelButton${index}`);
-        const imgView = document.getElementById(`imgView${index}`);
-        const status = document.getElementById(`status${index}`);
+    const file = input.files[0];
+    if (file) {
+        console.log(`File selected for input${index}: ${file.name}, type: ${file.type}, size: ${file.size}`);
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                console.log(`Image loaded for input${index}, DataURL length: ${e.target.result.length}`);
+                // Show original image in preview
+                imgView.src = e.target.result;
+                imgView.classList.remove('display-none');
+                console.log(`Set imgView${index}.src, removed display-none`);
+                status.textContent = 'Image selected (not cropped)';
+                status.classList.remove('text-green-600', 'text-red-600');
+                status.classList.add('text-yellow-600');
 
-        // Clear previous cropper instance
-        if (croppers[index]) {
-            console.log(`Destroying existing cropper for input${index}`);
-            croppers[index].destroy();
-            delete croppers[index];
-        }
+                // Setup cropper
+                cropperImg.src = e.target.result;
+                cropperContainer.classList.remove('hidden');
+                console.log(`Cropper container${index} shown`);
 
-        const file = input.files[0];
-        if (file) {
-            console.log(`File selected for input${index}: ${file.name}, type: ${file.type}, size: ${file.size}`);
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                try {
-                    console.log(`Image loaded for input${index}, DataURL length: ${e.target.result.length}`);
-                    // Show original image in preview
-                    imgView.src = e.target.result;
-                    imgView.style.display = 'block'; // Explicitly set display
-                    console.log(`Set imgView${index}.src, display set to block`);
-                    status.textContent = 'Image selected (not cropped)';
-                    status.classList.remove('text-green-600', 'text-red-600');
-                    status.classList.add('text-yellow-600');
+                // Initialize Cropper.js
+                croppers[index] = new Cropper(cropperImg, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    guides: true,
+                    background: false,
+                    autoCropArea: 0.8,
+                    zoomable: true,
+                    ready: function () {
+                        console.log(`Cropper initialized for input${index}`);
+                    },
+                    cropend: function () {
+                        console.log(`Crop area adjusted for input${index}`);
+                    }
+                });
 
-                    // Setup cropper
-                    cropperImg.src = e.target.result;
-                    cropperContainer.classList.remove('hidden');
-                    console.log(`Cropper container${index} shown`);
-
-                    // Initialize Cropper.js
-                    croppers[index] = new Cropper(cropperImg, {
-                        aspectRatio: 1,
-                        viewMode: 1,
-                        guides: true,
-                        background: false,
-                        autoCropArea: 0.8,
-                        zoomable: true,
-                        ready: function () {
-                            console.log(`Cropper initialized for input${index}`);
-                        },
-                        cropend: function () {
-                            console.log(`Crop area adjusted for input${index}`);
-                        }
+                // Handle crop and save
+                saveButton.onclick = function () {
+                    console.log(`Saving cropped image for input${index}`);
+                    const croppedCanvas = croppers[index].getCroppedCanvas({
+                        width: 440,
+                        height: 440
                     });
+                    if (!croppedCanvas) {
+                        console.error(`Failed to get cropped canvas for input${index}`);
+                        status.textContent = 'Failed to crop image';
+                        status.classList.remove('text-yellow-600');
+                        status.classList.add('text-red-600');
+                        displayErrorMessage('images-error', 'Failed to crop the image. Please try again.');
+                        return;
+                    }
+                    const croppedDataUrl = croppedCanvas.toDataURL('image/jpeg', 1.0);
+                    console.log(`Cropped DataURL length for input${index}: ${croppedDataUrl.length}`);
+                    imgView.src = croppedDataUrl;
+                    imgView.classList.remove('display-none');
+                    console.log(`Updated imgView${index}.src with cropped image, removed display-none`);
+                    status.textContent = 'Image cropped';
+                    status.classList.remove('text-yellow-600');
+                    status.classList.add('text-green-600');
 
-                    // Handle crop and save
-                    saveButton.onclick = function () {
-                        console.log(`Saving cropped image for input${index}`);
-                        const croppedCanvas = croppers[index].getCroppedCanvas({
-                            width: 440,
-                            height: 440
-                        });
-                        if (!croppedCanvas) {
-                            console.error(`Failed to get cropped canvas for input${index}`);
-                            status.textContent = 'Failed to crop image';
+                    croppedCanvas.toBlob(blob => {
+                        if (!blob) {
+                            console.error(`Failed to create blob for input${index}`);
+                            status.textContent = 'Failed to process cropped image';
                             status.classList.remove('text-yellow-600');
                             status.classList.add('text-red-600');
-                            displayErrorMessage('images-error', 'Failed to crop the image. Please try again.');
+                            displayErrorMessage('images-error', 'Failed to process the cropped image.');
                             return;
                         }
-                        const croppedDataUrl = croppedCanvas.toDataURL('image/jpeg', 1.0);
-                        console.log(`Cropped DataURL length for input${index}: ${croppedDataUrl.length}`);
-                        imgView.src = croppedDataUrl;
-                        imgView.style.display = 'block'; // Ensure visible
-                        console.log(`Updated imgView${index}.src with cropped image, display set to block`);
-                        status.textContent = 'Image cropped';
-                        status.classList.remove('text-yellow-600');
-                        status.classList.add('text-green-600');
+                        console.log(`Blob created for input${index}, size: ${blob.size}`);
+                        const fileName = `cropped-img-${Date.now()}-${index}.jpeg`;
+                        console.log(`Creating file: ${fileName}`);
+                        const croppedFile = new File([blob], fileName, { type: 'image/jpeg' });
+                        const fileList = new DataTransfer();
+                        fileList.items.add(croppedFile);
+                        input.files = fileList.files;
+                        console.log(`Updated input${index} with cropped file`);
+                        isCropped[index] = true;
+                    }, 'image/jpeg', 1.0);
 
-                        croppedCanvas.toBlob(blob => {
-                            if (!blob) {
-                                console.error(`Failed to create blob for input${index}`);
-                                status.textContent = 'Failed to process cropped image';
-                                status.classList.remove('text-yellow-600');
-                                status.classList.add('text-red-600');
-                                displayErrorMessage('images-error', 'Failed to process the cropped image.');
-                                return;
-                            }
-                            console.log(`Blob created for input${index}, size: ${blob.size}`);
-                            const fileName = `cropped-img-${Date.now()}-${index}.jpeg`;
-                            console.log(`Creating file: ${fileName}`);
-                            const croppedFile = new File([blob], fileName, { type: 'image/jpeg' });
-                            const fileList = new DataTransfer();
-                            fileList.items.add(croppedFile);
-                            input.files = fileList.files;
-                            console.log(`Updated input${index} with cropped file`);
-                            isCropped[index] = true;
-                        }, 'image/jpeg', 1.0);
+                    cropperContainer.classList.add('hidden');
+                    console.log(`Cropper container${index} hidden`);
+                    croppers[index].destroy();
+                    delete croppers[index];
+                };
 
-                        cropperContainer.classList.add('hidden');
-                        console.log(`Cropper container${index} hidden`);
+                // Handle cancel
+                cancelButton.onclick = function () {
+                    console.log(`Cancel cropping for input${index}`);
+                    cropperContainer.classList.add('hidden');
+                    input.value = '';
+                    imgView.src = '';
+                    imgView.classList.add('display-none');
+                    status.textContent = 'No image selected';
+                    status.classList.remove('text-yellow-600', 'text-green-600', 'text-red-600');
+                    status.classList.add('text-gray-600');
+                    isCropped[index] = false;
+                    if (croppers[index]) {
                         croppers[index].destroy();
                         delete croppers[index];
-                    };
-
-                    // Handle cancel
-                    cancelButton.onclick = function () {
-                        console.log(`Cancel cropping for input${index}`);
-                        cropperContainer.classList.add('hidden');
-                        input.value = '';
-                        imgView.src = '';
-                        imgView.style.display = 'none';
-                        status.textContent = 'No image selected';
-                        status.classList.remove('text-yellow-600', 'text-green-600', 'text-red-600');
-                        status.classList.add('text-gray-600');
-                        isCropped[index] = false;
-                        if (croppers[index]) {
-                            croppers[index].destroy();
-                            delete croppers[index];
-                        }
-                        console.log(`Reset input${index} and preview`);
-                    };
-                } catch (error) {
-                    console.error(`Error in viewImage for input${index}:`, error);
-                    displayErrorMessage('images-error', 'Failed to load image for cropping. Please try again.');
-                    status.textContent = 'Error loading image';
-                    status.classList.remove('text-yellow-600', 'text-green-600');
-                    status.classList.add('text-red-600');
-                }
-            };
-            reader.onerror = function () {
-                console.error(`FileReader error for input${index}`);
-                displayErrorMessage('images-error', 'Failed to read the selected image. Please try another file.');
-                status.textContent = 'Error reading image';
+                    }
+                    console.log(`Reset input${index} and preview`);
+                };
+            } catch (error) {
+                console.error(`Error in viewImage for input${index}:`, error);
+                displayErrorMessage('images-error', 'Failed to load image for cropping. Please try again.');
+                status.textContent = 'Error loading image';
                 status.classList.remove('text-yellow-600', 'text-green-600');
                 status.classList.add('text-red-600');
-            };
-            reader.readAsDataURL(file);
-        } else {
-            console.log(`No file selected for input${index}`);
-            status.textContent = 'No image selected';
-            status.classList.remove('text-yellow-600', 'text-green-600', 'text-red-600');
-            status.classList.add('text-gray-600');
-            imgView.src = '';
-            imgView.style.display = 'none';
-        }
+            }
+        };
+        reader.onerror = function () {
+            console.error(`FileReader error for input${index}`);
+            displayErrorMessage('images-error', 'Failed to read the selected image. Please try another file.');
+            status.textContent = 'Error reading image';
+            status.classList.remove('text-yellow-600', 'text-green-600');
+            status.classList.add('text-red-600');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        console.log(`No file selected for input${index}`);
+        status.textContent = 'No image selected';
+        status.classList.remove('text-yellow-600', 'text-green-600', 'text-red-600');
+        status.classList.add('text-gray-600');
+        imgView.src = '';
+        imgView.classList.add('display-none');
+    }
+}
+
+function validateForm() {
+    clearErrorMessages();
+    const name = document.getElementsByName('productName')[0].value;
+    const description = document.getElementById('descriptionid').value;
+    const brand = document.getElementsByName('brand')[0].value;
+    const category = document.getElementsByName('category')[0].value;
+    const color = document.getElementsByName('color')[0].value;
+    const sizes = document.getElementsByName('sizes');
+    const images = document.querySelectorAll('input[name="images"]');
+    let isValid = true;
+
+    // Validate product name
+    if (name.trim() === "") {
+        displayErrorMessage('productName-error', 'Please enter a product name.');
+        isValid = false;
+    } else if (!/^[a-zA-Z0-9\s]+$/.test(name.trim())) {
+        displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters and numbers.');
+        isValid = false;
     }
 
-    function validateForm() {
-        clearErrorMessages();
-        const name = document.getElementsByName('productName')[0].value;
-        const description = document.getElementById('descriptionid').value;
-        const brand = document.getElementsByName('brand')[0].value;
-        const price = document.getElementsByName('regularPrice')[0].value;
-        const salePrice = document.getElementsByName('salePrice')[0].value;
-        const color = document.getElementsByName('color')[0].value;
-        const category = document.getElementsByName('category')[0].value;
-        const quantity = document.getElementsByName('quantity')[0].value;
-        const sizes = document.getElementsByName('sizes');
-        const images = document.querySelectorAll('input[name="images"]');
-        let isValid = true;
+    // Validate description
+    if (description.trim() === "") {
+        displayErrorMessage('description-error', 'Please enter a product description.');
+        isValid = false;
+    } else if (!/^[a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(description.trim())) {
+        displayErrorMessage('description-error', 'Product description should contain only alphanumeric characters and allowed symbols.');
+        isValid = false;
+    }
 
-        if (name.trim() === "") {
-            displayErrorMessage('productName-error', 'Please enter a product name.');
-            isValid = false;
-        } else if (!/^[a-zA-Z0-9\s]+$/.test(name.trim())) {
-            displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters and number.');
+    // Validate brand
+    if (brand === "") {
+        displayErrorMessage('brand-error', 'Please select a brand.');
+        isValid = false;
+    } else if (!/^[0-9a-fA-F]{24}$/.test(brand)) {
+        displayErrorMessage('brand-error', 'Invalid brand selection.');
+        isValid = false;
+    }
+
+    // Validate category
+    if (category === "") {
+        displayErrorMessage('category-error', 'Please select a category.');
+        isValid = false;
+    } else if (!/^[0-9a-fA-F]{24}$/.test(category)) {
+        displayErrorMessage('category-error', 'Invalid category selection.');
+        isValid = false;
+    }
+
+    // Validate color
+    if (color.trim() === "") {
+        displayErrorMessage('color-error', 'Please enter a color.');
+        isValid = false;
+    }
+
+    // Validate variants
+    const selectedSizes = Array.from(sizes).filter(size => size.checked).map(size => size.value);
+    if (selectedSizes.length === 0) {
+        displayErrorMessage('variants-error', 'Please select at least one size.');
+        isValid = false;
+    } else {
+        // Check for duplicate sizes (shouldn't happen due to checkbox behavior, but just in case)
+        const sizeSet = new Set(selectedSizes);
+        if (sizeSet.size !== selectedSizes.length) {
+            displayErrorMessage('variants-error', 'Duplicate sizes are not allowed.');
             isValid = false;
         }
 
-        if (description.trim() === "") {
-            displayErrorMessage('description-error', 'Please enter a product description.');
-            isValid = false;
-        } else if (!/^[a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(description.trim())) {
-            displayErrorMessage('description-error', 'Product description should contain only alphabetic characters and number.');
-            isValid = false;
-        }
+        selectedSizes.forEach(size => {
+            const regularPrice = document.getElementById(`regularPrice-${size}`).value;
+            const salePrice = document.getElementById(`salePrice-${size}`).value;
+            const stock = document.getElementById(`stock-${size}`).value;
 
-        if (brand === "") {
-            displayErrorMessage('brand-error', 'Please select a brand.');
-            isValid = false;
-        }
+            if (!regularPrice || !/^\d+(\.\d{1,2})?$/.test(regularPrice) || parseFloat(regularPrice) <= 0) {
+                displayErrorMessage(`regularPrice-${size}-error`, 'Enter a valid positive regular price.');
+                isValid = false;
+            }
 
-        if (category === "") {
-            displayErrorMessage('category-error', 'Please select a category.');
-            isValid = false;
-        }
+            if (salePrice && (!/^\d+(\.\d{1,2})?$/.test(salePrice) || parseFloat(salePrice) < 0)) {
+                displayErrorMessage(`salePrice-${size}-error`, 'Enter a valid non-negative sale price.');
+                isValid = false;
+            }
 
-        if (!/^\d+(\.\d{1,2})?$/.test(price) || parseFloat(price) < 0) {
-            displayErrorMessage('regularPrice-error', 'Please enter a valid non-negative price.');
-            isValid = false;
-        }
+            if (parseFloat(regularPrice) <= parseFloat(salePrice || 0)) {
+                displayErrorMessage(`regularPrice-${size}-error`, 'Regular price must be greater than sale price.');
+                isValid = false;
+            }
 
-        if (salePrice && (!/^\d+(\.\d{1,2})?$/.test(salePrice) || parseFloat(salePrice) < 0)) {
-            displayErrorMessage('salePrice-error', 'Please enter a valid non-negative sale price.');
-            isValid = false;
-        }
-
-        if (parseFloat(price) <= parseFloat(salePrice || 0)) {
-            displayErrorMessage('regularPrice-error', 'Regular price must be greater than sale price.');
-            isValid = false;
-        }
-
-        if (parseInt(quantity) < 0 || isNaN(parseInt(quantity))) {
-            displayErrorMessage('quantity-error', 'Please enter a valid non-negative quantity.');
-            isValid = false;
-        }
-
-        if (color.trim() === "") {
-            displayErrorMessage('color-error', 'Please enter a color.');
-            isValid = false;
-        }
-
-        const selectedSizes = Array.from(sizes).filter(size => size.checked).map(size => size.value);
-        if (selectedSizes.length === 0) {
-            displayErrorMessage('sizes-error', 'Please select at least one size.');
-            isValid = false;
-        }
-
-        let hasImage = false;
-        images.forEach((input, index) => {
-            if (input.files.length > 0) {
-                if (!isCropped[index + 1]) {
-                    displayErrorMessage('images-error', `Please crop the image for input ${index + 1} before submitting.`);
-                    isValid = false;
-                } else {
-                    hasImage = true;
-                }
+            if (!stock || parseInt(stock) < 0 || isNaN(parseInt(stock))) {
+                displayErrorMessage(`stock-${size}-error`, 'Enter a valid non-negative stock quantity.');
+                isValid = false;
             }
         });
-        if (!hasImage) {
-            displayErrorMessage('images-error', 'Please select and crop at least one image.');
-            isValid = false;
+    }
+
+    // Validate images
+    let hasImage = false;
+    images.forEach((input, index) => {
+        if (input.files.length > 0) {
+            if (!isCropped[index + 1]) {
+                displayErrorMessage('images-error', `Please crop the image for input ${index + 1} before submitting.`);
+                isValid = false;
+            } else {
+                hasImage = true;
+            }
         }
-
-        return isValid;
+    });
+    if (!hasImage) {
+        displayErrorMessage('images-error', 'Please select and crop at least one image.');
+        isValid = false;
     }
 
-    function displayErrorMessage(elementId, message) {
-        let errorElement = document.getElementById(elementId);
-        if (!errorElement) {
-            errorElement = document.createElement('div');
-            errorElement.id = elementId;
-            errorElement.className = 'error-message text-red-500 text-sm mt-1';
-            const inputElement = document.querySelector(`[name="${elementId.split('-')[0]}"]`) || document.querySelector(`#${elementId.split('-')[0]}`);
-            inputElement.parentNode.appendChild(errorElement);
-        }
-        errorElement.innerText = message;
-        errorElement.style.display = 'block';
-    }
+    return isValid;
+}
 
-    function clearErrorMessages() {
-        const errorElements = document.getElementsByClassName('error-message');
-        Array.from(errorElements).forEach(element => {
-            element.innerText = '';
-            element.style.display = 'none';
-        });
+function displayErrorMessage(elementId, message) {
+    let errorElement = document.getElementById(elementId);
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.id = elementId;
+        errorElement.className = 'error-message text-red-500 text-sm mt-1';
+        const inputElement = document.querySelector(`[name="${elementId.split('-')[0]}"]`) || document.querySelector(`#${elementId.split('-')[0]}`);
+        inputElement.parentNode.appendChild(errorElement);
     }
+    errorElement.innerText = message;
+    errorElement.classList.remove('display-none');
+    errorElement.classList.add('display-block');
+}
+
+function clearErrorMessages() {
+    const errorElements = document.getElementsByClassName('error-message');
+    Array.from(errorElements).forEach(element => {
+        element.innerText = '';
+        element.classList.remove('display-block');
+        element.classList.add('display-none');
+    });
+}
 </script>
 
 <%- include('../../views/partials/admin/footer') %>

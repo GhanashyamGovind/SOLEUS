@@ -56,7 +56,7 @@ const loadHomepage = async (req, res) => {
                 category: {$in: categories.map(category => category._id)},
                 quantity: {$gt: 0}
             }    
-        )
+        ).populate('brand').exec()
 
         productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
         productData = productData.slice(0, 4);
@@ -262,13 +262,9 @@ const loadProfile = async (req, res) =>{
 const logOut = async (req, res) => {
     try {
 
-        
             delete req.session.user;
             return res.redirect('/login')
-        
-
-        
-
+      
         // req.session.destroy((err) => {
         //     if(err){
         //         console.log("Session destruction error ===> ", err);
@@ -298,8 +294,17 @@ const pageNotFound = async (req, res) => {
 
 const loadAllProductPage = async (req, res) => {
   try {
-    // Extract query parameters with defaults
-    const { brand = '', category = '', minPrice = '', maxPrice = '', onFire = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
+    const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
+    // Handle onFire as an array
+    let onFire = req.query['onFire[]'];
+    if (onFire && !Array.isArray(onFire)) {
+      onFire = [onFire]; // Convert single value to array
+    }
+    onFire = onFire || []; // Default to empty array if not provided
+
+    // Validate onFire values
+    const validOnFireValues = ['newArrival', 'topSelling'];
+    const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
 
     // Fetch categories
     const categories = await Category.find({ isListed: true });
@@ -312,19 +317,17 @@ const loadAllProductPage = async (req, res) => {
       quantity: { $gt: 0 },
     };
     if (brand) query.brand = brand;
-    if (category) {
-      query.category = category; // Expects category as ObjectId
-    }
+    if (category) query.category = category;
     if (minPrice || maxPrice) {
       query.salePrice = {};
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    if (onFire) {
-      query.onFire = onFire; // 
+    if (validatedOnFire.length > 0) {
+      query.onFire = { $in: validatedOnFire };
     }
     if (search) {
-      query.productName = { $regex: search, $options: 'i' }; 
+      query.productName = { $regex: search, $options: 'i' };
     }
 
     // Build sort option
@@ -343,7 +346,7 @@ const loadAllProductPage = async (req, res) => {
         sortOption.productName = -1;
         break;
       default:
-        sortOption.createdAt = -1; 
+        sortOption.createdAt = -1;
     }
 
     const limit = 12;
@@ -354,7 +357,9 @@ const loadAllProductPage = async (req, res) => {
     const products = await Product.find(query)
       .sort(sortOption)
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .populate('brand', 'brandName')
+      .populate('category', 'name');
 
     const brands = await Brand.find({ isBlocked: false });
     const categoriesWithIds = categories.map(category => ({ _id: category._id, name: category.name }));
@@ -364,7 +369,6 @@ const loadAllProductPage = async (req, res) => {
     const isAjax = ajax === 'true';
 
     if (isAjax) {
-      // Return JSON for fetch requests
       return res.json({
         products,
         currentPage,
@@ -373,13 +377,12 @@ const loadAllProductPage = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        selectedOnFire: onFire,
+        selectedOnFire: validatedOnFire,
         search,
         sort,
       });
     }
 
-    // Render EJS for regular requests
     return res.render('user/all-products', {
       products,
       category: categoriesWithIds,
@@ -391,7 +394,7 @@ const loadAllProductPage = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      selectedOnFire: onFire,
+      selectedOnFire: validatedOnFire,
       search,
       sort,
     });
@@ -409,26 +412,43 @@ const loadAllProductPage = async (req, res) => {
 
 const filterProduct = async (req, res) => {
   try {
-    
-    const { brand = '', category = '', minPrice = '', maxPrice = '', onFire = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
+    const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
+    // Handle onFire as an array
+    let onFire = req.query['onFire[]'];
+    if (onFire && !Array.isArray(onFire)) {
+      onFire = [onFire]; // Convert single value to array
+    }
+    onFire = onFire || []; // Default to empty array if not provided
 
-    
-    let query = {};
+    // Validate onFire values
+    const validOnFireValues = ['newArrival', 'topSelling'];
+    const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
+
+    // Fetch categories and ensure products are from listed categories
+    const categories = await Category.find({ isListed: true });
+    const categoryIds = categories.map((category) => category._id.toString());
+
+    // Build query object
+    let query = {
+      isBlocked: false,
+      category: { $in: categoryIds },
+      quantity: { $gt: 0 },
+    };
     if (brand) query.brand = brand;
-    if (category) query.category = category; 
+    if (category) query.category = category;
     if (minPrice || maxPrice) {
       query.salePrice = {};
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    if (onFire) {
-      query.onFire = onFire; 
+    if (validatedOnFire.length > 0) {
+      query.onFire = { $in: validatedOnFire };
     }
     if (search) {
-      query.productName = { $regex: search, $options: 'i' }; 
+      query.productName = { $regex: search, $options: 'i' };
     }
 
-    
+    // Build sort option
     let sortOption = {};
     switch (sort) {
       case 'priceLow':
@@ -444,31 +464,29 @@ const filterProduct = async (req, res) => {
         sortOption.productName = -1;
         break;
       default:
-        sortOption.createdAt = -1; 
+        sortOption.createdAt = -1;
     }
 
     const limit = 12;
     const currentPage = parseInt(page) || 1;
     const skip = (currentPage - 1) * limit;
 
-    
     const totalProducts = await Product.countDocuments(query);
     const products = await Product.find(query)
       .sort(sortOption)
       .skip(skip)
-      .limit(limit);
-
+      .limit(limit)
+      .populate('brand', 'brandName')
+      .populate('category', 'name');
 
     const brands = await Brand.find({ isBlocked: false });
-    const categories = await Category.find({ isListed: true });
+    const categoriesWithIds = categories.map(category => ({ _id: category._id, name: category.name }));
 
     const totalPages = Math.ceil(totalProducts / limit);
 
-    
     const isAjax = ajax === 'true';
 
     if (isAjax) {
-      // return JSON for fetch requests
       return res.json({
         products,
         currentPage,
@@ -477,24 +495,24 @@ const filterProduct = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        selectedOnFire: onFire,
+        selectedOnFire: validatedOnFire,
         search,
         sort,
       });
     }
 
-    // render ejs for normal requests
     return res.render('user/all-products', {
       products,
       brand: brands,
-      category: categories,
+      category: categoriesWithIds,
+      totalProducts,
       currentPage,
       totalPages,
       selectedBrand: brand,
       selectedCategory: category,
       minPrice,
       maxPrice,
-      selectedOnFire: onFire,
+      selectedOnFire: validatedOnFire,
       search,
       sort,
     });

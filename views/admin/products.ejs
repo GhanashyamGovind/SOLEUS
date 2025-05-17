@@ -1,96 +1,97 @@
 <%- include('../../views/partials/admin/header', {title: 'Product-List'}) %>
 
-            <!-- Product Table Section -->
-            <div class="p-4 flex-1 overflow-x-auto text-black">
-                <!-- Product List Header -->
-                <h1 class="text-2xl font-bold mb-4">PRODUCT LIST</h1>
+<!-- Product Table Section -->
+<div class="p-4 flex-1 overflow-x-auto text-black">
+    <!-- Product List Header -->
+    <h1 class="text-2xl font-bold mb-4">PRODUCT LIST</h1>
 
-                <!-- Search Bar -->
-                <div class="mb-4 flex justify-end">
-                    <div class="relative w-full max-w-xs">
-                        <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                </div>
+    <!-- Search Bar -->
+    <div class="mb-4 flex justify-end">
+        <div class="relative w-full max-w-xs">
+            <input type="text" placeholder="Search..." class="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <svg class="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+    </div>
 
-                <!-- Table -->
-                <table class="w-full bg-white shadow rounded-lg">
-                    <thead>
-                        <tr class="bg-gray-200 text-left">
-                            <th class="p-3">NAME</th>
-                            <th class="p-3">BRAND</th>
-                            <th class="p-3">CATEGORY</th>
-                            <th class="p-3">PRICE</th>
-                            <th class="p-3">OFFER PRICE</th>
-                            <th class="p-3">QUANTITY</th>
-                            <th class="p-3">ADD OFFER</th>
-                            <th class="p-3">ACTION</th>
-                            <th class="p-3">EDIT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+    <!-- Table -->
+    <table class="w-full bg-white shadow rounded-lg">
+        <thead>
+            <tr class="bg-gray-200 text-left">
+                <th class="p-3">IMG</th>
+                <th class="p-3">NAME</th>
+                <th class="p-3">BRAND</th>
+                <th class="p-3">CATEGORY</th>
+                <th class="p-3">OFFER PRICE</th>
+                <th class="p-3">QUANTITY</th>
+                <th class="p-3">ADD OFFER</th>
+                <th class="p-3">ACTION</th>
+                <th class="p-3">EDIT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for (let i = data.length - 1; i >= 0; i--) { %>
+            <tr class="border-b">
+                <!-- Fixed image source syntax -->
+                <td class="p-3">
+                    <img src="/Uploads/re-image/<%= data[i].productImage[0] %>" alt="<%= data[i].brand.brandName %>" class="w-10 h-10 object-cover rounded-full">
+                </td>
+                <td class="p-3"><%= data[i].productName %></td>
+                <td class="p-3"><%= data[i].brand.brandName %></td>
+                <td class="p-3"><%= data[i].category.name %></td>
+                <td class="p-3"><%= data[i].offerPrice || 'N/A' %></td> <!-- Added fallback for offerPrice -->
+                <td class="p-3"><%= data[i].quantity %></td>
+                <td class="p-3">
+                    <button class="bg-blue-500 text-white px-2 py-1 text-sm rounded hover:bg-blue-600">ADD</button>
+                </td>
+                <td class="p-3">
+                    <% if (data[i].isBlocked === false) { %>
+                        <button class="bg-red-500 text-white px-2 py-1 text-sm rounded hover:bg-red-600">
+                            <a href="/admin/blockProduct?id=<%= data[i]._id %>">BLOCK</a>
+                        </button>
+                    <% } else { %>
+                        <button class="bg-green-500 text-white px-2 py-1 text-sm rounded hover:bg-green-600">
+                            <a href="/admin/unBlockProduct?id=<%= data[i]._id %>">UNBLOCK</a>
+                        </button>
+                    <% } %>    
+                </td>
+                <td class="p-3">
+                    <button class="bg-blue-800 text-white px-2 py-1 text-sm rounded hover:bg-blue-700">
+                        <a href="/admin/editProduct?id=<%= data[i]._id %>">EDIT</a>
+                    </button>
+                </td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
 
-                        <% for( let i = data.length-1; i >=0; i-- ) { %>
-                        <tr class="border-b">
-                            <td class="p-3"><%= data[i].productName %></td>
-                            <td class="p-3"><%= data[i].brand %></td>
-                            <td class="p-3"><%= data[i].category.name %></td>
-                            <td class="p-3">₹ <%= data[i].salePrice %></td>
-                            <td class="p-3"></td>
-                            <td class="p-3"><%= data[i].quantity %></td>
-                            <td class="p-3">
-                                <button class="bg-blue-500 text-white px-2 py-1 text-sm rounded hover:bg-blue-600">ADD</button>
-                            </td>
-                            <td class="p-3">
-                                <% if (data[i].isBlocked === false) { %>
-                                    <button class="bg-red-500 text-white px-2 py-1 text-sm rounded hover:bg-red-600">
-                                        <a href="/admin/blockProduct?id=<%= data[i]._id %>">BLOCK</a>
-                                    </button>
-                                <% }else{ %>
-                                    <button class="bg-green-500 text-white px-2 py-1 text-sm rounded hover:bg-green-600">
-                                        <a href="/admin/unBlockProduct?id=<%= data[i]._id %>">UNBLOCK</a>
-                                    </button>
-                                <% } %>    
-                            </td>
-                            <td class="p-3">
-                                <button class="bg-blue-800 text-white px-2 py-1 text-sm rounded hover:bg-blue-700">
-                                    <a href="/admin/editProduct?id=<%= data[i]._id %>">EDIT</a>
-                                </button>
-                            </td>
-                        </tr>
-                         <% } %>
-                        
-                    </tbody>
-                </table>
+    <!-- Centered Pagination -->
+    <div class="w-full flex justify-center mt-6">
+        <div class="inline-flex items-center gap-1">
+            <% if (currentPage > 1) { %>
+                <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            <% } %>
 
-                <!-- Centered Pagination -->
-                <div class="w-full flex justify-center mt-6">
-                    <div class="inline-flex items-center gap-1">
-                        <% if (currentPage > 1) { %>
-                            <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        <% } %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <% if (i === currentPage) { %>
+                    <a href="?page=<%= i %>" class="px-3 py-1 border bg-blue-500 text-white rounded font-medium"><%= i %></a>
+                <% } else { %>
+                    <a href="?page=<%= i %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors"><%= i %></a>
+                <% } %>
+            <% } %>
 
-                        <% for (let i = 1; i <= totalPages; i++) { %>
-                            <% if (i === currentPage) { %>
-                                <a href="?page=<%= i %>" class="px-3 py-1 border bg-blue-500 text-white rounded font-medium"><%= i %></a>
-                            <% } else { %>
-                                <a href="?page=<%= i %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors"><%= i %></a>
-                            <% } %>
-                        <% } %>
-
-                        <% if (currentPage < totalPages) { %>
-                            <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </a>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
+            <% if (currentPage < totalPages) { %>
+                <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                </a>
+            <% } %>
+        </div>
+    </div>
+</div>
 
 <%- include('../../views/partials/admin/footer') %>

@@ -46,7 +46,7 @@ router.get('/deleteBrand', adminAuth, brandController.deleteBrand);
 //product controller
 router.get('/addProducts', adminAuth, productController.getProductPage);
 router.post('/addProducts', adminAuth, uploads.array("images", 4), productController.addProducts);
-router.get('/productlist', adminAuth, productController.productList);
+router.get('/productlist', adminAuth, productController.productList); // ith product list cheytha prodct show cheyyan vendi
 router.get('/blockProduct', adminAuth, productController.productBlock);
 router.get('/unBlockProduct', adminAuth, productController.productUnBlock);
 router.get('/editProduct', adminAuth, productController.getEditProduct);
