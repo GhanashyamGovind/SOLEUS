@@ -15,6 +15,9 @@ app.set('view engine', 'ejs');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
+
 //Session
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -36,8 +39,6 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
 
 //connect mongoDB
 connectDB();

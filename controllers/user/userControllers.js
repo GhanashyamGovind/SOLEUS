@@ -160,7 +160,7 @@ const signUp = async (req, res) => {
         }
 
         req.session.userOtp = otp;
-        req.session.userData = {name,phone,email, password};
+        req.session.userData = {name,phone,email,password};
 
         res.render("user/verify-otp");
         console.log("otp sent", otp)
@@ -188,7 +188,7 @@ const verifyOtp = async (req, res) => {
     try {
 
         const {otp} = req.body;
-        console.log(`user enterd otp ${otp}`);
+        // console.log(`user enterd otp ${otp}`);
 
         if(otp === req.session.userOtp){
             const user = req.session.userData; // session ill ulla otp aay compare cheyyunu
