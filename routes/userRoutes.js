@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user/userControllers');
-const profileController = require('../controllers/user/profileController')
+const profileController = require('../controllers/user/profileController');
+const productController = require('../controllers/user/productController');
 const passport = require('passport');
 
 
@@ -39,6 +40,7 @@ router.get('/allproducts', userController.loadAllProductPage);
 router.get('/productFilter', userController.filterProduct);
 router.get('/clearSearch', userController.clearSearch);
 
+
 //profileMangement
 router.get('/forgot-password', profileController.getForgotPassPage);
 router.post('/forgot-email-valid', profileController.forgotEmailValid);
@@ -46,6 +48,9 @@ router.post('/verify-passForgot-otp', profileController.verifyForgotPassOtp);
 router.get('/reset-password', profileController.getResetPassPage);
 router.post('/resend-forgot-otp', profileController.resendOtp);
 router.post('/reset-password', profileController.postNewPassword);
+
+//product management
+router.get('/productDetails', productController.productDeatils)
 
 
 
