@@ -64,7 +64,7 @@ const productSchema = new Schema({
     },
     sku: {
       type: String,
-      required: true // Unique within the product, enforced by middleware
+      required: true // Unique within the product
     },
     regularPrice: {
       type: Number,

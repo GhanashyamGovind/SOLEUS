@@ -101,8 +101,7 @@
                         </div>
                         <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Puma</p>
                     </a>
-
-                                        
+                    
                     <!-- Nike -->
                     <a href="#" class="brand-logo flex flex-col items-center group">
                         <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
@@ -142,8 +141,6 @@
                         </div>
                         <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Bata</p>
                     </a>
-                    
-                    <!-- Repeat for other brands -->
                 </div>
             </div>
         </div>
@@ -171,26 +168,19 @@
         
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <!-- Product cards with scroll animations -->
-             <% for( let i = 0; i < products.length; i++ ) { %>
-            
+            <% for( let i = 0; i < products.length; i++ ) { %>
             <div class="product-card group relative bg-white rounded-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 transform translate-y-20 opacity-0">
                 <div class="relative h-80 overflow-hidden">
-                    <img src="/uploads/re-image/<%= products[i].productImage[0] %>" 
+                    <img src="/Uploads/re-image/<%= products[i].productImage[0] %>" 
                          alt="<%= products[i].productName %>" 
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                     <!-- Favorite button -->
-                    <button class="absolute top-4 right-4 bg-white/90 hover:bg-red-500 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-md"
+                    <button onclick="addToWishlist('<%= products[i]._id %>')" class="absolute top-4 right-4 bg-white/90 hover:bg-red-500 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-md z-20"
                             aria-label="Add to favorites">
-                        <a href="/addToWishlist?id=<%= products[i]._id %>">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        </a>
                     </button>
-                    <!-- Discount badge
-                    <div class="absolute bottom-4 left-4 bg-yellow-400 text-black text-sm font-bold px-4 py-1 rounded-full shadow-md">
-                        -20% OFF
-                    </div> -->
                 </div>
                 <div class="p-5">
                     <h3 class="text-xl font-bold mb-1"><%= products[i].productName %></h3>
@@ -203,23 +193,21 @@
                         <button class="bg-black hover:bg-yellow-600 text-white p-3 rounded-full transition-all duration-300 transform hover:scale-110 flex items-center justify-center shadow-md"
                                 aria-label="Add to cart">
                             <a href="/addToCart?id=<%= products[i]._id %>">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
                             </a>
                         </button>
                     </div>
                 </div>
                 <!-- Hover overlay -->
-                <div class="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button class="bg-yellow-400 hover:bg-black text-black hover:text-yellow-400 font-bold py-3 px-6 rounded-full transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
-                       <a href="/productDetails?id=<%= products[i]._id %>"> Quick View</a>
+                <div class="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <button class="bg-yellow-400 hover:bg-black text-black hover:text-yellow-400 font-bold py-3 px-6 rounded-full transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 pointer-events-auto">
+                        <a href="/productDetails?id=<%= products[i]._id %>">Quick View</a>
                     </button>
                 </div>
             </div>
-
-             <% } %>
-            
+            <% } %>
         </div>
     </div>
 </section>
@@ -301,7 +289,6 @@
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry, index) => {
                 if (entry.isIntersecting) {
-
                     setTimeout(() => {
                         entry.target.classList.add('animate');
                     }, index * 100); 
@@ -316,4 +303,86 @@
             observer.observe(card);
         });
     });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Check if SweetAlert2 is loaded
+    console.log('SweetAlert2 loaded:', typeof Swal); // Debug log
+
+    async function addToWishlist(productId) {
+      try {
+        const response = await fetch('/addToWishlist',{
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ productId })
+        }); 
+        console.log('Response status:', response.status);
+        const text = await response.text();
+        console.log('Raw response:', text); // Debug raw response
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (error) {
+          console.error('Failed to parse JSON response:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Invalid server response. Please try again.',
+            showConfirmButton: true
+          });
+          return;
+        }
+
+        if (!data.status && data.message?.toLowerCase().includes('login')) {
+          Swal.fire({
+            toast: true,
+            icon: 'info',
+            title: 'Login Required',
+            text: data.message,
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true 
+          });
+          return;
+        }
+
+        if(data.status) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: data.message,
+            html: `<img src="/images/shoes.gif" alt="Shoes GIF" style="margin-top: 10px; width: auto; height: auto;" />`,
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true,
+            width: 400,
+            padding: '1.5em',
+            color: '#ffffff',
+            background: '#000'
+          });
+        } else {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: data.message,
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+          });
+        }
+      } catch (error) {
+        console.error('Error adding to wishlist:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Something went wrong!'
+        });
+      }
+    }
 </script>

@@ -241,17 +241,17 @@ const resendOtp = async (req, res) => {
 // profile load
 const loadProfile = async (req, res) =>{
     try {
-        const user = req.session.user
-        // console.log(user)
-        if(user){
-            const userData = await User.findOne({_id:user});
+        const userId = req.session.user
+        console.log(userId)
+        const userData = await User.findOne({_id:userId});
 
-            // console.log("User Data:", userData);
-
-            res.render('user/profile', {user: userData});
-        }else{
-            res.redirect('/');
+        if(!userData){
+          console.log("user not found", userId);
+          return res.redirect('/login');
         }
+
+        res.render('user/profile', {user: userData});
+        
     } catch (error) {
         console.error("Error in profile loadingcls ", error);
         res.redirect('/pageNotFound')

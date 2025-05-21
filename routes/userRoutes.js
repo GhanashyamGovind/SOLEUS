@@ -3,7 +3,9 @@ const router = express.Router();
 const userController = require('../controllers/user/userControllers');
 const profileController = require('../controllers/user/profileController');
 const productController = require('../controllers/user/productController');
+const wishlistController = require('../controllers/user/wishlistController')
 const passport = require('passport');
+const { userAuth } = require('../middlewares/auth');
 
 
 // error
@@ -31,7 +33,7 @@ router.get('/auth/google/callback', passport.authenticate('google', {failureRedi
 });
 
 // profile
-router.get('/profile', userController.loadProfile);
+router.get('/profile', userAuth, userController.loadProfile);
 
 
 //homepage and shope pages
@@ -50,7 +52,12 @@ router.post('/resend-forgot-otp', profileController.resendOtp);
 router.post('/reset-password', profileController.postNewPassword);
 
 //product management
-router.get('/productDetails', productController.productDeatils)
+router.get('/productDetails', productController.productDeatils);
+
+//whishlist manager
+router.get('/wishlist', userAuth, wishlistController.wishList);
+router.post('/addToWishlist', wishlistController.addToWishlist);
+router.delete('/removeWishlist/:productId', userAuth, wishlistController.removeFromWishlist)
 
 
 

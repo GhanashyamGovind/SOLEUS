@@ -33,6 +33,18 @@
                 text-align: center;
             }
         }
+        /* Ensure footer stays at the bottom */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1 0 auto; /* Grow to fill remaining space */
+        }
+        footer {
+            flex-shrink: 0; /* Prevent footer from shrinking */
+        }
     </style>
 </head>
 <body class="bg-white font-sans min-h-screen flex flex-col">
@@ -47,7 +59,7 @@
         <!-- Hamburger for mobile -->
         <div class="block md:hidden">
             <button id="menuToggle" class="text-3xl text-black focus:outline-none">
-                &#9776;
+                ☰
             </button>
         </div>
 
@@ -72,9 +84,11 @@
                 <a href="/login" class="hover:text-gray-700">
                     <i class="fas fa-user"></i>
                 </a>
+                
                 <a href="/cart" class="hover:text-gray-700">
                     <i class="fas fa-shopping-cart"></i>
                 </a>
+
                 <a href="/wishlist" class="hover:text-gray-700">
                     <i class="fas fa-heart"></i>
                 </a>
@@ -122,4 +136,3 @@
             });
         });
     </script>
-</body>
