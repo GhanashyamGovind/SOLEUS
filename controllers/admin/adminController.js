@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 
 
 //load-Login
-const loadLogin = async (req, res) => {
+const loadLogin = async (req, res, next) => {
     try {
         if(req.session.admin){
             return res.redirect('/admin')
@@ -12,12 +12,12 @@ const loadLogin = async (req, res) => {
          res.render('admin/admin-login', {message: null})
         }
     } catch (error) {
-        
+        next(error)
     }
 }
 
 // submit-login
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     try{
         const {email, password} = req.body;
         const admin = await User.findOne({email, isAdmin: true});
@@ -31,21 +31,19 @@ const login = async (req, res) => {
                 req.session.admin = admin._id;
                 return res.redirect('/admin');
             }else {
-                return res.redirect('/admin/login');
-                console.log("password is not matching")
+                
             }
 
         }
 
     }catch (error){
-        console.error('Login error => ', error);
-        return res.redirect('/admin/pageerror')
+        next(error)
     }
 }
 
 //loadDashboard
 
-const loadDashboard = async (req, res) =>{
+const loadDashboard = async (req, res, next) =>{
     try {
         if(req.session.admin){
             return res.render('admin/dashboard')
@@ -53,25 +51,24 @@ const loadDashboard = async (req, res) =>{
             return res.redirect('/admin/login')
         }
     } catch (error) {
-        console.error("error in loading the admin dashboard", error)
-        return res.redirect('/admin/pageerror')
+        next(error)
     }
 }
 
 //logOut
-const logout = async (req, res) => {
+const logout = async (req, res, next) => {
     try {
         req.session.destroy(err => {
             if(err){
-                console.error("Error while deleting the session in the admin side =====> ", err)
-                return res.redirect('/admin/pageeror')
+                const error = new Error('Error while destroying the admin session')
+                error.statusCode = 500;
+                throw error;
             }
                 console.log("session is deleted")
              return  res.redirect('/admin/login');
         })
     } catch (error) {
-        console.error("error in logout", error);
-        return res.redirect('/admin/pageeror');
+        next(error)
     }
 }
 

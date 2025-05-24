@@ -1,0 +1,668 @@
+<%- include('../../views/partials/user/header', {title: 'Profile-Details'}) %>
+
+<!-- Add Tailwind CSS CDN and SweetAlert2 CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'gold': {
+                        100: '#fdf4d9',
+                        300: '#f5d78e',
+                        400: '#e6b422',
+                        500: '#e6b422',
+                        700: '#c8991a',
+                    },
+                    'rich-black': '#0a0a0a',
+                    'off-white': '#f8f8f8',
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    body {
+        font-family: 'Quantico';
+        background: linear-gradient(135deg, #e6b422 0%, #0a0a0a 100%);
+        background-attachment: fixed;
+    }
+    .title-font {
+        font-family: 'Quantico';
+    }
+    .profile-card {
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(230, 180, 34, 0.4);
+        background: rgba(10, 10, 10, 0.9);
+    }
+    .profile-image {
+        background: linear-gradient(135deg, #e6b422 0%, #0a0a0a 100%);
+        box-shadow: 0 5px 15px rgba(230, 180, 34, 0.3);
+    }
+    .input-field {
+        transition: all 0.3s ease;
+    }
+    .input-field:focus {
+        border-color: #e6b422;
+        box-shadow: 0 0 0 3px rgba(230, 180, 34, 0.2);
+    }
+    .gold-glow {
+        text-shadow: 0 0 8px rgba(230, 180, 34, 0.5);
+    }
+    .edit-button {
+        width: 80px;
+    }
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 50;
+        align-items: center;
+        justify-content: center;
+    }
+    .modal.show {
+        display: flex;
+    }
+    .modal-content {
+        background: rgba(10, 10, 10, 0.95);
+        border: 1px solid rgba(230, 180, 34, 0.4);
+        border-radius: 1rem;
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+    }
+    .error-text {
+        color: #ff4d4d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<body>
+    <div class="profile-card rounded-xl p-10 w-full max-w-3xl relative mx-auto my-8">
+        <!-- Back Button -->
+        <button class="absolute top-5 right-5 bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span class="text-white">Back</span>
+        </button>
+
+        <!-- Account Details Title -->
+        <h2 class="title-font text-4xl font-bold text-center mb-10 text-white tracking-wider gold-glow">Profile Settings</h2>
+
+        <!-- Profile Image Section -->
+        <div class="flex flex-col items-center mb-12">
+            <% if (user) { %>
+            <div class="profile-image w-36 h-36 rounded-full flex items-center justify-center mb-6 border-2 border-gold-500">
+                <% if (user.profileImage) { %>
+                 <img src="<%= user.profileImage %>" alt="profilepic" class="w-full h-full object-cover rounded-full">
+                <% }else{ %>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gold-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <% } %>
+            </div>
+            <% } %>
+            <button id="openModal" class="bg-transparent text-gold-500 font-semibold py-2 px-6 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 text-base flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="text-white">Change Photo</span>
+            </button>
+        </div>
+
+        <!-- User Details Form -->
+        <div class="space-y-8">
+            <!-- Row 1: Username and Mobile Number -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Username -->
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">Username</label>
+                    <div class="flex gap-3 items-center">
+                        <input type="text" class="input-field flex-1 p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
+                        placeholder="<%= user.name %>" readonly>
+                        <button class="edit-button bg-gold-500 text-white font-semibold py-2 rounded-lg hover:bg-gold-400 transition-all" data-field="username">
+                            Edit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mobile Number -->
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">Mobile Number</label>
+                    <div class="flex gap-3 items-center">
+                        <input type="text" class="input-field flex-1 p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
+                        placeholder="<%= user.phone %>" readonly>
+                        <button class="edit-button bg-gold-500 text-white font-semibold py-2 rounded-lg hover:bg-gold-400 transition-all" data-field="mobile">
+                            Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Email and Password (stacked) -->
+            <div class="grid grid-cols-1 gap-8">
+                <!-- Email -->
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">Email Address</label>
+                    <div class="flex gap-3 items-center">
+                        <input type="email" class="input-field flex-1 p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none"
+                         placeholder="<%= user.email %>" readonly>
+                        <button class="edit-button bg-gold-500 text-white font-semibold py-2 rounded-lg hover:bg-gold-400 transition-all" data-field="email">
+                            Edit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex gap-3 justify-end">
+                        <button class="w-40 bg-gold-500 text-white font-semibold py-2 rounded-lg hover:bg-gold-400 transition-all" data-field="password">
+                            Edit Password
+                        </button>
+                    </div>
+                    <div class="flex justify-end">
+                        <a href="/forgot-password" class="text-gold-500 font-semibold hover:text-gold-300 transition-all">Forgot Password?</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Button -->
+        <div class="mt-12 pt-6 border-t border-gray-700">
+            <button id="deleteAccountBtn" class="w-full bg-transparent text-red-400 font-semibold py-3 rounded-lg hover:bg-red-900 transition-all border border-red-400 hover:border-red-300 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                <span class="text-white text-lg">Delete Account</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Profile Picture Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <h3 class="title-font text-2xl font-bold text-white mb-6 text-center gold-glow">Change Profile Picture</h3>
+            <form id="profilePictureForm" action="/updateImage" method="POST" enctype="multipart/form-data" class="flex flex-col items-center gap-4">
+                <!-- Current Profile Image -->
+                <% if (user) { %>
+                <div class="profile-image w-24 h-24 rounded-full flex items-center justify-center mb-4 border-2 border-gold-500">
+                    <% if (user.profileImage) { %>
+                     <img src="<%= user.profileImage %>" class="w-full h-full object-cover rounded-full">
+                    <% } else { %>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gold-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <% } %>
+                </div>
+                
+                <!-- File Input -->
+                <label class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all cursor-pointer">
+                    Choose File
+                    <input type="file" accept="image/*" class="hidden" id="profileImageInput" name="profileImage">
+                </label>
+                <!-- Remove Profile Picture Button -->
+                <button type="button" id="removeProfilePic" class="delete-image-btn bg-transparent text-red-400 font-semibold py-2 px-4 rounded-lg hover:text-red-300 transition-all border border-red-400 hover:border-red-300 flex items-center gap-2"
+                    data-id="<%= user._id %>">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span class="text-white">Remove Profile Picture</span>
+                </button>
+                <% } %>
+                <!-- Modal Buttons -->
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelModal" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
+                        Cancel
+                    </button>
+                    <button type="submit" id="saveProfilePic" class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Username Modal -->
+    <div id="usernameModal" class="modal">
+        <div class="modal-content">
+            <h3 class="title-font text-2xl font-bold text-white mb-6 text-center gold-glow">Edit Username</h3>
+            <form id="usernameForm" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">New Username</label>
+                    <input type="text" name="username" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
+                           value="<%= user.name %>" required>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelUsernameModal" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
+                        Cancel
+                    </button>
+                    <button type="submit" id="saveUsername" class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Phone Number Modal -->
+    <div id="phoneModal" class="modal">
+        <div class="modal-content">
+            <h3 class="title-font text-2xl font-bold text-white mb-6 text-center gold-glow">Edit Phone Number</h3>
+            <form id="phoneForm" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">New Phone Number</label>
+                    <input type="tel" name="phone" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
+                           value="<%= user.phone %>" pattern="[0-9]{10}" required>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelPhoneModal" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
+                        Cancel
+                    </button>
+                    <button type="submit" id="savePhone" class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Verify Email Modal -->
+    <div id="verifyEmailModal" class="modal">
+        <div class="modal-content">
+            <h3 class="title-font text-2xl font-bold text-white mb-6 text-center gold-glow">Verify Current Email</h3>
+            <form id="verifyEmailForm" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">Current Email</label>
+                    <input type="email" name="email" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
+                           value="<%= user.email %>" required>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelVerifyEmailModal" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
+                        Cancel
+                    </button>
+                    <button type="submit" id="sendOtp" class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all">
+                        Send OTP
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h3 class="title-font text-2xl font-bold text-white mb-6 text-center gold-glow">Edit Password</h3>
+            <form id="passwordForm" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">Old Password</label>
+                    <input type="password" name="oldPassword" id="oldPassword" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" required>
+                    <span id="oldPasswordError" class="error-text hidden"></span>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">New Password</label>
+                    <input type="password" name="newPassword" id="newPassword" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" required>
+                    <span id="newPasswordError" class="error-text hidden"></span>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <label class="text-white text-base font-medium">Confirm New Password</label>
+                    <input type="password" name="confirmPassword" id="confirmPassword" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" required>
+                    <span id="confirmPasswordError" class="error-text hidden"></span>
+                </div>
+                <div class="flex justify-end gap-4 mt-8">
+                    <button type="button" id="cancelPasswordModal" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
+                        Cancel
+                    </button>
+                    <button type="submit" id="savePassword" class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+
+<script>
+    // Modal JavaScript
+    const openModalBtn = document.getElementById('openModal');
+    const modal = document.getElementById('profileModal');
+    const cancelModalBtn = document.getElementById('cancelModal');
+    const profileImageInput = document.getElementById('profileImageInput');
+
+    // Open modal
+    openModalBtn.addEventListener('click', () => {
+        modal.classList.add('show');
+    });
+
+    // Close modal
+    cancelModalBtn.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+
+    // Handle file input (placeholder for actual implementation)
+    profileImageInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            console.log('Selected file:', file.name);
+            // Add logic to preview or upload the image
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const deleteButton = document.querySelectorAll(".delete-image-btn");
+
+        deleteButton.forEach(btn => {
+            btn.addEventListener("click", async() => {
+                const userId = btn.dataset.id;
+
+                try {
+                    const res = await fetch(`/delete-profile-img/${userId}`, {
+                        method: 'DELETE'
+                    });
+                    const data = await res.json();
+
+                    if(data.success) {
+                        alert('Profile image deleted successfully!');
+                        window.location.reload();
+                    }else{
+                        alert(`Error: ${data.message}`);
+                        console.error("error in deleting profile img", data.message)
+                    }
+                } catch (error) {
+                    alert('An error occurred while deleting the profile image.');
+                    console.error(error)
+                }
+            });
+        });
+
+        // Delete Account Button with SweetAlert2
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+        deleteAccountBtn.addEventListener('click', async () => {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: 'Do you want to delete your account? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e6b422',
+                cancelButtonColor: '#ff4d4d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'No, cancel'
+            });
+
+            if (result.isConfirmed) {
+                window.location.href = '/confirm-delete';
+            }
+        });
+
+        // Username Modal JavaScript
+        const openUsernameModalBtn = document.querySelector('button[data-field="username"]');
+        const usernameModal = document.getElementById('usernameModal');
+        const cancelUsernameModalBtn = document.getElementById('cancelUsernameModal');
+        const usernameForm = document.getElementById('usernameForm');
+
+        openUsernameModalBtn.addEventListener('click', () => {
+            usernameModal.classList.add('show');
+        });
+
+        cancelUsernameModalBtn.addEventListener('click', () => {
+            usernameModal.classList.remove('show');
+        });
+
+        // Handle username form submission with fetch
+        usernameForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(usernameForm);
+            const username = formData.get('username');
+
+            try {
+                const res = await fetch('/updateUsername', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username })
+                });
+                const data = await res.json();
+
+                if (data.status) {
+                    alert('Username updated successfully!');
+                    usernameModal.classList.remove('show');
+                    window.location.reload();
+                } else {
+                    alert(`Error: ${data.message}`);
+                    console.error("Error updating username:", data.message);
+                }
+            } catch (error) {
+                alert('An error occurred while updating the username.');
+                console.error("Error in fetch:", error);
+            }
+        });
+
+        // Phone Number Modal JavaScript
+        const openPhoneModalBtn = document.querySelector('button[data-field="mobile"]');
+        const phoneModal = document.getElementById('phoneModal');
+        const cancelPhoneModalBtn = document.getElementById('cancelPhoneModal');
+        const phoneForm = document.getElementById('phoneForm');
+
+        openPhoneModalBtn.addEventListener('click', () => {
+            phoneModal.classList.add('show');
+        });
+
+        cancelPhoneModalBtn.addEventListener('click', () => {
+            phoneModal.classList.remove('show');
+        });
+
+        // Handle phone number form submission with fetch
+        phoneForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(phoneForm);
+            const phone = formData.get('phone');
+
+            try {
+                const res = await fetch('/updatePhone', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Phone number updated successfully!');
+                    phoneModal.classList.remove('show');
+                    window.location.reload();
+                } else {
+                    alert(`Error: ${data.message}`);
+                    console.error("Error updating phone number:", data.message);
+                }
+            } catch (error) {
+                alert('An error occurred while updating the phone number.');
+                console.error("Error in fetch:", error);
+            }
+        });
+
+        // Verify Email Modal JavaScript
+        const openVerifyEmailModalBtn = document.querySelector('button[data-field="email"]');
+        const verifyEmailModal = document.getElementById('verifyEmailModal');
+        const cancelVerifyEmailModalBtn = document.getElementById('cancelVerifyEmailModal');
+        const verifyEmailForm = document.getElementById('verifyEmailForm');
+
+        openVerifyEmailModalBtn.addEventListener('click', () => {
+            verifyEmailModal.classList.add('show');
+        });
+
+        cancelVerifyEmailModalBtn.addEventListener('click', () => {
+            verifyEmailModal.classList.remove('show');
+        });
+
+        verifyEmailForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(verifyEmailForm);
+            const email = formData.get('email');
+
+            try {
+                const res = await fetch('/generateEmailOtp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('OTP sent to your email!');
+                    verifyEmailModal.classList.remove('show');
+                    window.location.href = '/verify-EmailOtp';
+                } else {
+                    alert(`Error: ${data.message}`);
+                    console.error("Error generating OTP:", data.message);
+                }
+            } catch (error) {
+                alert('An error occurred while sending the OTP.');
+                console.error("Error in fetch:", error);
+            }
+        });
+
+        // Password Modal JavaScript
+        const openPasswordModalBtn = document.querySelector('button[data-field="password"]');
+        const passwordModal = document.getElementById('passwordModal');
+        const cancelPasswordModalBtn = document.getElementById('cancelPasswordModal');
+        const passwordForm = document.getElementById('passwordForm');
+        const oldPasswordInput = document.getElementById('oldPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const oldPasswordError = document.getElementById('oldPasswordError');
+        const newPasswordError = document.getElementById('newPasswordError');
+        const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+        openPasswordModalBtn.addEventListener('click', () => {
+            passwordModal.classList.add('show');
+            // Clear previous error messages and reset form
+            oldPasswordError.classList.add('hidden');
+            newPasswordError.classList.add('hidden');
+            confirmPasswordError.classList.add('hidden');
+            passwordForm.reset();
+        });
+
+        cancelPasswordModalBtn.addEventListener('click', () => {
+            passwordModal.classList.remove('show');
+            oldPasswordError.classList.add('hidden');
+            newPasswordError.classList.add('hidden');
+            confirmPasswordError.classList.add('hidden');
+            passwordForm.reset();
+        });
+
+        // Password validation function
+        const validatePasswordForm = () => {
+            let isValid = true;
+            const oldPassword = oldPasswordInput.value.trim();
+            const newPassword = newPasswordInput.value.trim();
+            const confirmPassword = confirmPasswordInput.value.trim();
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+
+            // Reset error messages
+            oldPasswordError.classList.add('hidden');
+            newPasswordError.classList.add('hidden');
+            confirmPasswordError.classList.add('hidden');
+            oldPasswordInput.classList.remove('border-red-400');
+            newPasswordInput.classList.remove('border-red-400');
+            confirmPasswordInput.classList.remove('border-red-400');
+
+            // Validate old password
+            if (!oldPassword) {
+                oldPasswordError.textContent = 'Old password is required';
+                oldPasswordError.classList.remove('hidden');
+                oldPasswordInput.classList.add('border-red-400');
+                isValid = false;
+            }
+
+            // Validate new password
+            if (!newPassword) {
+                newPasswordError.textContent = 'New password is required';
+                newPasswordError.classList.remove('hidden');
+                newPasswordInput.classList.add('border-red-400');
+                isValid = false;
+            } else if (!passwordRegex.test(newPassword)) {
+                newPasswordError.textContent = 'New password must be at least 8 characters long and include one uppercase letter, one lowercase letter, one number, and one special character';
+                newPasswordError.classList.remove('hidden');
+                newPasswordInput.classList.add('border-red-400');
+                isValid = false;
+            } else if (newPassword === oldPassword) {
+                newPasswordError.textContent = 'New password cannot be the same as the old password';
+                newPasswordError.classList.remove('hidden');
+                newPasswordInput.classList.add('border-red-400');
+                isValid = false;
+            }
+
+            // Validate confirm password
+            if (!confirmPassword) {
+                confirmPasswordError.textContent = 'Confirm password is required';
+                confirmPasswordError.classList.remove('hidden');
+                confirmPasswordInput.classList.add('border-red-400');
+                isValid = false;
+            } else if (newPassword !== confirmPassword) {
+                confirmPasswordError.textContent = 'Confirm password does not match new password';
+                confirmPasswordError.classList.remove('hidden');
+                confirmPasswordInput.classList.add('border-red-400');
+                isValid = false;
+            }
+
+            return isValid;
+        };
+
+        // Handle password form submission with fetch
+        passwordForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            // Run client-side validation
+            if (!validatePasswordForm()) {
+                return;
+            }
+
+            const formData = new FormData(passwordForm);
+            const oldPassword = formData.get('oldPassword');
+            const newPassword = formData.get('newPassword');
+
+            try {
+                const res = await fetch('/updatePassword', {
+                    method: 'PUT', // Updated to PUT as per your preference
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ oldPassword, newPassword })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Password updated successfully!');
+                    passwordModal.classList.remove('show');
+                    passwordForm.reset();
+                    window.location.reload();
+                } else {
+                    // Display server-side errors (e.g., incorrect old password)
+                    oldPasswordError.textContent = data.message;
+                    oldPasswordError.classList.remove('hidden');
+                    oldPasswordInput.classList.add('border-red-400');
+                    console.error("Error updating password:", data.message);
+                }
+            } catch (error) {
+                alert('An error occurred while updating the password.');
+                console.error("Error in fetch:", error);
+            }
+        });
+    });
+</script>
+
+<%- include('../../views/partials/user/footer') %>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SOLEUS - 404 Error</title>
+    <title>SOLEUS Error: <%= statusCode %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -21,10 +21,10 @@
         <p class="text-2xl mb-6">OOPs!</p>
         
         <!-- Error message -->
-        <p class="text-xl mb-2">something went wrong</p>
+        <p class="text-xl mb-2"><%= message %></p>
         
         <!-- 404 Error code -->
-        <p class="text-8xl italic text-yellow-400 font-bold my-6">404</p>
+        <p class="text-8xl italic text-yellow-400 font-bold my-6"><%= statusCode %></p>
         
         <!-- Back button -->
         <a href="/admin" class="inline-block bg-yellow-400 text-black font-bold py-3 px-8 rounded-lg hover:bg-yellow-300 transition-colors mt-4">

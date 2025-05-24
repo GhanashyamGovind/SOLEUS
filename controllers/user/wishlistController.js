@@ -2,7 +2,7 @@ const User = require('../../models/userSchema');
 const Product = require('../../models/productSchema');
 const mongoose = require('mongoose');
 
-const wishList = async (req, res) => {
+const wishList = async (req, res, next) => {
     try {
         
         const userId = req.session.user;
@@ -15,12 +15,11 @@ const wishList = async (req, res) => {
         })
         
     } catch (error) {
-        console.error(error)
-        return res.redirect('/pageNotFound')
+        next(error)
     }
 }
 
-const addToWishlist = async (req, res) => {
+const addToWishlist = async (req, res, next) => {
     try {
 
         const userId = req.session.user;
@@ -41,20 +40,21 @@ const addToWishlist = async (req, res) => {
         return res.status(200).json({status: true, message: "Product added to wishlist"})
         
     } catch (error) {
-        console.error("error while adding to wishlist", error);
-        return res.status(500).json({status: false, message: "Internal Server Error"})
+        next(error)
     }
 }
 
 
-const removeFromWishlist = async (req, res) => {
+const removeFromWishlist = async (req, res, next) => {
     try {
 
         const userId = req.session.user;
         const productId = req.params.productId;
 
         if(!userId){
-            return res.status(404).json({status: false, message: "User not found"})
+            const error = new Error('Please login to remove from wihslist');
+            error.statusCode = 401;
+            throw error;
         }
         
 
@@ -72,8 +72,7 @@ const removeFromWishlist = async (req, res) => {
 
          
     } catch (error) {
-        console.error('Error removing wishlist item:', error);
-        res.status(500).json({status: false, message: 'Internal server error' });
+        next(error)
     }
 }
 

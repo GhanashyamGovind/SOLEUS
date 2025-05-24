@@ -1,0 +1,207 @@
+<%- include('../../views/partials/user/header', {title: 'Confirm Account Deletion'}) %>
+
+<!-- Add Tailwind CSS CDN and SweetAlert2 CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'gold': {
+                        100: '#fdf4d9',
+                        300: '#f5d78e',
+                        400: '#e6b422',
+                        500: '#e6b422',
+                        700: '#c8991a',
+                    },
+                    'rich-black': '#0a0a0a',
+                    'off-white': '#f8f8f8',
+                },
+                fontFamily: {
+                    quantico: ['Quantico', 'sans-serif'],
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    body {
+        font-family: 'Quantico', sans-serif;
+        background: linear-gradient(135deg, #e6b422 0%, #0a0a0a 100%);
+        background-attachment: fixed;
+    }
+    .title-font {
+        font-family: 'Quantico', sans-serif;
+    }
+    .card {
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(230, 180, 34, 0.5);
+        background: rgba(10, 10, 10, 0.95);
+        border-radius: 1.5rem;
+    }
+    .input-field {
+        transition: all 0.3s ease;
+        font-family: 'Quantico', sans-serif;
+    }
+    .input-field:focus {
+        border-color: #e6b422;
+        box-shadow: 0 0 0 4px rgba(230, 180, 34, 0.3);
+    }
+    .gold-glow {
+        text-shadow: 0 0 10px rgba(230, 180, 34, 0.6);
+    }
+    .error-text {
+        color: #ff4d4d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        font-family: 'Quantico', sans-serif;
+    }
+    .nav-link, .nav-link span, .nav-link svg {
+        font-family: 'Quantico', sans-serif !important;
+    }
+    button {
+        font-family: 'Quantico', sans-serif !important;
+    }
+</style>
+
+<body>
+    <div class="card rounded-xl p-12 w-full max-w-lg relative mx-auto my-10">
+        <!-- Back Button -->
+        <a href="/profile-settings" class="nav-link absolute top-6 left-6 bg-transparent text-gold-500 font-semibold py-2 px-5 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span class="text-white">Back</span>
+        </a>
+
+        <!-- Title -->
+        <h2 class="title-font text-4xl font-bold text-center mb-10 text-white tracking-wider gold-glow">Confirm Account Deletion</h2>
+
+        <!-- Confirmation Form -->
+        <form id="confirmDeleteForm" class="flex flex-col gap-8">
+            <div class="flex flex-col gap-4">
+                <label class="text-white text-lg font-medium">Email Address</label>
+                <input type="email" name="email" id="email" class="input-field p-4 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none text-base" required>
+                <span id="emailError" class="error-text hidden"></span>
+            </div>
+            <div class="flex flex-col gap-4">
+                <label class="text-white text-lg font-medium">Password</label>
+                <input type="password" name="password" id="password" class="input-field p-4 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none text-base" required>
+                <span id="passwordError" class="error-text hidden"></span>
+            </div>
+            <div class="flex justify-end gap-5 mt-8">
+                <button type="button" id="cancelBtn" class="bg-transparent text-gold-500 font-semibold py-3 px-6 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 text-base">
+                    Cancel
+                </button>
+                <button type="submit" id="confirmDeleteBtn" class="bg-red-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-400 transition-all text-base">
+                    Delete Account
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const confirmDeleteForm = document.getElementById('confirmDeleteForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailError = document.getElementById('emailError');
+        const passwordError = document.getElementById('passwordError');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        // Cancel button redirects back to profile settings
+        cancelBtn.addEventListener('click', () => {
+            window.location.href = '/profile-settings';
+        });
+
+        // Validation function
+        const validateForm = () => {
+            let isValid = true;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            // Reset error messages
+            emailError.classList.add('hidden');
+            passwordError.classList.add('hidden');
+            emailInput.classList.remove('border-red-400');
+            passwordInput.classList.remove('border-red-400');
+
+            // Validate email
+            if (!email) {
+                emailError.textContent = 'Email is required';
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-400');
+                isValid = false;
+            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                emailError.textContent = 'Invalid email format';
+                emailError.classList.remove('hidden');
+                emailInput.classList.add('border-red-400');
+                isValid = false;
+            }
+
+            // Validate password
+            if (!password) {
+                passwordError.textContent = 'Password is required';
+                passwordError.classList.remove('hidden');
+                passwordInput.classList.add('border-red-400');
+                isValid = false;
+            }
+
+            return isValid;
+        };
+
+        // Handle form submission
+        confirmDeleteForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = new FormData(confirmDeleteForm);
+            const email = formData.get('email');
+            const password = formData.get('password');
+
+            try {
+                const res = await fetch('/confirm-delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    await Swal.fire({
+                        title: 'Account Deleted',
+                        text: 'Your account has been successfully deleted.',
+                        imageUrl: '/images/profileDelete-action.gif',
+                        showConfirmButton: false,
+                        timer: 3000, // Auto-close after 3 seconds (3000 ms)
+                        timerProgressBar: true
+                    });
+                    window.location.href = '/login'; 
+                } else {
+                    passwordError.textContent = data.message;
+                    passwordError.classList.remove('hidden');
+                    passwordInput.classList.add('border-red-400');
+                    console.error("Error deleting account:", data.message);
+                }
+            } catch (error) {
+                await Swal.fire({
+                    title: 'Error',
+                    text: 'An error occurred while deleting your account.',
+                    icon: 'error',
+                    confirmButtonColor: '#e6b422'
+                });
+                console.error("Error in fetch:", error);
+            }
+        });
+    });
+</script>
+
+<%- include('../../views/partials/user/footer') %>

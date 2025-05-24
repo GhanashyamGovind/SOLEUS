@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
-const applyProductMiddleware = require('../middlewares/producMiddleware')
+const applyProductMiddleware = require('../middlewares/producMiddleware');
 
 const productSchema = new Schema({
   productName: {

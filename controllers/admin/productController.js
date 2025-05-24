@@ -251,7 +251,7 @@ const addProducts = async (req, res) => {
   }
 };
 
-const productList = async (req, res) => {
+const productList = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 10; // Number of products per page
@@ -275,13 +275,12 @@ const productList = async (req, res) => {
       title: 'Product-List',
     });
   } catch (error) {
-    console.error('Error fetching product list:', error);
-    res.redirect('/admin/pageerror');
+    next(error)
   }
 };
 
 
-const productBlock = async (req, res) => {
+const productBlock = async (req, res, next) => {
   try {
     const id = req.query.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -290,8 +289,7 @@ const productBlock = async (req, res) => {
     await Product.updateOne({ _id: id }, { $set: { isBlocked: true } });
     return res.redirect('/admin/productlist');
   } catch (error) {
-    console.error('Error while blocking the product:', error);
-    return res.redirect('/admin/pageerror');
+    next(error)
   }
 };
 
@@ -299,13 +297,14 @@ const productUnBlock = async (req, res) => {
   try {
     const id = req.query.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.redirect('/admin/pageerror');
+      const error = new Error('Invalid product ID');
+      error.statusCode = 400;
+      throw error;
     }
     await Product.updateOne({ _id: id }, { $set: { isBlocked: false } });
     return res.redirect('/admin/productlist');
   } catch (error) {
-    console.error('Error while unblocking the product:', error);
-    return res.redirect('/admin/pageerror');
+    next(error)
   }
 };
 

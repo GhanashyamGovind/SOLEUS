@@ -7,7 +7,7 @@ const brandController = require('../controllers/admin/brandController');
 const productController = require('../controllers/admin/productController')
 const {userAuth, adminAuth} = require('../middlewares/auth');
 const multer = require('multer');
-const storage = require('../helpers/multer');
+const {storage} = require('../helpers/multer');
 const Brand = require('../models/brandSchema');
 const uploads = multer({storage:storage})
 

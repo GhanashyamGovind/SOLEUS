@@ -45,7 +45,7 @@ async function sendVerificationEmail(email, otp){
 }
 
 //home page
-const loadHomepage = async (req, res) => {
+const loadHomepage = async (req, res, next) => {
     try{
         const user = req.session.user;
 
@@ -69,13 +69,12 @@ const loadHomepage = async (req, res) => {
         }
        
     } catch (error){
-        console.error("home page not found", error);
-        res.status(500).send("server error");
+        next(error);
     }
 }
 
 //login-load
-const loadLogin = async (req, res) => {  
+const loadLogin = async (req, res, next) => {  
     try {
 
         if(!req.session.user){
@@ -85,23 +84,27 @@ const loadLogin = async (req, res) => {
         }
         
     } catch (error) {
-        console.log("login is not loading ", error);
-        res.redirect('/pageNotFound')
+        next(error);
     }
 }
 
 // signup-load 
-const loadSignUp = async (req, res) => {
+const loadSignUp = async (req, res, next) => {
     try {
+
+      if(!req.session.user){
         return res.render('user/signUp');
+      } else {
+        return res.redirect('/')
+      }
+        
     } catch (error) {
-        console.log("signup is not loading", error);
-        res.status(500).send("Server Error")
+        next(error)
     }
 }
 
  //login-submit 
- const login = async (req, res) =>{
+ const login = async (req, res, next) =>{
     try {
 
         const {email, password} = req.body;
@@ -122,14 +125,15 @@ const loadSignUp = async (req, res) => {
             return res.render('user/login', {message: 'Incorrect Password'})
         }
 
-        req.session.user = findUser._id;
+        req.session.user = findUser._id; // => ivide aanu user session store aakunnath athum id aanu store aakunnath
         // console.log(req.session.user)
         res.redirect('/')
         
     } catch (error) {
 
-        console.error('login error', error);
-        res.render('user/login', {message: "Login Failed !. Please try again later"})
+        // console.error('login error', error);
+        // res.render('user/login', {message: "Login Failed !. Please try again later"})
+        next(error)
         
     }
  }
@@ -139,7 +143,7 @@ const loadSignUp = async (req, res) => {
 
 
 // submit signUp
-const signUp = async (req, res) => {
+const signUp = async (req, res, next) => {
     try {
         const {name, email, password, confirmPassword, phone} = req.body;
 
@@ -166,8 +170,7 @@ const signUp = async (req, res) => {
         console.log("otp sent", otp)
 
     } catch (error) {
-        console.error("signup error", error);
-        res.redirect("/page-404")
+        next(error)
     }
 }
 
@@ -184,7 +187,7 @@ const securePassword = async (password) => {
     }
 }
 
-const verifyOtp = async (req, res) => {
+const verifyOtp = async (req, res, next) => {
     try {
 
         const {otp} = req.body;
@@ -209,12 +212,13 @@ const verifyOtp = async (req, res) => {
         }
 
     } catch (error) {
-        console.error("otp verification error ====>", error);
-        res.status(500).json({success:false, message: "An error occured"})
+      next(error)
+        // console.error("otp verification error ====>", error);
+        // res.status(500).json({success:false, message: "An error occured"})
     }
 }
 
-const resendOtp = async (req, res) => {
+const resendOtp = async (req, res, next) => {
     try {
         
         const {email} = req.session.userData;
@@ -233,13 +237,12 @@ const resendOtp = async (req, res) => {
         }
 
     } catch (error) {
-        console.error("Error resendig OTP ", error);
-        res.status(500).json({success: false, message: "Internal Server Error. Please try again"})
+        next(error);
     }
 }
 
 // profile load
-const loadProfile = async (req, res) =>{
+const loadProfile = async (req, res, next) =>{
     try {
         const userId = req.session.user
         console.log(userId)
@@ -253,13 +256,12 @@ const loadProfile = async (req, res) =>{
         res.render('user/profile', {user: userData});
         
     } catch (error) {
-        console.error("Error in profile loadingcls ", error);
-        res.redirect('/pageNotFound')
+        next(error)
     }
 }
 
 //logout
-const logOut = async (req, res) => {
+const logOut = async (req, res, next) => {
     try {
 
             delete req.session.user;
@@ -275,19 +277,18 @@ const logOut = async (req, res) => {
         // })
     } catch (error) {
 
-        console.error("LogOut error", error);
-        res.redirect('/pageNotFound')
+        next(error)
         
     }
 }
 
 
-const pageNotFound = async (req, res) => {
+const pageNotFound = async (req, res, next) => {
     
     try {
         res.render('user/page-404')
     } catch (error) {
-        res.redirect('/pageNotFound')
+        next(error)
     }
 
 }

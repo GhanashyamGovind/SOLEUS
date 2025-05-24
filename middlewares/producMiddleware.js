@@ -1,3 +1,7 @@
+//The middleware automatically validates and processes product data before saving,
+//ensuring unique SKUs, calculated quantities, prices, and stock status for routes like product creation or updates
+
+
 module.exports = function(schema) {
   schema.pre('save', function(next) {
     // Enforce SKU uniqueness within the product

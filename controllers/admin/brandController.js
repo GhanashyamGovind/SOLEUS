@@ -3,7 +3,7 @@ const Brand = require('../../models/brandSchema');
 const Product = require('../../models/productSchema');
 
 
-const getBrandPage = async (req, res) => {
+const getBrandPage = async (req, res, next) => {
     try {
 
         const page = parseInt(req.query.page) || 1;
@@ -21,13 +21,12 @@ const getBrandPage = async (req, res) => {
         })
         
     } catch (error) {
-        console.error(error);
-        res.redirect('/admin/pageerror')
+        next(error)
     }
 }
 
 
-const addBrand = async (req, res) => {
+const addBrand = async (req, res, next) => {
     try {
 
         const brand = req.body.name;
@@ -48,11 +47,11 @@ const addBrand = async (req, res) => {
         
         
     } catch (error) {
-        
+        next(error)
     }
 }
 
-const blockBrand = async (req, res) => {
+const blockBrand = async (req, res, next) => {
     try {
 
         let id = req.query.id;
@@ -61,13 +60,12 @@ const blockBrand = async (req, res) => {
         return res.redirect('/admin/brands');
         
     } catch (error) {
-        console.error("error while blocking", error)
-        return res.redirect('/admin/pageerror');
+        next(error)
     }
 }
 
 
-const unBlockBrand = async (req, res) => {
+const unBlockBrand = async (req, res, next) => {
     try {
 
         let id = req.query.id;
@@ -75,12 +73,11 @@ const unBlockBrand = async (req, res) => {
         return res.redirect('/admin/brands');
 
     } catch (error) {
-        console.error("error while unblocking => ", error);
-        return res.redirect('/admin/pageerror');
+        next(error)
     }
 }
 
-const deleteBrand = async (req, res) => {
+const deleteBrand = async (req, res, next) => {
     try {
 
         let id = req.query.id;
@@ -88,8 +85,7 @@ const deleteBrand = async (req, res) => {
         return res.redirect('/admin/brands');
         
     } catch (error) {
-        console.error('error while deleting the brand => ', error);
-        return res.redirect('/admin/pageerror');
+        next(error)
     }
 }
 

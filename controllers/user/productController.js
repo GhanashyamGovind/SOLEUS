@@ -3,7 +3,7 @@ const Category = require('../../models/categorySchema');
 const User = require('../../models/userSchema');
 
 
-const productDeatils = async (req, res) => {
+const productDeatils = async (req, res, next) => {
     try {
 
         const productId = req.query.id;
@@ -26,7 +26,7 @@ const productDeatils = async (req, res) => {
         })
         
     } catch (error) {
-        console.error("error while getting the product detail page ==>", error)
+       next(error)
     }
 }
 

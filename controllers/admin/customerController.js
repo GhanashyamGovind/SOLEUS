@@ -1,7 +1,7 @@
 const User = require('../../models/userSchema');
 
 
-const customerInfo = async (req, res) => {
+const customerInfo = async (req, res, next) => {
     try {
         console.log("Accessing customerrInfo rout")
 
@@ -42,41 +42,40 @@ const customerInfo = async (req, res) => {
         res.render('admin/customers', {data: userData, totalPage: totalPageArray, currentPage: page-1})
         
     } catch (error) {
-        
+        next(error)
     }
 }
 
 
-const customerBlocked = async (req, res) => {
+const customerBlocked = async (req, res, next) => {
     try {
         let id = req.query.id;
         await User.updateOne({ _id: id}, {$set: { isBlocked: true } });
         return res.redirect('/admin/users');
     } catch (error) {
-        return res.redirect('/admin/pageerror');
+       next(error)
     }
 }
 
 
-const customerunBlocked = async (req, res) => {
+const customerunBlocked = async (req, res, next) => {
     try {
         let id = req.query.id;
         await User.updateOne({ _id: id }, {$set: { isBlocked: false } });
         // console.log(id)
         return res.redirect('/admin/users');
     } catch (error) {
-        return res.redirect('/admin/pageerror');
+        next(error)
     }
 }
 
-const customerDeleted = async (req, res) => {
+const customerDeleted = async (req, res, next) => {
     try {
         let id = req.query.id;
         await User.deleteOne({_id: id});
         return res.redirect('/admin/users');
     } catch (error) {
-        console.error("error while deleting the user => ", error)
-        return res.redirect('/admin/pageerror');
+        next(error)
     }
 }
 

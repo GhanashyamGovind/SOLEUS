@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 - Page Not Found | SOLEUS</title>
+    <title>404 - Page Not</title>
    
     <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap" rel="stylesheet">
     
@@ -22,63 +22,19 @@
 </head>
 <body class="bg-black font-sans text-white">
     <!-- Header -->
-    <header class="bg-yellow-400 p-4 flex items-center justify-between">
-        <!-- Left: Logo Image and SOLEUS Text -->
-        <div class="flex items-center space-x-2 flex-shrink-0">
-            <img src="/images/logo.png" alt="SOLEUS Logo" class="h-8 w-8">
-            <div class="text-2xl font-bold text-black">SOLEUS</div>
-        </div>
-        <!-- Center: Navigation -->
-        <nav class="flex-1 flex justify-center space-x-6 text-black">
-            <a href="/" class="hover:underline">Home</a>
-            <a href="/collections" class="hover:underline">All Collections</a>
-            <a href="/about" class="hover:underline">About</a>
-            <a href="/contact" class="hover:underline">Contact</a>
-        </nav>
-        <!-- Right: Search Bar and Icons -->
-        <div class="flex items-center space-x-4 flex-shrink-0">
-            <!-- Search Bar -->
-            <div class="relative">
-                <input type="text" placeholder="Search..." class="border rounded-lg py-1 px-3 text-black focus:outline-none">
-                <span class="absolute right-2 top-1/2 transform -translate-y-1/2 text-black">🔍</span>
-            </div>
-            <!-- Icons -->
-            <div class="flex space-x-4 text-black text-2xl">
-                <a href="/profile" class="hover:text-gray-700">👤</a>
-                <a href="/cart" class="hover:text-gray-700">🛒</a>
-                <a href="/wishlist" class="hover:text-gray-700">❤️</a>
-            </div>
-        </div>
-    </header>
 
     <!-- Main Content -->
     <main class="flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-center">
-        <h1 class="text-9xl font-bold text-yellow-400 mb-4">404</h1>
-        <p class="text-2xl mb-6">So sorry, we couldn’t find what you’re looking for.</p>
+        <h1 class="text-9xl font-bold text-yellow-400 mb-4"><%= statusCode %></h1>
+        <p class="text-2xl mb-6">So sorry, we couldn’t find what you’re looking for. <br> 
+        <%= message %>
+        </p>
         <a href="/" class="bg-yellow-400 text-black px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-yellow-500">
             <span>Back to Home page</span>
             <span>➔</span>
         </a>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-black text-white py-8 px-4 border-t border-gray-700">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-                <h3 class="text-lg font-bold mb-2">SOLEUS</h3>
-                <p class="text-sm">Your go-to destination for men's shoes.</p>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-2">Get in Touch</h3>
-                <p class="text-sm">Email: support@soleus.com</p>
-                <p class="text-sm">Phone: +123-456-7890</p>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold mb-2">Company Policy</h3>
-                <p class="text-sm">Privacy Policy</p>
-                <p class="text-sm">Terms of Service</p>
-            </div>
-        </div>
-    </footer>
+
 </body>
 </html>

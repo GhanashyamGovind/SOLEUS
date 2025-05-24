@@ -6,6 +6,7 @@ const passport = require('./config/passport')
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const errorHandler = require('./middlewares/errorHandlers')
 
 const app = express();
 
@@ -46,6 +47,16 @@ connectDB();
 
 app.use('/',userRoutes);
 app.use('/admin',adminRoutes)
+
+
+//error
+app.use((req, res, next) => {
+    const err = new Error('Page Not Found');
+    err.statusCode = 404;
+    next(err);
+});
+
+app.use(errorHandler);
 
 app.listen(process.env.PORT, () => {
     console.log(`=====Server is running in ${process.env.PORT} port=====`)

@@ -1,0 +1,120 @@
+<%- include('../../views/partials/user/header', {title: 'Update Email'}) %>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.min.css" rel="stylesheet">
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'gold': {
+                        100: '#fdf4d9',
+                        300: '#f5d78e',
+                        400: '#e6b422',
+                        500: '#e6b422',
+                        700: '#c8991a',
+                    },
+                    'rich-black': '#0a0a0a',
+                    'off-white': '#f8f8f8',
+                }
+            }
+        }
+    }
+</script>
+
+<style>
+    body {
+        font-family: 'Quantico';
+        background: linear-gradient(135deg, #e6b422 0%, #0a0a0a 100%);
+        background-attachment: fixed;
+    }
+    .title-font {
+        font-family: 'Quantico';
+    }
+    .update-card {
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(230, 180, 34, 0.4);
+        background: rgba(10, 10, 10, 0.9);
+    }
+    .input-field {
+        transition: all 0.3s ease;
+    }
+    .input-field:focus {
+        border-color: #e6b422;
+        box-shadow: 0 0 0 3px rgba(230, 180, 34, 0.2);
+    }
+    .gold-glow {
+        text-shadow: 0 0 8px rgba(230, 180, 34, 0.5);
+    }
+</style>
+
+<body>
+    <div class="update-card rounded-xl p-10 w-full max-w-md relative mx-auto my-8">
+        <h2 class="title-font text-3xl font-bold text-center mb-8 text-white tracking-wider gold-glow">Update Email</h2>
+        <form id="updateEmailForm" class="flex flex-col gap-4">
+            <div class="flex flex-col gap-3">
+                <label class="text-white text-base font-medium">New Email</label>
+                <input type="email" name="email" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" required>
+            </div>
+            <div class="flex justify-end gap-4 mt-6">
+                <button type="button" id="cancelUpdate" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
+                    Cancel
+                </button>
+                <button type="submit" id="saveEmail" class="bg-gold-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gold-400 transition-all">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const updateEmailForm = document.getElementById('updateEmailForm');
+            const cancelUpdateBtn = document.getElementById('cancelUpdate');
+            cancelUpdateBtn.addEventListener('click', () => {
+                window.location.href = '/getProfileDetails';
+            });
+            updateEmailForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const formData = new FormData(updateEmailForm);
+                const email = formData.get('email');
+                try {
+                    const res = await fetch('/update-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include', // Include cookies for session
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await res.json();
+                    console.log('Response:', data); // Debug log
+                    if (data.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Email Updated Successfully",
+                            text: "Please log in again.",
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => {
+                            window.location.href = data.redirectUrl;
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error",
+                            text: data.message || "Failed to update email."
+                        });
+                    }
+                } catch (error) {
+                    console.error("Fetch error:", error); // Debug log
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "An error occurred while updating the email."
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+<%- include('../../views/partials/user/footer') %>

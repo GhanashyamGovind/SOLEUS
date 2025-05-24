@@ -33,7 +33,7 @@ const categoryInfo = async (req, res) => {
 }
 
 
-const addCategory = async (req, res) => {
+const addCategory = async (req, res, next) => {
     try {
 
         const {name, description} = req.body;
@@ -54,32 +54,32 @@ const addCategory = async (req, res) => {
         
     } catch (error) {
         
-        return res.status(500).json({error: "Internal Server Error"})
+        next(error)
     }
 }
 
-const getListCategory = async (req, res) => {
+const getListCategory = async (req, res, next) => {
     try {
         let id = req.query.id;
         await Category.updateOne({_id: id}, {$set: {isListed: false}});
         return res.redirect('/admin/category');
     } catch (error) {
-        res.redirect('/admin/pageerror')
+        next(error)
     }
 }
 
-const getUnlistCategory = async (req, res) => {
+const getUnlistCategory = async (req, res, next) => {
     try {
         let id = req.query.id;
         await Category.updateOne({_id: id}, {$set: {isListed: true}});
         return res.redirect('/admin/category');
     } catch (error) {
-        res.redirect('/admin/pageerroor')
+        next(error)
     }
 }
 
 
-const getEditCategory = async (req, res) => {
+const getEditCategory = async (req, res, next) => {
     try {
 
         let id = req.query.id;
@@ -88,12 +88,11 @@ const getEditCategory = async (req, res) => {
         res.render('admin/edit-category', {category: category})
         
     } catch (error) {
-        
-        res.redirect('/admin/pageerror')
+        next(error)
     }
 }
 
-const editCategory = async (req, res) => {
+const editCategory = async (req, res, next) => {
 
 try {
 
@@ -119,8 +118,7 @@ try {
     }
     
 } catch (error) {
-    console.error(error);
-    res.status(500).json({message: "Internal server error"});
+    next(error)
 }
 
 }
