@@ -22,9 +22,10 @@ router.get('/logout', adminController.logout);
 
 //Customer management
 router.get('/users',adminAuth, customerController.customerInfo);
-router.get('/blockCustomer', adminAuth, customerController.customerBlocked);
-router.get('/unblockCustomer', adminAuth, customerController.customerunBlocked);
+// router.get('/blockCustomer', adminAuth, customerController.customerBlocked);
+// router.get('/unblockCustomer', adminAuth, customerController.customerunBlocked);
 router.get('/deleteCustomer', adminAuth, customerController.customerDeleted);
+router.get('/blockandUnblock', adminAuth, customerController.blockAndUnblock)
 
 //Category managemnt
 router.get('/category', adminAuth, categoryController.categoryInfo);

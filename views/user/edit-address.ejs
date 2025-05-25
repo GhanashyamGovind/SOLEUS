@@ -1,0 +1,190 @@
+<%- include('../../views/partials/user/header', {title: 'Edit Address'}) %>
+
+<!-- Main Content -->
+<main class="flex-grow container mx-auto py-8 px-4 flex flex-col items-center relative">
+    <!-- Back Button -->
+    <button onclick="window.location.href='/getAddress'" class="absolute top-8 right-4 bg-gold text-dark-bg font-semibold py-2 px-4 rounded-lg hover:bg-yellow-300 transition-all duration-200 shadow hover:shadow-gold-glow focus:outline-none focus:ring-2 focus:ring-gold">
+        Back
+    </button>
+
+    <!-- Page Title -->
+    <h1 class="text-3xl font-bold text-dark-bg mb-8 text-center">Edit Address</h1>
+
+    <!-- Error/Success Message Container -->
+    <div id="error-message" class="hidden w-full max-w-lg text-center p-4 mb-4 text-red-700 bg-red-100 rounded-lg"></div>
+
+    <!-- Address Form -->
+    <form id="editAddressForm" method="POST" class="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-lg shadow-md">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Address Type -->
+            <div class="flex flex-col">
+                <label for="addressType" class="text-dark-bg font-semibold mb-2">Address Type</label>
+                <select id="addressType" name="addressType" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" required>
+                    <option value="Home" <%= address.addressType === 'Home' ? 'selected' : '' %>>Home</option>
+                    <option value="Work" <%= address.addressType === 'Work' ? 'selected' : '' %>>Work</option>
+                    <option value="Other" <%= address.addressType === 'Other' ? 'selected' : '' %>>Other</option>
+                </select>
+            </div>
+
+            <!-- Name -->
+            <div class="flex flex-col">
+                <label for="name" class="text-dark-bg font-semibold mb-2">Name</label>
+                <input type="text" id="name" name="name" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.name %>" required>
+            </div>
+
+            <!-- Building Name -->
+            <div class="flex flex-col">
+                <label for="buildingName" class="text-dark-bg font-semibold mb-2">Building Name</label>
+                <input type="text" id="buildingName" name="buildingName" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.buildingName %>" required>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="flex flex-col">
+                <label for="phone" class="text-dark-bg font-semibold mb-2">Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.phone %>" required>
+            </div>
+
+            <!-- Pincode -->
+            <div class="flex flex-col">
+                <label for="pincode" class="text-dark-bg font-semibold mb-2">Pincode</label>
+                <input type="text" id="pincode" name="pincode" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.pincode %>" required>
+            </div>
+
+            <!-- Landmark -->
+            <div class="flex flex-col">
+                <label for="landMark" class="text-dark-bg font-semibold mb-2">Landmark</label>
+                <input type="text" id="landMark" name="landMark" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.landMark %>" required>
+            </div>
+
+            <!-- City -->
+            <div class="flex flex-col">
+                <label for="city" class="text-dark-bg font-semibold mb-2">City/District/Town</label>
+                <input type="text" id="city" name="city" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.city %>" required>
+            </div>
+
+            <!-- State -->
+            <div class="flex flex-col">
+                <label for="state" class="text-dark-bg font-semibold mb-2">State</label>
+                <input type="text" id="state" name="state" class="border border-gray-300 rounded-lg p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gold transition-all duration-200" value="<%= address.state %>" required>
+            </div>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-center gap-4 mt-6">
+            <button type="submit" id="submitBtn" class="bg-black text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed">
+                Save
+            </button>
+            <button type="button" id="resetBtn" class="bg-cyan-500 text-white font-semibold py-2 px-6 rounded-lg hover:bg-cyan-600 transition-all duration-200">
+                Reset
+            </button>
+        </div>
+    </form>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const editAddressForm = document.getElementById('editAddressForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const errorMessage = document.getElementById('error-message');
+
+    // Store original form values for reset
+    const originalValues = {
+        addressType: '<%= address.addressType %>',
+        name: '<%= address.name %>',
+        buildingName: '<%= address.buildingName %>',
+        phone: '<%= address.phone %>',
+        pincode: '<%= address.pincode %>',
+        landMark: '<%= address.landMark %>',
+        city: '<%= address.city %>',
+        state: '<%= address.state %>'
+    };
+
+    // Reset form to original values
+    resetBtn.addEventListener('click', () => {
+        editAddressForm.querySelector('#addressType').value = originalValues.addressType;
+        editAddressForm.querySelector('#name').value = originalValues.name;
+        editAddressForm.querySelector('#buildingName').value = originalValues.buildingName;
+        editAddressForm.querySelector('#phone').value = originalValues.phone;
+        editAddressForm.querySelector('#pincode').value = originalValues.pincode;
+        editAddressForm.querySelector('#landMark').value = originalValues.landMark;
+        editAddressForm.querySelector('#city').value = originalValues.city;
+        editAddressForm.querySelector('#state').value = originalValues.state;
+        errorMessage.classList.add('hidden');
+    });
+
+    editAddressForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+        errorMessage.classList.add('hidden');
+
+        const formData = new FormData(editAddressForm);
+        const addressData = {
+            addressType: formData.get('addressType'),
+            name: formData.get('name'),
+            buildingName: formData.get('buildingName'),
+            phone: formData.get('phone'),
+            pincode: formData.get('pincode'),
+            landMark: formData.get('landMark'),
+            city: formData.get('city'),
+            state: formData.get('state'),
+        };
+
+        // Client-side validation
+        if (!/^\d{6}$/.test(addressData.pincode)) {
+            errorMessage.textContent = 'Pincode must be a 6-digit number';
+            errorMessage.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save';
+            return;
+        }
+        if (!/^\d{10}$/.test(addressData.phone)) {
+            errorMessage.textContent = 'Phone number must be 10 digits';
+            errorMessage.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save';
+            return;
+        }
+
+        try {
+            const response = await fetch('/editAddress?id=<%= address._id %>', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(addressData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                await Swal.fire({
+                    toast: true,
+                    position: 'center',
+                    icon: 'success',
+                    title: result.message,
+                    background: '#000',
+                    color: '#FFD700',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                window.location.replace('/getAddress');
+            } else {
+                errorMessage.textContent = result.message || 'Failed to update address. Please try again.';
+                errorMessage.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            errorMessage.textContent = 'An error occurred while updating the address. Please try again.';
+            errorMessage.classList.remove('hidden');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Save';
+        }
+    });
+});
+</script>
+
+<%- include('../../views/partials/user/footer') %>

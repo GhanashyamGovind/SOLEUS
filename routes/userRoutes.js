@@ -71,6 +71,15 @@ router.post('/updatePassword', userAuth, profileController.updatePassword);
 router.get('/confirm-delete', userAuth, profileController.deletePage);
 router.delete('/confirm-delete', userAuth, profileController.confirmDelete);
 
+//profil and profile address details
+router.get('/getAddress', userAuth, profileController.loadAddress);
+router.get('/addAddrress', userAuth, profileController.getAddAdress);
+router.post('/addAddress', userAuth, profileController.addAddress);
+router.get('/editAddress', userAuth, profileController.loadEdit);
+router.put('/editAddress', userAuth, profileController.editAddress);
+router.delete('/deleteAddress/:id', profileController.deleteAddress)
+
+
 
 
 
@@ -81,7 +90,6 @@ router.get('/productDetails', productController.productDeatils);
 router.get('/wishlist', userAuth, wishlistController.wishList);
 router.post('/addToWishlist', wishlistController.addToWishlist);
 router.delete('/removeWishlist/:productId', userAuth, wishlistController.removeFromWishlist);
-
 
 
 

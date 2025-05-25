@@ -33,11 +33,11 @@
                             <td class="p-3"><%= data[i].createdOn %></td>
                             <td class="p-3 flex space-x-2">
                                 <% if(data[i].isBlocked === false) {%>
-                                <a href="/admin/blockCustomer?id=<%= data[i]._id %>" class="bg-gradient-to-b from-orange-400 to-orange-500 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
+                                <a href="/admin/blockandUnblock?id=<%= data[i]._id %>" class="bg-gradient-to-b from-orange-400 to-orange-500 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
                                     BLOCK
                                 </a>
                                 <% } else { %>
-                                <a href="/admin/unblockCustomer?id=<%= data[i]._id %>" class="bg-gradient-to-b from-green-500 to-green-600 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
+                                <a href="/admin/blockandUnblock?id=<%= data[i]._id %>" class="bg-gradient-to-b from-green-500 to-green-600 text-white px-4 py-1 rounded shadow hover:shadow-md transition-all">
                                     UNBLOCK
                                 </a>
                                 <% } %>

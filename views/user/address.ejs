@@ -1,0 +1,141 @@
+<%- include('../../views/partials/user/header', {title: 'Address'}) %> 
+
+<!-- Main Content -->
+<main class="flex-grow container mx-auto py-8 px-4 flex flex-col items-center relative">
+    
+    <button class="absolute top-8 right-4 bg-gold text-dark-bg font-semibold py-2 px-4 rounded hover:bg-yellow-300 transition-all duration-200 shadow hover:shadow-gold-glow">
+        BACK
+    </button>
+
+    
+    <h1 class="text-3xl font-bold text-dark-bg mb-8 text-center">Your Addresses</h1>
+
+    <!-- Add Address Button -->
+    <button onclick="window.location.href = '/addAddrress'" class="bg-gold text-dark-bg font-semibold py-3 px-8 rounded-lg hover:bg-yellow-300 transition-all duration-200 mb-8 shadow-md hover:shadow-gold-glow transform hover:scale-105">
+        + Add New Address
+    </button>
+
+    <% if (address.address.length >= 0) { %>
+    <!-- Address Card -->
+    <% address.address.forEach(add => { %>
+    <div class="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-md shadow-card transition-all duration-300 address-card mb-6 shadow-2xl">
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-gray-100">
+            <h2 class="text-xl font-bold text-dark-bg"><%= add.addressType %></h2>
+            <div class="flex space-x-3">
+                <button onclick="window.location.href='/editAddress?id=<%= add._id %>'" class="text-blue-500 hover:text-blue-700 font-semibold flex items-center space-x-1 transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0l-1.414-1.414a2 2 0 010-2.828z" />
+                    </svg>
+                    <span>Edit</span>
+                </button>
+                <button class="text-red-500 hover:text-red-700 font-semibold flex items-center space-x-1 transition-colors duration-200 delete-address" 
+                       data-address-id="<%= add._id %>">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>Delete</span>
+                </button>
+            </div>
+        </div>
+        <div class="space-y-3 text-gray-700">
+            <p class="flex items-start">
+                <span class="font-semibold text-dark-bg w-20">Name:</span>
+                <span class="flex-1"><%= add.name %></span>
+            </p>
+            <p class="flex items-start">
+                <span class="font-semibold text-dark-bg w-20">Address:</span>
+                <span class="flex-1"><%= add.buildingName%>, <%= add.landMark %><br><%= add.city %>, <%= add.state %></span>
+            </p>
+            <p class="flex items-start">
+                <span class="font-semibold text-dark-bg w-20">Phone:</span>
+                <span class="flex-1"><%= add.phone %></span>
+            </p>
+            <p class="flex items-start">
+                <span class="font-semibold text-dark-bg w-20">Pin:</span>
+                <span class="flex-1"><%= add.pincode %></span>
+            </p>
+        </div>
+    </div>
+    <% }) %>
+    <% } else { %>
+    <div class="bg-white border border-gray-200 rounded-lg p-8 w-full max-w-md text-center shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <h3 class="text-lg font-bold text-dark-bg mb-2">No Saved Addresses</h3>
+        <p class="text-gray-600 mb-4">You haven't saved any addresses yet.</p>
+    </div>
+    <% } %>
+</main>
+
+<!-- SweetAlert2 CSS and JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Add event listeners to all delete buttons
+    document.querySelectorAll('.delete-address').forEach(button => {
+        button.addEventListener('click', async (event) => {
+            event.preventDefault();
+            
+        
+            const addressId = button.getAttribute('data-address-id');
+
+            // Show confirmation dialog
+            const result = await Swal.fire({
+                title: 'Are you sure you want to delete this address?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const response = await fetch(`/deleteAddress/${addressId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Address Deleted',
+                            text: result.message || 'The address has been deleted successfully!',
+                            confirmButtonColor: '#3085d6'
+                        }).then(() => {
+                           
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Deletion Failed',
+                            text: result.message || 'Failed to delete address. Please try again.',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error deleting address:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while deleting the address. Please try again.',
+                        confirmButtonColor: '#d33'
+                    });
+                }
+            }
+        });
+    });
+});
+</script>
+
+<%- include('../../views/partials/user/footer') %>

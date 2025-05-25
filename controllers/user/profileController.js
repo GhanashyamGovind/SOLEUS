@@ -1,4 +1,5 @@
 const User = require('../../models/userSchema');
+const Address = require("../../models/addressSchema")
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const env = require('dotenv').config();
@@ -553,6 +554,220 @@ const confirmDelete = async (req, res, next) => {
     }
 }
 
+const loadAddress = async (req, res, next) => {
+    try {
+
+
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+        if(!user) {
+            const error = new Error("User not found");
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const addressData = await Address.findOne({userId: userId});
+
+        return res.render('user/address', {
+            user: user,
+            address: addressData || {address: []}
+        });
+
+    } catch (error) {
+        next(error)
+    }
+}
+
+// this the page for adding the new addres not he page of showing the address
+const getAddAdress = async (req, res, next) => {
+    try {
+
+        const userId = req.session.user;
+        const user = await User.findById(userId);
+
+        if(!user){
+            const error = new Error("User not found");
+            error.statusCode = 404;
+            throw error
+        }
+
+        return res.render('user/add-address');
+    } catch (error) {
+        next(error);
+    }
+}
+
+const addAddress = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        if(!userId){
+            return res.status(401).json({success: false, message: "Unauthorized user"});
+        }
+
+        const {
+            addressType,
+            name,
+            buildingName,
+            phone,
+            pincode,
+            landMark,
+            city,
+            state,
+        } = req.body;
+
+        if(!addressType || !name || !buildingName || !city || !landMark || !state || !phone || !pincode) {
+            return res.status(400).json({success: false, message: "All required fields must be provided"});
+        }
+
+        const pincodeNumber = Number(pincode);
+        if (isNaN(pincodeNumber)) {
+            return res.status(400).json({ success: false, message: 'Invalid pincode' });
+        }
+
+        // address obj
+        const newAddress = {
+            addressType,
+            name,
+            city,
+            landMark,
+            state,
+            pincode: pincodeNumber,
+            phone,
+            buildingName
+        }
+
+        let addressDoc = await Address.findOne({userId});
+
+        if(addressDoc) {
+            addressDoc.address.push(newAddress);
+            await addressDoc.save();
+        } else {
+            addressDoc = new Address({
+                userId,
+                address: [newAddress]
+            });
+            await addressDoc.save();
+        }
+
+        return res.status(201).json({success: true, message: "Address added successfully"});
+    } catch (error) {
+        next(error);
+    }
+}
+
+const loadEdit = async (req, res, next) => {
+        try {
+            const userId = req.session.user;
+            if(!userId){
+                const error = new Error("User not found");
+                error.statusCode = 404;
+                throw error
+            }
+
+            const addressId = req.query.id
+
+            const userAddress = await Address.findOne({userId, 'address._id': addressId}, {'address.$': 1})
+            console.log(userAddress)
+
+            const address = userAddress.address[0];
+
+            console.log(`this is adddress: ${address}`)
+
+            return res.render('user/edit-address', {address})
+        } catch (error) {
+            
+        }
+    }
+
+    const editAddress = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        const addressId = req.query.id;
+
+        if (!userId) {
+                return res.status(401).json({success: false, message: 'User not authenticated' });
+        } 
+
+        const {
+            addressType,
+            name,
+            buildingName,
+            phone,
+            pincode,
+            landMark,
+            city,
+            state
+        } = req.body;
+
+        if (!addressType || !name || !buildingName || !phone || !pincode || !landMark || !city || !state) {
+                return res.status(400).json({success: false, message: 'All address fields are required' });
+        }
+
+        if (!/^\d{6}$/.test(pincode)) {
+                return res.status(400).json({success: false, message: 'Pincode must be a 6-digit number' });
+        }
+
+        if (!/^\d{10}$/.test(phone)) {
+                return res.status(400).json({success: false, message: 'Phone number must be 10 digits' });
+        }
+
+        const updateAddress = await Address.findOneAndUpdate(
+            {userId, 'address._id': addressId},
+            {
+                $set: {
+                    'address.$.addressType': addressType,
+                    'address.$.name': name,
+                    'address.$.buildingName': buildingName,
+                    'address.$.phone': phone,
+                    'address.$.pincode': pincode,
+                    'address.$.landMark': landMark,
+                    'address.$.city': city,
+                    'address.$.state': state
+                }
+            },
+            {new: true}
+        );
+
+        if (!updateAddress) {
+                return res.status(404).json({success: false, message: 'Address not found' });
+        }
+
+        
+        return res.status(200).json({success: true, message: 'Address updated successfully' });
+    } catch (error) {
+        next(error)
+    }
+}
+
+const deleteAddress = async (req, res, next) => {
+    try {
+        const userId = req.session.user; 
+        if(!userId) {
+            return res.status(401).json({success: false, message: "Unautherized user"});
+        }
+
+        const addressId = req.params.id;
+        console.log('ad id', addressId);
+
+        const updateAddress = await Address.findOneAndUpdate(
+            {userId},
+            {$pull: {address: {_id: addressId}}},
+            {new: true}
+        );
+
+        console.log(updateAddress)
+
+        if (!updateAddress) {
+            return res.status(404).json({success: false, message: 'Address not found' });
+        }
+
+        return res.status(200).json({success: true, message: 'Address deleted successfully' });
+    } catch (error) {
+        next(error)
+    }
+}
+
+
 
 module.exports = {
     getForgotPassPage,
@@ -575,4 +790,10 @@ module.exports = {
     updatePassword,
     deletePage,
     confirmDelete,
+    loadAddress,
+    getAddAdress,
+    addAddress,
+    loadEdit,
+    editAddress,
+    deleteAddress,
 }

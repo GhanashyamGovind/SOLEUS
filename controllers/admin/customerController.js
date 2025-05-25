@@ -47,10 +47,17 @@ const customerInfo = async (req, res, next) => {
 }
 
 
-const customerBlocked = async (req, res, next) => {
+const blockAndUnblock = async (req, res, next) => {
     try {
         let id = req.query.id;
-        await User.updateOne({ _id: id}, {$set: { isBlocked: true } });
+        const user =await  User.findById(id)
+
+        if(user.isBlocked){
+            await User.updateOne({ _id: id}, {$set: { isBlocked: false } });
+        } else {
+            await User.updateOne({ _id: id}, {$set: { isBlocked: true } });
+        }
+        
         return res.redirect('/admin/users');
     } catch (error) {
        next(error)
@@ -58,16 +65,18 @@ const customerBlocked = async (req, res, next) => {
 }
 
 
-const customerunBlocked = async (req, res, next) => {
-    try {
-        let id = req.query.id;
-        await User.updateOne({ _id: id }, {$set: { isBlocked: false } });
-        // console.log(id)
-        return res.redirect('/admin/users');
-    } catch (error) {
-        next(error)
-    }
-}
+// const customerunBlocked = async (req, res, next) => {
+//     try {
+//         let id = req.query.id;
+//         await User.updateOne({ _id: id }, {$set: { isBlocked: false } });
+//         // console.log(id)
+//         return res.redirect('/admin/users');
+//     } catch (error) {
+//         next(error)
+//     }
+// }
+
+
 
 const customerDeleted = async (req, res, next) => {
     try {
@@ -82,7 +91,8 @@ const customerDeleted = async (req, res, next) => {
 
 module.exports = {
     customerInfo,
-    customerBlocked,
-    customerunBlocked,
+    // customerBlocked,
+    // customerunBlocked,
     customerDeleted,
+    blockAndUnblock,
 }

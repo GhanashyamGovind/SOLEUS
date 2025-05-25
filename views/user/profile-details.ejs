@@ -435,11 +435,25 @@
                 const data = await res.json();
 
                 if (data.status) {
-                    alert('Username updated successfully!');
+                    await Swal.fire({
+                        toast: true,
+                        position: 'center',
+                        icon: 'success',
+                        title: data.message,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                     usernameModal.classList.remove('show');
                     window.location.reload();
                 } else {
-                    alert(`Error: ${data.message}`);
+                    await Swal.fire({
+                        toast: true,
+                        position: 'center',
+                        icon: 'error',
+                        title: data.message,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                     console.error("Error updating username:", data.message);
                 }
             } catch (error) {
@@ -522,11 +536,25 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    alert('OTP sent to your email!');
+                    await Swal.fire({
+                        toast: true,
+                        position: 'center',
+                        icon: 'success',
+                        title: data.message,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                     verifyEmailModal.classList.remove('show');
                     window.location.href = '/verify-EmailOtp';
                 } else {
-                    alert(`Error: ${data.message}`);
+                    await Swal.fire({
+                        toast: true,
+                        position: 'center',
+                        icon: 'error',
+                        title: data.message,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                     console.error("Error generating OTP:", data.message);
                 }
             } catch (error) {
@@ -646,7 +674,14 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    alert('Password updated successfully!');
+                    await Swal.fire({
+                        toast: true,
+                        position: 'center',
+                        icon: 'success',
+                        title: data.message,
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                     passwordModal.classList.remove('show');
                     passwordForm.reset();
                     window.location.reload();
