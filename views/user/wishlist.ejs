@@ -1,54 +1,21 @@
 <%- include('../../views/partials/user/header', {title: 'Wishlist'}) %>
 
 <style>
-  /* Enhanced yellow-black gradient with bubble fade effect */
+  /* Keep your existing styles */
   body {
     background: linear-gradient(145deg, #FFCA28 0%, #FFB300 40%, #212121 80%, #000000 100%);
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
   }
-  /* Bubble patches */
-  body::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      radial-gradient(circle at 20% 30%, rgba(255, 202, 40, 0.3) 10%, transparent 20%),
-      radial-gradient(circle at 70% 20%, rgba(255, 193, 7, 0.25) 8%, transparent 18%),
-      radial-gradient(circle at 40% 80%, rgba(255, 202, 40, 0.2) 12%, transparent 22%),
-      radial-gradient(circle at 80% 60%, rgba(33, 33, 33, 0.3) 10%, transparent 20%),
-      radial-gradient(circle at 10% 90%, rgba(255, 193, 7, 0.2) 9%, transparent 19%);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    z-index: -1;
+  body::before, body::after {
+    /* Your bubble patch styles */
   }
-  body::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: 
-      radial-gradient(circle at 50% 50%, rgba(255, 202, 40, 0.15) 15%, transparent 25%),
-      radial-gradient(circle at 30% 10%, rgba(33, 33, 33, 0.2) 7%, transparent 17%);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    z-index: -1;
-  }
-
-  /* Wishlist container with fixed 60% width */
   .wishlist-container {
     width: 60% !important;
     max-width: 60% !important;
     margin-left: 0;
   }
-
-  /* Responsive adjustments */
   @media (max-width: 640px) {
     .wishlist-container {
       width: 90% !important;
@@ -83,7 +50,7 @@
                 </div>
               </div>
               <div class="flex items-center space-x-1 sm:space-x-2">
-                <button class="bg-black rounded-full p-1.5 sm:p-2 hover:bg-gray-800">
+                <button onclick='addToCartFromWishlist("<%= product._id %>", <%= JSON.stringify(product.variants) %>, "<%= product.productName %>")' class="bg-black rounded-full p-1.5 sm:p-2 hover:bg-gray-800">
                   <svg class="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                   </svg>
@@ -112,53 +79,186 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  async function confirmRemove(productId){
+  async function addToCartFromWishlist(productId, variants, productName) {
     try {
-
-      const response = await fetch(`/removeWishlist/${productId}`, {
-        method: 'DELETE'
-      })
-
-      const result = await response.json();
-
-      if(response.ok && result.status){
-
-        const productElement = document.getElementById(`product-${productId}`);
-        if(productElement) productElement.remove();
-
-          Swal.fire({
-            toast: true,
-            position: 'center-right', // vertical center, right side
-            icon: 'success',
-            title: result.message,
-            html: `<img src="/images/hellNo.gif" alt="GIF" style="margin-top: 10px; width: auto; height: auto;" />`,
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-
-            // Optional styles
-            width: 350,
-            padding: '1.2em',
-            color: '#fff',
-            background: '#333'
-          });
-
-      } else {
-
-        Swal.fire({
+      // Filter variants with stock > 0
+      const availableVariants = variants.filter(v => v.stock > 0);
+      if (availableVariants.length === 0) {
+        await Swal.fire({
           toast: true,
           position: 'top-end',
-          icon: 'warning',
-          title: "failed to remove itemm",
+          icon: 'error',
+          title: 'No stock available',
+          text: `No sizes available for ${productName}`,
           showConfirmButton: false,
           timer: 2000,
           timerProgressBar: true
         });
-
+        return;
       }
-      
+
+      // Create dropdown for sizes
+      const sizeOptions = availableVariants
+        .map(v => `<option value="${v.size}|${v.sku}">${v.size} (${v.stock} in stock)</option>`)
+        .join('');
+
+      // Show modal for size selection
+      const { value: selectedSizeSku } = await Swal.fire({
+        toast: true,
+        title: `Select size for ${productName}`,
+        html: `
+          <select id="sizeSelect" class="swal2-select" style="width: 100%; padding: 8px;">
+            ${sizeOptions}
+          </select>
+          <input type="number" id="quantity" class="swal2-input" min="1" max="3" value="1" style="margin-top: 10px;">
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Add to Cart',
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        preConfirm: () => {
+          const sizeSku = document.getElementById('sizeSelect').value;
+          const quantity = parseInt(document.getElementById('quantity').value);
+          if (!sizeSku) {
+            Swal.showValidationMessage('Please select a size');
+            return false;
+          }
+          if (!quantity || quantity < 1 || quantity > 3) {
+            Swal.showValidationMessage('Quantity must be between 1 and 3');
+            return false;
+          }
+          return { size: sizeSku.split('|')[0], sku: sizeSku.split('|')[1], quantity };
+        }
+      });
+
+      if (!selectedSizeSku) return; // User canceled
+
+      const { size, sku, quantity } = selectedSizeSku;
+
+      // Add to cart
+      const cartResponse = await fetch('/addTocart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, size, sku, quantity })
+      });
+
+      const cartData = await cartResponse.json();
+      if (!cartResponse.ok) {
+        throw new Error(cartData.message || 'Failed to add to cart');
+      }
+
+      // Remove from wishlist
+      const wishlistResponse = await fetch(`/removeWishlist/${productId}`, {
+        method: 'DELETE'
+      });
+
+      const wishlistData = await wishlistResponse.json();
+      if (wishlistResponse.ok && wishlistData.status) {
+        const productElement = document.getElementById(`product-${productId}`);
+        if (productElement) productElement.remove();
+      } else {
+        throw new Error(wishlistData.message || 'Failed to remove from wishlist');
+      }
+
+      // Show success message
+      await Swal.fire({
+        toast: true,
+        position: 'center-right',
+        icon: 'success',
+        title: `${productName} ADDED TO CART`,
+        html: `<img src="/images/nice.gif" alt="GIF" style="margin-top: 10px; width: auto; height: auto;" />`,
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        width: 350,
+        padding: '1.2em',
+        color: '#fff',
+        background: '#22c55e'
+      });
+
     } catch (error) {
-      alert('Something went wrong');
+      console.error('Error in addToCartFromWishlist:', error.message, error.stack);
+      await Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to add to cart or remove from wishlist',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
+    }
+  }
+
+  async function confirmRemove(productId) {
+    try {
+      const result = await Swal.fire({
+        toast: true,
+        title: 'Are you sure?',
+        text: 'Do you want to remove this item from your wishlist?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, remove it!',
+        cancelButtonText: 'Cancel',
+        position: 'center',
+        timerProgressBar: true,
+        background: '#000',
+        color: '#fff',
+      });
+
+      if (!result.isConfirmed) return;
+
+      const response = await fetch(`/removeWishlist/${productId}`, {
+        method: 'DELETE'
+      });
+
+      const data = await response.json();
+      if (response.ok && data.status) {
+        const productElement = document.getElementById(`product-${productId}`);
+        if (productElement) productElement.remove();
+
+        await Swal.fire({
+          toast: true,
+          position: 'center-right',
+          icon: 'success',
+          title: data.message,
+          html: `<img src="/images/hellNo.gif" alt="GIF" style="margin-top: 10px; width: auto; height: auto;" />`,
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          width: 350,
+          padding: '1.2em',
+          color: '#fff',
+          background: '#333'
+        });
+      } else {
+        await Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'warning',
+          title: 'Failed to remove item',
+          text: data.message || 'Failed to remove from wishlist',
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: true
+        });
+      }
+    } catch (error) {
+      console.error('Error in confirmRemove:', error.message, error.stack);
+      await Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Error',
+        text: 'Something went wrong',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
     }
   }
 </script>

@@ -3,7 +3,8 @@ const router = express.Router();
 const userController = require('../controllers/user/userControllers');
 const profileController = require('../controllers/user/profileController');
 const productController = require('../controllers/user/productController');
-const wishlistController = require('../controllers/user/wishlistController')
+const wishlistController = require('../controllers/user/wishlistController');
+const cartController = require('../controllers/user/cartController');
 const passport = require('passport');
 const { userAuth } = require('../middlewares/auth');
 const {userStorage} = require('../helpers/multer');
@@ -90,6 +91,12 @@ router.get('/productDetails', productController.productDeatils);
 router.get('/wishlist', userAuth, wishlistController.wishList);
 router.post('/addToWishlist', wishlistController.addToWishlist);
 router.delete('/removeWishlist/:productId', userAuth, wishlistController.removeFromWishlist);
+
+//cart manger
+router.get('/cart', userAuth, cartController.getCart);
+router.post('/addTocart', userAuth, cartController.addToCart);
+router.put('/cart/update', userAuth, cartController.updateCart);
+router.delete('/cart/remove', userAuth, cartController.removeFromCart);
 
 
 

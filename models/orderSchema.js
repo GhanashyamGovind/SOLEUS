@@ -6,6 +6,7 @@ const orderSchema = new Schema({
     orderId: {
         type: String,
         default: () => uiidv4(),
+        unique: true
     },
     orderedItems: [{
         product: {

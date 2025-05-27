@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
-
+const { Schema } = mongoose;
 
 const cartSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
-        required: true
+        required: true,
+
     },
     items: [{
         productId: {
@@ -16,28 +16,34 @@ const cartSchema = new Schema({
         },
         quantity: {
             type: Number,
-            required: true
+            required: true,
+            min: 1
         },
         price: {
             type: Number,
-            required: true
+            required: true,
+            min: 0 
         },
-        totalPrice: {
-            type: Number,
-            required: true
-        },
-        status: {
+        size: {
             type: String,
-            default: 'placed'
+            required: true // Store the selected size, which should match the Product schema's size enum
         },
-        cancellationReason: {
+        sku: {
             type: String,
-            default: 'none'
+            required: true
         }
+    }],
+    totalPrice: {
+        type: Number,
+        default: 0 
+    }
+}, { timestamps: true }); 
 
-    }]
+// Pre-save hook to calculate totalPrice
+cartSchema.pre('save', function(next) {
+    this.totalPrice = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+    next();
 });
-
 
 const Cart = mongoose.model('Cart', cartSchema);
 

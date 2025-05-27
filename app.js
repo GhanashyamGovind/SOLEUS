@@ -6,7 +6,7 @@ const passport = require('./config/passport')
 const connectDB = require('./config/db');
 const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const errorHandler = require('./middlewares/errorHandlers')
+const errorHandler = require('./middlewares/errorHandlers');
 
 const app = express();
 
