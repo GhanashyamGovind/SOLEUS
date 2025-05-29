@@ -51,6 +51,7 @@ app.use('/admin',adminRoutes)
 
 //error
 app.use((req, res, next) => {
+    console.error(`404 Error: Requested URL: ${req.originalUrl}`);
     const err = new Error('Page Not Found');
     err.statusCode = 404;
     next(err);

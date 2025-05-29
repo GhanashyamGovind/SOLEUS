@@ -167,11 +167,19 @@
         }
 
         function resendOTP(){
+            const resendBtn = document.getElementById('resendOtpButton');
+
+            //disable btn
+            resendBtn.disabled = true;
+            resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            resendBtn.textContent = "Wait 60s..."
+
             clearInterval(timerInterval);
             timer = 60;
             document.getElementById('otp').disabled = false;
             document.getElementById('timerValue').classList.remove('expired');
             startTimer();
+            
             $.ajax({
                 type: "POST",
                 url: "/resend-otp",
@@ -179,7 +187,8 @@
                     if(response.success){
                         Swal.fire({
                             icon: "success",
-                            titile: "OTP Resend Successfully",
+                            titile: "Success",
+                            text: "otp resend successfully",
                             showConfirmButton: false,
                             timer: 1500,
                         })
@@ -192,8 +201,41 @@
                     }
                 }
             })
+
+             //re enable btn
+            let countdown = 60;
+            const interval = setInterval(()=> {
+                countdown--;
+                resendBtn.textContent = `Wait ${countdown}s...`;
+                if(countdown < 0) {
+                    clearInterval(interval);
+                    resendBtn.disabled = false;
+                    resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    resendBtn.textContent = "Resend OTP";
+                }
+            }, 1000)
+
             return false
         }
+
+        window.onload = function () {
+        const resendBtn = document.getElementById('resendOtpButton');
+        resendBtn.disabled = true;
+        resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        resendBtn.textContent = "Wait 60s...";
+
+        let countdown = 60;
+        const interval = setInterval(() => {
+            countdown--;
+            resendBtn.textContent = `Wait ${countdown}s...`;
+            if (countdown < 0) {
+                clearInterval(interval);
+                resendBtn.disabled = false;
+                resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                resendBtn.textContent = "Resend OTP";
+            }
+        }, 1000);
+    };
     </script>
 </body>
 </html>

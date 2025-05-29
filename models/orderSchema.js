@@ -1,18 +1,26 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
-const {v4: uiidv4} = require('uuid')// to genreate unq  id - this is an order so ceach one have unq id that why we use this
+const { Schema } = mongoose;
+const { v4: uuidv4 } = require('uuid'); // To generate unique orderId
 
 const orderSchema = new Schema({
     orderId: {
         type: String,
-        default: () => uiidv4(),
+        default: () => uuidv4(),
         unique: true
     },
     orderedItems: [{
         product: {
             type: Schema.Types.ObjectId,
-            ref:'Product',
-            require: true
+            ref: 'Product',
+            required: true
+        },
+        size: {
+            type: String,
+            required: true
+        },
+        sku: {
+            type: String,
+            required: true
         },
         quantity: {
             type: Number,
@@ -29,7 +37,7 @@ const orderSchema = new Schema({
     },
     discount: {
         type: Number,
-        default: 0,
+        default: 0
     },
     finalAmount: {
         type: Number,
@@ -37,16 +45,16 @@ const orderSchema = new Schema({
     },
     address: {
         type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        ref: 'Address', // Corrected to reference Address schema
+        required: true // Allow null until checkout
     }, 
     invoiceDate: {
-        type: Date,
+        type: Date
     },
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned'] // enum only allow specific roles
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned'],
     },
     createdOn: {
         type: Date,
@@ -57,9 +65,7 @@ const orderSchema = new Schema({
         type: Boolean, 
         default: false
     }
-
-})
-
+});
 
 const Order = mongoose.model('Order', orderSchema);
 

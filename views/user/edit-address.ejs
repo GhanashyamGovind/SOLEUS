@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     showConfirmButton: false,
                     timer: 3000
                 });
-                window.location.replace('/getAddress');
+                window.location.replace(result.url);
             } else {
                 errorMessage.textContent = result.message || 'Failed to update address. Please try again.';
                 errorMessage.classList.remove('hidden');

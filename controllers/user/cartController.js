@@ -1,6 +1,7 @@
 const User = require('../../models/userSchema');
 const Product = require('../../models/productSchema');
 const Cart = require('../../models/cartSchema');
+const Order = require('../../models/orderSchema');
 
 
 
@@ -93,7 +94,7 @@ const addToCart = async (req, res) => {
         }
 
         //product korakkunu
-        variant.stock -= quantity;
+        // variant.stock -= quantity; ith venda because stock minus aakendath buy cheytha shesham annu
         await product.save();
 
         // calculte total price
@@ -163,7 +164,7 @@ const updateCart = async (req, res, next) => {
         }
 
         //update stock
-        variant.stock -= quantityChange;
+        // variant.stock -= quantityChange;
 
         await product.save();
 
@@ -239,11 +240,58 @@ const removeFromCart = async (req, res, next) => {
 }
 
 
+//single buy
+const buyNow = async (req, res, next) => {
+    try {
+
+        const userId = req.session.user;
+        if(!userId) {
+            return res.status(401).json({success: false, message: "Unautherized user"});
+        }
+
+        const {productId, size, sku, quantity} = req.body;
+
+        if (!productId || !size || !sku || quantity !== 1) {
+            return res.status(400).json({ success: false, message: 'Invalid input data'});
+        }
+
+        const product = await Product.findById(productId);
+        if(!product) {
+            return res.status(404).json({success: false, message: "Product not found"})
+        }
+
+        const variant = product.variants.find(v => v.sku === sku && v.size === size);
+        if (!variant) {
+            return res.status(404).json({ success: false, message: 'Selected size or SKU not found' });
+        }
+
+        if(variant.stock < quantity) {
+            return res.status(400).json({success: false, message: 'Insufficient stock'});
+        }
+
+        // session ill buy noe itme store cheyaam
+        req.session.buyNow = {
+            productId,
+            size,
+            sku,
+            quantity: 1,
+            price: variant.salePrice
+        };
+
+        return res.status(200).json({success: true, message: 'Proceeding to checkout', redirectUrl: '/check-out?buyNow=true'})
+        
+    } catch (error) {
+        next(error)
+    }
+}
+
+
 module.exports = {
     getCart,
     addToCart,
     updateCart,
     removeFromCart,
+    buyNow,
 }
 
 

@@ -178,6 +178,14 @@
         }
 
         async function resendOTP() {
+
+            const resendBtn = document.getElementById('resendOtpButton');
+
+            //disable btn
+            resendBtn.disabled = true;
+            resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            resendBtn.textContent = "Wait 60s..."
+
             clearInterval(timerInterval);
             timer = 60;
             document.getElementById('otp').disabled = false;
@@ -216,37 +224,42 @@
                     text: "Something went wrong. Try again."
                 });
             }
+
+            //re enable btn
+            let countdown = 60;
+            const interval = setInterval(()=> {
+                countdown--;
+                resendBtn.textContent = `Wait ${countdown}s...`;
+                if(countdown < 0) {
+                    clearInterval(interval);
+                    resendBtn.disabled = false;
+                    resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    resendBtn.textContent = "Resend OTP";
+                }
+            }, 1000)
+
             return false;
         }
 
-       /* function resendOTP(){
-            clearInterval(timerInterval);
-            timer = 60;
-            document.getElementById('otp').disabled = false;
-            document.getElementById('timerValue').classList.remove('expired');
-            startTimer();
-            $.ajax({
-                type: "POST",
-                url: "/resend-otp",
-                success: function(response){
-                    if(response.success){
-                        Swal.fire({
-                            icon: "success",
-                            titile: "OTP Resend Successfully",
-                            showConfirmButton: false,
-                            timer: 1500,
-                        })
-                    }else{
-                        Swal.fire({
-                            icon: "error",
-                            titile: "Error",
-                            text: "An error occured while resending OTP Please try agian"
-                        })
-                    }
-                }
-            })
-            return false
-        }*/
+        window.onload = function () {
+        const resendBtn = document.getElementById('resendOtpButton');
+        resendBtn.disabled = true;
+        resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        resendBtn.textContent = "Wait 60s...";
+
+        let countdown = 60;
+        const interval = setInterval(() => {
+            countdown--;
+            resendBtn.textContent = `Wait ${countdown}s...`;
+            if (countdown < 0) {
+                clearInterval(interval);
+                resendBtn.disabled = false;
+                resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                resendBtn.textContent = "Resend OTP";
+            }
+        }, 1000);
+    };
+
     </script>
 </body>
 </html>

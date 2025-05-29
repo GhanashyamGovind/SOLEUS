@@ -31,7 +31,7 @@
                         <button onclick="addToCart('<%= product._id %>')" class="btn-add-to-cart w-full md:w-auto bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-gray-700 flex items-center justify-center">
                             <i class="fas fa-shopping-cart mr-2"></i> Add to Cart
                         </button>
-                        <button class="btn-buy-now w-full md:w-auto bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700">
+                        <button onclick="buyNow('<%= product._id %>')" class="btn-buy-now w-full md:w-auto bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700">
                             Buy Now
                         </button>
                     </div>
@@ -403,6 +403,117 @@ async function addToCart(productId) {
         });
     }
 }
+
+async function buyNow(productId) {
+    try {
+        const selectedSizeBtn = document.querySelector('.size-btn.selected');
+        if (!selectedSizeBtn) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                title: 'Please select a size',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        const selectSize = selectedSizeBtn.dataset.size;
+        const selectedSku = selectedSizeBtn.dataset.sku;
+
+        const buyNowData = {
+            productId: productId,
+            size: selectSize,
+            sku: selectedSku,
+            quantity: 1
+        };
+
+        const response = await fetch('/buyNow', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(buyNowData)
+        });
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            console.error('Response is not JSON:', contentType);
+            Swal.fire({
+                toast: true,
+                icon: 'info',
+                title: 'Login Required',
+                text: 'Please login to proceed to checkout',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (error) {
+            console.error('Failed to parse JSON response:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Invalid server response. Please try again.',
+                showConfirmButton: true
+            });
+            return;
+        }
+
+        if (!data.success && data.message?.toLowerCase().includes('login')) {
+            Swal.fire({
+                toast: true,
+                icon: 'info',
+                title: 'Login Required',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+            return;
+        }
+
+        if (data.success && data.redirectUrl) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: data.message || 'Proceeding to checkout!',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            }).then(() => {
+                window.location.href = data.redirectUrl;
+            });
+        } else {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'warning',
+                title: data.message || 'Failed to proceed to checkout',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+    } catch (error) {
+        console.error('Error in buyNow:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong!'
+        });
+    }
+}
+
 </script>
 
 <!-- Inline CSS for Magnifier and Other Styles -->

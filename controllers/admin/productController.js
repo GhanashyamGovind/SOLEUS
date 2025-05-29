@@ -442,6 +442,7 @@ const editProduct = async (req, res) => {
       return res.status(400).json({ error: 'At least one size is required' });
     }
 
+    let zeroStockWarning = false;
     for (const size of sizesArray) {
       if (!validSizes.includes(size)) {
         return res.status(400).json({ error: `Invalid size: ${size}` });
@@ -462,9 +463,15 @@ const editProduct = async (req, res) => {
       if (isNaN(stock) || stock < 0) {
         return res.status(400).json({ error: `Invalid stock quantity for size ${size}` });
       }
+      if (stock === 0) {
+        zeroStockWarning = true;
+      }
       
-      variants.push({ size, regularPrice, salePrice, stock });
-    }
+    variants.push({ size,
+       sku: existingProduct.variants.find(v => v.size === size)?.sku || `SKU-${id}-${size}`,
+        regularPrice, 
+        salePrice, 
+        stock });    }
 
     // Calculate quantity
     const quantity = variants.reduce((sum, variant) => sum + variant.stock, 0);
@@ -528,7 +535,11 @@ const editProduct = async (req, res) => {
     };
 
     await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
-    return res.status(200).json({ message: 'Product updated successfully' });
+    const response = { message: 'Product updated successfully' };
+    if (zeroStockWarning) {
+      response.warning = 'Some variants have zero stock, which may make the product unavailable to users.';
+    }
+    return res.status(200).json({ response });
   } catch (error) {
     console.error('Error in edit product:', error);
     if (error.name === 'CastError') {

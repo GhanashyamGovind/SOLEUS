@@ -5,6 +5,7 @@ const profileController = require('../controllers/user/profileController');
 const productController = require('../controllers/user/productController');
 const wishlistController = require('../controllers/user/wishlistController');
 const cartController = require('../controllers/user/cartController');
+const checkoutController = require('../controllers/user/checkoutController');
 const passport = require('passport');
 const { userAuth } = require('../middlewares/auth');
 const {userStorage} = require('../helpers/multer');
@@ -74,13 +75,11 @@ router.delete('/confirm-delete', userAuth, profileController.confirmDelete);
 
 //profil and profile address details
 router.get('/getAddress', userAuth, profileController.loadAddress);
-router.get('/addAddrress', userAuth, profileController.getAddAdress);
+router.get('/addAddress', userAuth, profileController.getAddAdress);
 router.post('/addAddress', userAuth, profileController.addAddress);
 router.get('/editAddress', userAuth, profileController.loadEdit);
 router.put('/editAddress', userAuth, profileController.editAddress);
 router.delete('/deleteAddress/:id', profileController.deleteAddress)
-
-
 
 
 
@@ -97,6 +96,15 @@ router.get('/cart', userAuth, cartController.getCart);
 router.post('/addTocart', userAuth, cartController.addToCart);
 router.put('/cart/update', userAuth, cartController.updateCart);
 router.delete('/cart/remove', userAuth, cartController.removeFromCart);
+
+//single buy
+router.post('/buyNow', userAuth, cartController.buyNow);
+
+//checkout and payment
+router.get('/check-out', userAuth, checkoutController.loadCheckOut);
+router.post('/proceedToPayment', userAuth, checkoutController.proceedToPayment);
+//success
+router.get('/order/success', userAuth, checkoutController.successPage)
 
 
 
