@@ -187,6 +187,9 @@ const proceedToPayment = async (req, res, next) => {
 
             await order.save();
 
+            // Add order to user's orderHistory
+            await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
+
             req.session.buyNow = null;
             req.session.couponDiscount = null;
         } else {
@@ -233,6 +236,9 @@ const proceedToPayment = async (req, res, next) => {
                 couponApplied: !!discount
             });
             await order.save();
+
+            // Add order to user's orderHistory
+            await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
 
             await Cart.findOneAndUpdate({ userId }, { items: [], totalAmount: 0 });
             req.session.couponDiscount = null;

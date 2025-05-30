@@ -6,6 +6,7 @@ const productController = require('../controllers/user/productController');
 const wishlistController = require('../controllers/user/wishlistController');
 const cartController = require('../controllers/user/cartController');
 const checkoutController = require('../controllers/user/checkoutController');
+const orderController = require('../controllers/user/orderController')
 const passport = require('passport');
 const { userAuth } = require('../middlewares/auth');
 const {userStorage} = require('../helpers/multer');
@@ -96,15 +97,17 @@ router.get('/cart', userAuth, cartController.getCart);
 router.post('/addTocart', userAuth, cartController.addToCart);
 router.put('/cart/update', userAuth, cartController.updateCart);
 router.delete('/cart/remove', userAuth, cartController.removeFromCart);
-
 //single buy
 router.post('/buyNow', userAuth, cartController.buyNow);
-
 //checkout and payment
 router.get('/check-out', userAuth, checkoutController.loadCheckOut);
 router.post('/proceedToPayment', userAuth, checkoutController.proceedToPayment);
 //success
 router.get('/order/success', userAuth, checkoutController.successPage)
+
+
+//orders
+router.get('/getOrders', userAuth, orderController.loadOrder)
 
 
 
