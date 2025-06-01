@@ -132,21 +132,52 @@ document.addEventListener("DOMContentLoaded", () => {
             state: formData.get('state'),
         };
 
+
         // Client-side validation
-        if (!/^\d{6}$/.test(addressData.pincode)) {
-            errorMessage.textContent = 'Pincode must be a 6-digit number';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Save';
-            return;
-        }
-        if (!/^\d{10}$/.test(addressData.phone)) {
-            errorMessage.textContent = 'Phone number must be 10 digits';
-            errorMessage.classList.remove('hidden');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Save';
-            return;
-        }
+// Client-side validation
+if (!/^\d+$/.test(addressData.pincode)) {
+    errorMessage.textContent = 'Pincode must be a valid number';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^(?!000000)\d{6}$/.test(addressData.pincode)) {
+    errorMessage.textContent = 'Pincode must be a valid 6-digit number and not all zeros';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^\d{10}$/.test(addressData.phone)) {
+    errorMessage.textContent = 'Phone number must be exactly 10 digits';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^[6-9]/.test(addressData.phone)) {
+    errorMessage.textContent = 'Phone number must start with 6, 7, 8, or 9';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^[A-Za-z]+( [A-Za-z]+)?$/.test(addressData.name)) {
+    errorMessage.textContent = 'Username must contain only letters and no numbers';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (
+    /^[+\-*/_]/.test(addressData.state) ||
+    /^[+\-*/_]/.test(addressData.city) ||
+    /^[+\-*/_]/.test(addressData.landMark) ||
+    /^[+\-*/_]/.test(addressData.buildingName)
+) {
+    errorMessage.textContent = 'Fields cannot start with +, -, *, /, or _';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+}
+
 
         try {
             const response = await fetch('/editAddress?id=<%= address._id %>', {

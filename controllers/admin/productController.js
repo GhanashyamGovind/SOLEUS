@@ -442,7 +442,7 @@ const editProduct = async (req, res) => {
       return res.status(400).json({ error: 'At least one size is required' });
     }
 
-    let zeroStockWarning = false;
+    // let zeroStockWarning = false;
     for (const size of sizesArray) {
       if (!validSizes.includes(size)) {
         return res.status(400).json({ error: `Invalid size: ${size}` });
@@ -457,18 +457,18 @@ const editProduct = async (req, res) => {
       if (isNaN(salePrice) || salePrice < 0) {
         return res.status(400).json({ error: `Invalid sale price for size ${size}` });
       }
-      if (regularPrice <= salePrice) {
+      if (regularPrice < salePrice) {
         return res.status(400).json({ error: `Regular price must be greater than sale price for size ${size}` });
       }
-      if (isNaN(stock) || stock < 0) {
+      if (isNaN(stock) || stock <= 0) {
         return res.status(400).json({ error: `Invalid stock quantity for size ${size}` });
       }
       if (stock === 0) {
-        zeroStockWarning = true;
+        return res.status(400).json({ error: `Invalid stock quantity for size ${size}` });
       }
       
     variants.push({ size,
-       sku: existingProduct.variants.find(v => v.size === size)?.sku || `SKU-${id}-${size}`,
+        sku: existingProduct.variants.find(v => v.size === size)?.sku || `SKU-${id}-${size}`,
         regularPrice, 
         salePrice, 
         stock });    }
@@ -536,9 +536,9 @@ const editProduct = async (req, res) => {
 
     await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
     const response = { message: 'Product updated successfully' };
-    if (zeroStockWarning) {
-      response.warning = 'Some variants have zero stock, which may make the product unavailable to users.';
-    }
+    // if (zeroStockWarning) {
+    //   response.warning = 'Some variants have zero stock, which may make the product unavailable to users.';
+    // }
     return res.status(200).json({ response });
   } catch (error) {
     console.error('Error in edit product:', error);

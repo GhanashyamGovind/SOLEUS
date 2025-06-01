@@ -551,7 +551,7 @@
           displayErrorMessage('sizes-error', `Regular price must be greater than sale price for size ${size}.`);
           isValid = false;
         }
-        if (!stock || parseInt(stock) < 0) {
+        if (!stock || parseInt(stock) <= 0) {
           console.log(`Stock validation failed for size ${size}`);
           displayErrorMessage('sizes-error', `Please enter a valid stock quantity for size ${size}.`);
           isValid = false;

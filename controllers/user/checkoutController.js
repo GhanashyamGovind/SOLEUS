@@ -127,17 +127,28 @@ const proceedToPayment = async (req, res, next) => {
         if (!addressId) {
             return res.status(400).json({ success: false, message: 'Please select a shipping address' });
         }
-        if (!['razorpay', 'cod', 'wallet'].includes(paymentMethod)) {
+        if (!['Razorpay', 'COD', 'Wallet'].includes(paymentMethod)) {
             return res.status(400).json({ success: false, message: 'Invalid payment method' });
         }
 
         // Handle Razorpay and Wallet (not implemented)
-        if (paymentMethod === 'razorpay' || paymentMethod === 'wallet') {
+        if (paymentMethod === 'Razorpay' || paymentMethod === 'Wallet') {
             return res.status(501).json({
                 success: false,
                 message: `Payment method ${paymentMethod} is not implemented yet. Order will be created after payment confirmation.`
             });
         }
+
+        //new change in schema i need to do deep copy the address otherwise the ordered addres change while user profile editing
+
+        const userAddressDoc = await Address.findOne({userId});
+        console.log("user address doc ==> ", userAddressDoc);
+
+        const selectedAddress = userAddressDoc.address.id(addressId);
+        console.log("selected address, => ", selectedAddress);
+
+        const clonedAddress = structuredClone(selectedAddress.toObject());
+        console.log("structured clone", clonedAddress)
 
         // Handle COD
         let order;
@@ -167,7 +178,7 @@ const proceedToPayment = async (req, res, next) => {
 
             order = new Order({
                 orderId: uuidv4(),
-                userId,
+                user: userId,
                 orderedItems: [{
                     product: productId,
                     size,
@@ -178,8 +189,9 @@ const proceedToPayment = async (req, res, next) => {
                 totalPrice,
                 discount,
                 finalAmount,
-                address: addressId,
+                address: clonedAddress,
                 invoiceDate: new Date(),
+                paymentMethod: paymentMethod,
                 status: 'Pending',
                 createdOn: new Date(),
                 couponApplied: !!discount
@@ -224,23 +236,24 @@ const proceedToPayment = async (req, res, next) => {
 
             order = new Order({
                 orderId: uuidv4(),
-                userId,
+                user: userId,
                 orderedItems: items,
                 totalPrice,
                 discount,
                 finalAmount,
-                address: addressId,
+                address: clonedAddress,
                 invoiceDate: new Date(),
+                paymentMethod: paymentMethod,
                 status: 'Pending',
                 createdOn: new Date(),
                 couponApplied: !!discount
             });
             await order.save();
 
-            // Add order to user's orderHistory
+            // user ne order to user's orderHistory (ith njn first cheyyan marann poy so histroy first kittiyila)
             await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
 
-            await Cart.findOneAndUpdate({ userId }, { items: [], totalAmount: 0 });
+            await Cart.findOneAndUpdate({ userId }, { items: [], totalPrice: 0 });
             req.session.couponDiscount = null;
         }
 
@@ -256,7 +269,7 @@ const proceedToPayment = async (req, res, next) => {
             }
         }
 
-        // Redirect to success page for COD
+        
         const redirectUrl = `/order/success?orderId=${order._id}`;
         console.log(`Order created: ${order._id}, Payment Method: COD, Redirecting to: ${redirectUrl}`);
 
@@ -298,11 +311,9 @@ const successPage = async (req, res, next) => {
         console.log("first", order.address)
 
         //delivery address
-        const findAddress = await Address.findOne(
-            {"address._id": addressId},
-            {"address.$": 1 }
-        ).lean();
-        const deliveryAddress = findAddress?.address?.[0];
+        const findAddress = order.address
+        // console.log("find address  :::+> ", findAddress)
+        const deliveryAddress = findAddress;
         if (!deliveryAddress) {
             return res.status(404).json({ success: false, message: 'Delivery address not found' });
         }

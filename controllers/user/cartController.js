@@ -269,7 +269,7 @@ const buyNow = async (req, res, next) => {
             return res.status(400).json({success: false, message: 'Insufficient stock'});
         }
 
-        // session ill buy noe itme store cheyaam
+        // session ill buy now itme store cheyaam
         req.session.buyNow = {
             productId,
             size,

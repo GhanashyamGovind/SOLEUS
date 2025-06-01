@@ -70,7 +70,7 @@ router.post('/verify-email-otp', userAuth, profileController.verifyEmailOtp);
 router.post('/resend-email-otp', userAuth, profileController.resendOtp);
 router.get('/update-email', userAuth, profileController.getUpdateEmail);
 router.post('/update-email', userAuth, profileController.updateEmail);
-router.post('/updatePassword', userAuth, profileController.updatePassword);
+router.put('/updatePassword', userAuth, profileController.updatePassword);
 router.get('/confirm-delete', userAuth, profileController.deletePage);
 router.delete('/confirm-delete', userAuth, profileController.confirmDelete);
 
@@ -103,11 +103,11 @@ router.post('/buyNow', userAuth, cartController.buyNow);
 router.get('/check-out', userAuth, checkoutController.loadCheckOut);
 router.post('/proceedToPayment', userAuth, checkoutController.proceedToPayment);
 //success
-router.get('/order/success', userAuth, checkoutController.successPage)
+router.get('/order/success', userAuth, checkoutController.successPage);
 
 
 //orders
-router.get('/getOrders', userAuth, orderController.loadOrder)
+router.get('/getOrders', userAuth, orderController.loadOrder);
 
 
 

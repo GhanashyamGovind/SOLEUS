@@ -240,8 +240,9 @@
             <form id="usernameForm" class="flex flex-col gap-4">
                 <div class="flex flex-col gap-3">
                     <label class="text-white text-base font-medium">New Username</label>
-                    <input type="text" name="username" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
+                    <input type="text" id="username" name="username" class="input-field p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none" 
                            value="<%= user.name %>" required>
+                    <span id="userNameError" class="error-text hidden"></span>
                 </div>
                 <div class="flex justify-end gap-4 mt-8">
                     <button type="button" id="cancelUsernameModal" class="bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300">
@@ -409,18 +410,56 @@
         const usernameModal = document.getElementById('usernameModal');
         const cancelUsernameModalBtn = document.getElementById('cancelUsernameModal');
         const usernameForm = document.getElementById('usernameForm');
+        const userNameError = document.getElementById('userNameError');
+        const usenameInput = document.getElementById('username')
 
         openUsernameModalBtn.addEventListener('click', () => {
             usernameModal.classList.add('show');
+
+            userNameError.classList.add('hidden')
         });
 
         cancelUsernameModalBtn.addEventListener('click', () => {
             usernameModal.classList.remove('show');
+
+            userNameError.classList.add('hidden')
         });
+
+        //usename validation
+        const validUserName = () => {
+            let isValid = true;
+            const newUsername = usenameInput.value.trim();
+            const usernameRegex = /^[A-Za-z]+( [A-Za-z]+)?$/
+            
+            //reset error message
+            userNameError.classList.add('hidden');
+            userNameError.classList.remove('border-red-400');
+
+            //validate
+            if(!newUsername){
+                userNameError.textContent = 'User Name is required';
+                userNameError.classList.remove('hidden');
+                userNameError.classList.add('border-red-400');
+                isValid = false;
+            }else if(!usernameRegex.test(newUsername)){
+                userNameError.textContent = 'Username must contain only letters and no numbers';
+                userNameError.classList.remove('hidden');
+                userNameError.classList.add('border-red-400');
+                isValid = false;
+            }
+
+            return isValid;
+        }
 
         // Handle username form submission with fetch
         usernameForm.addEventListener('submit', async (event) => {
             event.preventDefault();
+
+            //running validation
+            if(!validUserName()){
+                return;
+            }
+
             const formData = new FormData(usernameForm);
             const username = formData.get('username');
 

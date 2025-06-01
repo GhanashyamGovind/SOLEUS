@@ -8,6 +8,11 @@ const orderSchema = new Schema({
         default: () => uuidv4(),
         unique: true
     },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     orderedItems: [{
         product: {
             type: Schema.Types.ObjectId,
@@ -44,12 +49,22 @@ const orderSchema = new Schema({
         required: true
     },
     address: {
-        type: Schema.Types.ObjectId,
-        ref: 'Address', // Corrected to reference Address schema
-        required: true // Allow null until checkout
+        addressType: { type: String, required: true },
+        name: { type: String, required: true },
+        city: { type: String, required: true },
+        landMark: { type: String, required: true },
+        state: { type: String, required: true },
+        pincode: { type: Number, required: true },
+        phone: { type: String, required: true },
+        buildingName: { type: String, required: true }
     }, 
     invoiceDate: {
         type: Date
+    },
+    paymentMethod: {
+        type: String,
+        enum: ['COD', 'Razorpay', 'Wallet'],
+        required: true
     },
     status: {
         type: String,

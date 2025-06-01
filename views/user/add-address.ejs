@@ -10,6 +10,10 @@
     <!-- Page Title -->
     <h1 class="text-3xl font-bold text-dark-bg mb-8 text-center">Add New Address</h1>
 
+
+    <!-- Error/Success Message Container -->
+    <div id="error-message" class="hidden w-full max-w-lg text-center p-4 mb-4 text-red-700 bg-red-100 rounded-lg"></div>
+
     <!-- Address Form -->
     <form id="addAddressForm" class="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-lg shadow-md">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,6 +87,9 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const addAddressForm = document.getElementById('addAddressForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const errorMessage = document.getElementById('error-message');
 
     addAddressForm.reset();
 
@@ -101,15 +108,56 @@ document.addEventListener("DOMContentLoaded", () => {
             state: formData.get('state')
         };
 
-        // Client-side validation
-        if (!/^\d+$/.test(addressData.pincode)) {
-            alert('Pincode must be a valid number');
-            return;
-        }
-        if (!/^\d{10}$/.test(addressData.phone)) {
-            alert('Phone number must be 10 digits');
-            return;
-        }
+        setInterval(() => {
+             errorMessage.classList.add('hidden');
+        }, 5000);
+
+// Client-side validation
+if (!/^\d+$/.test(addressData.pincode)) {
+    errorMessage.textContent = 'Pincode must be a valid number';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^(?!000000)\d{6}$/.test(addressData.pincode)) {
+    errorMessage.textContent = 'Pincode must be a valid 6-digit number and not all zeros';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^\d{10}$/.test(addressData.phone)) {
+    errorMessage.textContent = 'Phone number must be exactly 10 digits';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^[6-9]/.test(addressData.phone)) {
+    errorMessage.textContent = 'Phone number must start with 6, 7, 8, or 9';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (!/^[A-Za-z]+( [A-Za-z]+)?$/.test(addressData.name)) {
+    errorMessage.textContent = 'Username must contain only letters and no numbers';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+} else if (
+    /^[+\-*/_]/.test(addressData.state) ||
+    /^[+\-*/_]/.test(addressData.city) ||
+    /^[+\-*/_]/.test(addressData.landMark) ||
+    /^[+\-*/_]/.test(addressData.buildingName)
+) {
+    errorMessage.textContent = 'Fields cannot start with +, -, *, /, or _';
+    errorMessage.classList.remove('hidden');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Save';
+    return;
+}
+
+        
+        
 
         try {
             const response = await fetch('/addAddress', {

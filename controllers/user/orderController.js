@@ -37,32 +37,32 @@ const loadOrder = async (req, res, next) => {
         const totalOrders = orders.length;
         console.log('Fetched orders:', orders);
 
-        // Fetch all relevant addresses
-        const addressIds = orders
-            .map(order => order.address)
-            .filter(id => id); // Ensure valid ObjectIds
-        let addressDocs = [];
-        if (addressIds.length > 0) {
-            addressDocs = await Address.aggregate([
-                { $unwind: '$address' }, // Unwind the address array
-                { $match: { 'address._id': { $in: addressIds } } }, // Match address subdocuments
-                { $project: { address: 1, _id: 0 } } // Project only the address subdocument
-            ]).exec();
-        }
-        console.log('Address IDs:', addressIds);
-        console.log('Address Docs:', addressDocs);
+        // // Fetch all relevant addresses
+        // const addressIds = orders
+        //     .map(order => order.address)
+        //     .filter(id => id); // Ensure valid ObjectIds
+        // let addressDocs = [];
+        // if (addressIds.length > 0) {
+        //     addressDocs = await Address.aggregate([
+        //         { $unwind: '$address' }, // Unwind the address array
+        //         { $match: { 'address._id': { $in: addressIds } } }, // Match address subdocuments
+        //         { $project: { address: 1, _id: 0 } } // Project only the address subdocument
+        //     ]).exec();
+        // }
+        // console.log('Address IDs:', addressIds);
+        // console.log('Address Docs:', addressDocs);
 
-        // Map addressId to address details for quick lookup
-        const addressMap = new Map();
-        addressDocs.forEach(doc => {
-            if (doc.address) {
-                addressMap.set(doc.address._id.toString(), doc.address);
-            }
-        });
-        console.log('Address Map:', addressMap);
+        // // Map addressId to address details for quick lookup
+        // const addressMap = new Map();
+        // addressDocs.forEach(doc => {
+        //     if (doc.address) {
+        //         addressMap.set(doc.address._id.toString(), doc.address);
+        //     }
+        // });
+        // console.log('Address Map:', addressMap);
 
         const formattedOrders = orders.map(order => {
-            const specificAddress = addressMap.get(order.address?.toString()) || {};
+            const savedAddress = order.address || {};
 
             // Get the first product's image (if available)
             const firstProduct = order.orderedItems[0]?.product || {};
@@ -75,9 +75,9 @@ const loadOrder = async (req, res, next) => {
 
             return {
                 orderId: order.orderId || order._id.toString(),
-                userName: specificAddress._id ? `${specificAddress.name || ''}` : 'N/A',
-                address: specificAddress._id
-                    ? `${specificAddress.buildingName || ''}, ${specificAddress.landMark || ''}, ${specificAddress.city || ''}, ${specificAddress.state || ''} - ${specificAddress.pincode || ''}`
+                userName: savedAddress ? `${savedAddress.name || ''}` : 'N/A',
+                address: savedAddress
+                    ? `${savedAddress.buildingName || ''}, ${savedAddress.landMark || ''}, ${savedAddress.city || ''}, ${savedAddress.state || ''} - ${savedAddress.pincode || ''}`
                     : 'Address not available',
                 productImage,
                 totalItems,
