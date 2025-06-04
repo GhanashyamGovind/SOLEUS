@@ -3,6 +3,8 @@ const User = require('../../models/userSchema');
 const Address = require('../../models/addressSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
+const mongoose = require('mongoose')
+const { render } = require('ejs');
 
 const loadOrder = async (req, res, next) => {
     try {
@@ -35,31 +37,6 @@ const loadOrder = async (req, res, next) => {
             .lean();
 
         const totalOrders = orders.length;
-        console.log('Fetched orders:', orders);
-
-        // // Fetch all relevant addresses
-        // const addressIds = orders
-        //     .map(order => order.address)
-        //     .filter(id => id); // Ensure valid ObjectIds
-        // let addressDocs = [];
-        // if (addressIds.length > 0) {
-        //     addressDocs = await Address.aggregate([
-        //         { $unwind: '$address' }, // Unwind the address array
-        //         { $match: { 'address._id': { $in: addressIds } } }, // Match address subdocuments
-        //         { $project: { address: 1, _id: 0 } } // Project only the address subdocument
-        //     ]).exec();
-        // }
-        // console.log('Address IDs:', addressIds);
-        // console.log('Address Docs:', addressDocs);
-
-        // // Map addressId to address details for quick lookup
-        // const addressMap = new Map();
-        // addressDocs.forEach(doc => {
-        //     if (doc.address) {
-        //         addressMap.set(doc.address._id.toString(), doc.address);
-        //     }
-        // });
-        // console.log('Address Map:', addressMap);
 
         const formattedOrders = orders.map(order => {
             const savedAddress = order.address || {};
@@ -104,4 +81,145 @@ const loadOrder = async (req, res, next) => {
     }
 };
 
-module.exports = { loadOrder };
+
+const getTrackPage = async (req, res, next) => {
+    try {
+
+        const userId = req.session.user;
+        if(!userId){
+            const error = new Error('Unautherized user');
+            error.statusCode = 401;
+            throw error;
+        }
+
+        const {orderId} = req.params;
+
+        const order = await Order.findOne({orderId}).populate('orderedItems.product').lean();
+        // console.log("specific producd ::::::=====> \n", order)
+       
+
+        const getProducts = order.orderedItems.map((item) => {
+            return{
+                name: item.product.productName,
+                image: item.product.productImage,
+                sku: item.sku,
+                size: item.size,
+                quantity: item.quantity,
+                price: item.price,
+                color: item.color,
+                return: item.returnStatus,
+                reason: item.returnReason
+            }
+        });
+        
+        const address = order.address;
+
+        // console.log("get products:::======> \n",getProducts)
+        
+
+
+        return res.render('user/track', {
+            products: getProducts,
+            address,
+            order,
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+
+const cancelOrder = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            const error = new Error('Unauthorized user');
+            error.statusCode = 401;
+            throw error;
+        }
+
+        const { orderId } = req.params;
+
+        const order = await Order.findOne({ orderId }).populate('orderedItems.product');
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        // Update product stock and status for each ordered item
+        for (const item of order.orderedItems) {
+            const product = await Product.findById(item.product);
+            if (!product) {
+                return res.status(404).json({ success: false, message: `Product with ID ${item.product} not found` });
+            }
+
+            // Find the specific variant
+            const variant = product.variants.find(v => v.sku === item.sku);
+            if (!variant) {
+                return res.status(404).json({ success: false, message: `Variant with SKU ${item.sku} not found in product ${item.product}` });
+            }
+
+            // Restore stock
+            variant.stock += item.quantity;
+
+            // Update total stock and product status
+            product.quantity = product.variants.reduce((total, v) => total + v.stock, 0);
+            product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
+
+            await product.save();
+        }
+
+        // Update order status
+        order.status = 'Cancelled';
+        await order.save();
+
+        return res.status(200).json({ success: true, message: 'Order cancelled and stock updated' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+const returnOrderRequest = async (req, res, next) => {
+    try {
+        
+        const userId = req.session.user;
+        if(!userId){
+            const error = new Error('Unautherized user');
+            error.statusCode(401);
+            throw error;
+        }
+
+        const {orderId} = req.params;
+        const {sku, returnReason} = req.body;
+
+        if(!orderId || !sku || !returnReason){
+            return res.status(400).json({success: false, message: "Required fileds are missing"})
+        }
+
+        const returnProduct = await Order.findOneAndUpdate(
+            {orderId, 'orderedItems.sku': sku },
+            {
+                $set:{
+                    'orderedItems.$.returnStatus': 'Requested',
+                    'orderedItems.$.returnReason': returnReason
+                }
+            },
+            {new: true}
+        )
+
+        if(!returnProduct){
+            return res.status(404).json({success: false, message:'Order or product not found'});
+        }
+
+        
+        return res.status(200).json({success: true, message: 'Product Return request success'})
+    } catch (error) {
+        next(error)
+    }
+}
+
+module.exports = { 
+    loadOrder,
+    getTrackPage,
+    cancelOrder,
+    returnOrderRequest,
+};

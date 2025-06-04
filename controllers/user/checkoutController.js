@@ -78,16 +78,16 @@ const loadCheckOut = async (req, res, next) => {
                     return null;
                 }
 
-                const variant = product.variants.find(v => v.size === item.size && v.color === item.color);
+                const variant = product.variants.find(v => v.size === item.size && v.sku === item.sku);
                 if (!variant) {
-                    console.warn(`Variant not found for product ${product.productName}, size: ${item.size}, color: ${item.color}`);
+                    console.warn(`Variant not found for product ${product.productName}, size: ${item.size}, sku: ${item.sku}`);
                     return null;
                 }
 
                 return {
                     name: product.productName,
                     size: item.size,
-                    color: variant.color || product.color || 'N/A',
+                    color: product.color || 'N/A',
                     quantity: item.quantity,
                     price: variant.salePrice,
                     total: variant.salePrice * item.quantity,
@@ -171,6 +171,8 @@ const proceedToPayment = async (req, res, next) => {
                 return res.status(400).json({ success: false, message: 'Insufficient stock' });
             }
 
+            const color = product.color;
+
             const totalPrice = price * quantity;
             const deliveryCharges = totalPrice >= 2500 ? 0 : 99;
             const discount = req.session.couponDiscount || 0;
@@ -184,7 +186,10 @@ const proceedToPayment = async (req, res, next) => {
                     size,
                     sku,
                     quantity,
-                    price
+                    price,
+                    color,
+                    // returnStatus: null,
+                    // returnReason: null,
                 }],
                 totalPrice,
                 discount,
@@ -225,7 +230,8 @@ const proceedToPayment = async (req, res, next) => {
                     size: item.size,
                     sku: variant.sku,
                     quantity: item.quantity,
-                    price: variant.salePrice
+                    price: variant.salePrice,
+                    color: item.productId.color,
                 };
             });
 
@@ -340,7 +346,7 @@ const successPage = async (req, res, next) => {
             success: true,
             title: 'success',
             orderNumber: order.orderId,
-            orderData: order.createdOn.toLocaleDateString('en-IN'),
+            orderDate: order.createdOn.toLocaleDateString('en-IN'),
             paymentMethod: order.paymentMethod || 'COD',
             orderItems,
             priceDetails,

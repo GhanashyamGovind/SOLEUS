@@ -8,14 +8,12 @@
         -ms-overflow-style: none; /* IE and Edge */
         scrollbar-width: none; /* Firefox */
     }
-    /* Status dropdown hover effect */
     .status-select {
         transition: background-color 0.2s ease;
     }
     .status-select:hover {
         background-color: #e5e7eb; /* Tailwind gray-200 */
     }
-    /* Date input styling */
     input[type="date"] {
         -webkit-appearance: none;
         appearance: none;
@@ -23,21 +21,18 @@
     input[type="date"]::-webkit-calendar-picker-indicator {
         filter: invert(0.5);
     }
-    /* Button transitions */
     .btn {
         transition: background-color 0.3s ease, transform 0.1s ease;
     }
     .btn:hover {
         transform: translateY(-1px);
     }
-    /* Table row hover effect */
     .table-row:hover {
         background-color: #f9fafb; /* Tailwind gray-50 */
     }
-    /* Placeholder text color */
     input::placeholder {
         color: #1f2937; /* Tailwind gray-800 (black-like) */
-        opacity: 1; /* Ensure placeholder color is consistent */
+        opacity: 1;
     }
 </style>
 
@@ -62,7 +57,7 @@
             <h2 class="text-lg font-semibold mb-2 text-gray-800">Search Orders</h2>
             <div class="flex flex-row gap-2">
                 <input type="text" id="search-user" placeholder="Search by User Name" class="border border-gray-300 rounded-lg p-1 text-xs text-black focus:outline-none focus:ring-2 focus:ring-gray-400 transition-shadow duration-200 hover:shadow-md flex-1">
-                <input type="date" id="search-date" class="border border-gray-300 rounded-lg p-1 text-xs text-black focus:outline-none focus:ring-2 focus:ring-gray-400 transition-shadow duration-200 hover:shadow-md w-28" max="2025-05-30">
+                <input type="date" id="search-date" class="border border-gray-300 rounded-lg p-1 text-xs text-black focus:outline-none focus:ring-2 focus:ring-gray-400 transition-shadow duration-200 hover:shadow-md w-28" max="2025-06-02">
                 <button onclick="searchOrders()" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-xs btn shadow-sm">Search</button>
             </div>
         </div>
@@ -99,22 +94,21 @@
                                 <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.totalItems %></td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.paymentMethod %></td>
                                 <td class="px-4 py-4 whitespace-nowrap">
-                                    <span id="status-<%= order.orderId %>" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white <%= order.orderStatus === 'Pending' ? 'bg-yellow-500' : order.orderStatus === 'Processing' ? 'bg-blue-500' : order.orderStatus === 'Shipped' ? 'bg-indigo-500' : order.orderStatus === 'Delivered' ? 'bg-green-500' : order.orderStatus === 'Returned' ? 'bg-orange-500' : 'bg-red-500' %>">
+                                    <span id="status-<%= order.orderId %>" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white <%= order.orderStatus === 'Pending' ? 'bg-yellow-500' : order.orderStatus === 'Processing' ? 'bg-blue-500' : order.orderStatus === 'Shipped' ? 'bg-indigo-500' : order.orderStatus === 'Delivered' ? 'bg-green-500' : order.orderStatus === 'Cancelled' ? 'bg-red-500' : 'bg-red-500' %>">
                                         <%= order.orderStatus %>
                                     </span>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
-                                    <select id="status-select-<%= order.orderId %>" onchange="updateStatus('<%= order.orderId %>')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                                    <select id="status-select-<%= order.orderId %>" onchange="handleStatusChange('<%= order.orderId %>')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" <%= order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : '' %>>
                                         <option value="Pending" <%= order.orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
                                         <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
                                         <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                                         <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Returned" <%= order.orderStatus === 'Returned' ? 'selected' : '' %>>Returned</option>
-                                        <option value="Canceled" <%= order.orderStatus === 'Canceled' ? 'selected' : '' %>>Canceled</option>
+                                        <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                                     </select>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base">
-                                    <button class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
+                                    <button onclick="window.location.assign('<%= order.viewLink %>')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
                                 </td>
                             </tr>
                             <% }) %>
@@ -158,10 +152,10 @@
                     'Processing': 'bg-blue-500',
                     'Shipped': 'bg-indigo-500',
                     'Delivered': 'bg-green-500',
-                    'Returned': 'bg-orange-500',
-                    'Canceled': 'bg-red-500'
+                    'Cancelled': 'bg-red-500'
                 }[order.orderStatus] || 'bg-gray-500';
 
+                const viewLink = order.viewLink || '#'; // Fallback to '#' if viewLink is undefined
                 const row = `
                     <tr class="table-row transition-colors duration-200">
                         <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderId}</td>
@@ -174,17 +168,16 @@
                             <span id="status-${order.orderId}" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}">${order.orderStatus}</span>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
-                            <select id="status-select-${order.orderId}" onchange="updateStatus('${order.orderId}')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400">
+                            <select id="status-select-${order.orderId}" onchange="handleStatusChange('${order.orderId}')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" ${order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : ''}>
                                 <option value="Pending" ${order.orderStatus === 'Pending' ? 'selected' : ''}>Pending</option>
                                 <option value="Processing" ${order.orderStatus === 'Processing' ? 'selected' : ''}>Processing</option>
                                 <option value="Shipped" ${order.orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
                                 <option value="Delivered" ${order.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="Returned" ${order.orderStatus === 'Returned' ? 'selected' : ''}>Returned</option>
-                                <option value="Canceled" ${order.orderStatus === 'Canceled' ? 'selected' : ''}>Canceled</option>
+                                <option value="Cancelled" ${order.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
                             </select>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base">
-                            <button class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
+                            <button onclick="window.location.assign('${viewLink}')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
                         </td>
                     </tr>
                 `;
@@ -210,7 +203,19 @@
         renderOrders(filteredOrders);
     }
 
-    // Function to update order status
+    // Function to handle status change
+    async function handleStatusChange(orderId) {
+        const select = document.getElementById(`status-select-${orderId}`);
+        const newStatus = select.value;
+
+        if (newStatus === 'Cancelled') {
+            await cancelOrder(orderId);
+        } else {
+            await updateStatus(orderId);
+        }
+    }
+
+    // Function to update order status (except Cancelled)
     async function updateStatus(orderId) {
         const select = document.getElementById(`status-select-${orderId}`);
         const newStatus = select.value;
@@ -234,8 +239,7 @@
                 'Processing': 'bg-blue-500',
                 'Shipped': 'bg-indigo-500',
                 'Delivered': 'bg-green-500',
-                'Returned': 'bg-orange-500',
-                'Canceled': 'bg-red-500'
+                'Cancelled': 'bg-red-500'
             }[newStatus] || 'bg-gray-500';
             statusSpan.className = `px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}`;
 
@@ -244,9 +248,56 @@
             if (order) {
                 order.orderStatus = newStatus;
             }
+
+            // Re-render orders to update the disabled state
+            renderOrders(allOrders);
         } catch (error) {
             console.error('Error updating status:', error);
             alert('Failed to update status. Please try again.');
+            // Revert select to original status
+            const order = allOrders.find(o => o.orderId === orderId);
+            if (order) {
+                select.value = order.orderStatus;
+            }
+        }
+    }
+
+    // Function to cancel order using PUT method
+    async function cancelOrder(orderId) {
+        const select = document.getElementById(`status-select-${orderId}`);
+        const newStatus = 'Cancelled';
+
+        try {
+            const response = await fetch(`/admin/orders/cancel/${orderId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel order');
+            }
+
+            const data = await response.json();
+            const statusSpan = document.getElementById(`status-${orderId}`);
+            statusSpan.textContent = newStatus;
+            const statusColor = 'bg-red-500';
+            statusSpan.className = `px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}`;
+
+            // Update local orders array
+            const order = allOrders.find(o => o.orderId === orderId);
+            if (order) {
+                order.orderStatus = newStatus;
+            }
+
+            // Disable the select dropdown after cancellation
+            select.disabled = true;
+
+            // Re-render orders to update the disabled state
+            renderOrders(allOrders);
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            alert('Failed to cancel order. Please try again.');
             // Revert select to original status
             const order = allOrders.find(o => o.orderId === orderId);
             if (order) {

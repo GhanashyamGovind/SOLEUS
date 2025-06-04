@@ -34,6 +34,19 @@ const orderSchema = new Schema({
         price: {
             type: Number,
             default: 0
+        },
+        color: {
+        type: String,
+        required: true
+        },
+        returnStatus: {
+            type: String,
+            enum: [null, 'Requested', 'Returned', 'Rejected'],
+            default: null
+        },
+        returnReason: {
+            type: String,
+            default: null
         }
     }],
     totalPrice: {

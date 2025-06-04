@@ -6,7 +6,7 @@ const productController = require('../controllers/user/productController');
 const wishlistController = require('../controllers/user/wishlistController');
 const cartController = require('../controllers/user/cartController');
 const checkoutController = require('../controllers/user/checkoutController');
-const orderController = require('../controllers/user/orderController')
+const orderController = require('../controllers/user/orderController');
 const passport = require('passport');
 const { userAuth } = require('../middlewares/auth');
 const {userStorage} = require('../helpers/multer');
@@ -108,6 +108,9 @@ router.get('/order/success', userAuth, checkoutController.successPage);
 
 //orders
 router.get('/getOrders', userAuth, orderController.loadOrder);
+router.get('/ordeTracking/:orderId', userAuth, orderController.getTrackPage);
+router.put('/orders/cancel/:orderId', userAuth, orderController.cancelOrder)
+router.put('/order/return/:orderId', userAuth, orderController.returnOrderRequest);
 
 
 
