@@ -133,10 +133,88 @@ const cancellOrder = async (req, res, next) => {
     }
 }
 
+const approveReturn = async (req, res, next) => {
+    try{
+
+        const {orderId} = req.params;
+        const {sku} = req.body;
+        if(!sku || !orderId) {
+            return res.status(400).json({success: false, message: "Require fields are missing"});
+        }
+
+        const orders = await Order.findOne({orderId}).populate('orderedItems.product').exec()
+
+        //find the item of the sku
+        const item = orders.orderedItems.find(v => v.sku === sku);
+        if(!item) {
+            return res.status(404).json({success: false, message: `${sku} SKU \n Item not found`})
+        }
+
+        //findg the product
+        const product = item.product;
+
+        //finding the prodct with sku
+        const variant = product.variants.find(v => v.sku === sku);
+        if(!variant) {
+            return res.status(404).json({success: false, message: `variant of this prodct is missing`})
+        }
+
+        //restore stock
+        variant.stock += item.quantity;
+
+        //update product stock and status and save
+        product.quantity = product.variants.reduce((total, v) => total + v.stock, 0);
+        product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
+        await product.save();
+
+        //change the status
+        item.returnStatus = 'Returned';
+        await orders.save();
+
+        return res.status(200).json({success: true, message: "Return approved product stock updated"})
+
+    } catch (error){
+        next(error)
+    }
+}
+
+const rejectReturn = async (req, res,  next) => {
+    try{
+
+        const {orderId} = req.params;
+        const {sku} = req.body;
+        if(!sku || !orderId) {
+            return res.status(400).json({success: false, message: "Require fields are missing"});
+        }
+
+        const update = await Order.updateOne(
+            {orderId, 'orderedItems.sku': sku},
+            {$set: {'orderedItems.$.returnStatus': 'Rejected'}}
+        );
+
+        if (update.matchedCount === 0) {
+        // No document matched: probably wrong orderId or sku
+        return res.status(404).json({ success: false, message: "Order or item not found" });
+        }
+
+        if (update.modifiedCount === 0) {
+        // Document matched but no changes applied (maybe already rejected)
+        return res.status(200).json({ success: true, message: "Return status was already 'Rejected'" });
+        }
+
+        return res.status(200).json({ success: true, message: "Return request 'Rejected'" });
+        
+    } catch (error) {
+        next(error)
+    }
+}
+
 
 module.exports = {
     getAdminOrder,
     updateStatus,
     getOrderProducts,
     cancellOrder,
+    approveReturn,
+    rejectReturn,
 }

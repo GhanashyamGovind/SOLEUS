@@ -58,7 +58,9 @@ router.post('/editProduct/:id', adminAuth, uploads.array("images", 4), productCo
 router.get('/orders', adminAuth, orderController.getAdminOrder);
 router.patch('/orders/status/:orderId', adminAuth, orderController.updateStatus);
 router.get('/orders/products/:orderId', adminAuth, orderController.getOrderProducts);
-router.put('/orders/cancel/:orderId',adminAuth, orderController.cancellOrder)
+router.put('/orders/cancel/:orderId',adminAuth, orderController.cancellOrder);
+router.put('/orders/return/approve/:orderId', adminAuth, orderController.approveReturn)
+router.put('/orders/return/reject/:orderId', adminAuth, orderController.rejectReturn)
 
 
 module.exports = router

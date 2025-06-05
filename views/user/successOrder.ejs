@@ -245,6 +245,7 @@
             const trackOrderBtn = document.querySelector('button:has(svg path[d*="9 12l2 2"])');
             const continueShoppingBtn = document.querySelector('button:has(svg path[d*="16 11V7"])');
             
+            const orderId = '<%= orderNumber %>'
             trackOrderBtn?.addEventListener('click', function() {
                 // Add your track order logic here
                 console.log('Track Order clicked');
@@ -253,6 +254,7 @@
                 setTimeout(() => {
                     this.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>TRACK ORDER';
                 }, 2000);
+                window.location.replace(`/ordeTracking/${orderId}`)
             });
             
             continueShoppingBtn?.addEventListener('click', function() {

@@ -42,7 +42,7 @@
           <div class="flex flex-col lg:flex-row lg:justify-between space-y-4 lg:space-y-0">
             <div class="flex space-x-4 flex-1">
               <div class="w-20 h-20 rounded-xl flex-shrink-0 shadow-inner overflow-hidden">
-                <img src="/uploads/re-image/<%= product.image[0] %>" alt="<%= product.name %>" class="w-full h-full object-cover" />
+                <img src="/Uploads/re-image/<%= product.image[0] %>" alt="<%= product.name %>" class="w-full h-full object-cover" />
               </div>
               <div class="flex-1 grid grid-cols-2 gap-4">
                 <div>
@@ -68,6 +68,9 @@
               </div>
             </div>
             <div class="flex flex-col items-end space-y-2 lg:ml-4">
+              <% if (product.reason) { %>
+               <p class="text-black bg-yellow-100 ">Return reason: <%= product.reason %></p>
+              <% } %>
               <% if (product.return === 'Requested') { %>
               <button id="return-btn-1" class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-6 py-2 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                 RETURN REQUEST
@@ -79,6 +82,14 @@
                 <button onclick="reject('<%= product.sku %>')" id="reject-btn-1" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-200 text-sm font-semibold shadow-md">
                   REJECT
                 </button>
+                <% } else if (product.return === 'Returned'){%>
+                  <span class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 text-sm font-semibold shadow-md">
+                  Product Returned
+                  </span>Return request Rejected
+                <% } else if(product.return === 'Rejected') {%>
+                  <span class="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 text-sm font-semibold shadow-md">
+                  Return request Rejected
+                  </span>
                 <% } %>
               </div>
               <p id="status-text-1" class="hidden text-sm font-bold"></p>
@@ -166,29 +177,57 @@ if (menuToggle && sidebar && overlay) {
 // Handle return request for product 1
 const returnBtn1 = document.getElementById('return-btn-1');
 const statusDiv1 = document.getElementById('status-1');
-const approveBtn1 = document.getElementById('approve-btn-1');
-const rejectBtn1 = document.getElementById('reject-btn-1');
 const statusText1 = document.getElementById('status-text-1');
 
-if (returnBtn1 && statusDiv1 && approveBtn1 && rejectBtn1 && statusText1) {
+if (returnBtn1 && statusDiv1 && statusText1) {
   returnBtn1.addEventListener('click', () => {
     returnBtn1.style.display = 'none'; // Hide the button
     statusDiv1.classList.remove('hidden'); // Show approve/reject buttons
   });
+}
 
-  approveBtn1.addEventListener('click', () => {
-    statusDiv1.classList.add('hidden'); // Hide approve/reject buttons
-    statusText1.classList.remove('hidden'); // Show status text
-    statusText1.textContent = 'ORDER RETURNED';
-    statusText1.classList.add('text-yellow-500'); // yello for approved
-  });
+// approve fucntion
+async function approve(sku) {
+  const orderId = '<%= order.orderId %>';
+  try {
+    const response = await fetch(`/admin/orders/return/approve/${orderId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sku }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      window.location.reload()
+    } else {
+      console.error('Error approving return:', data.message);
+    }
+  } catch (error) {
+    console.error('Fetch error:', error);
+  }
+}
 
-  rejectBtn1.addEventListener('click', () => {
-    statusDiv1.classList.add('hidden'); // Hide approve/reject buttons
-    statusText1.classList.remove('hidden'); // Show status text
-    statusText1.textContent = 'REQUEST REJECTED';
-    statusText1.classList.add('text-red-500'); // Red for rejected
-  });
+// reject function
+async function reject(sku) {
+  const orderId = '<%= order.orderId %>';
+  try {
+    const response = await fetch(`/admin/orders/return/reject/${orderId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ sku }),
+    });
+    const data = await response.json();
+    if (data.success) {
+      window.location.reload()
+    } else {
+      console.error('Error rejecting return:', data.message);
+    }
+  } catch (error) {
+    console.error('Fetch error:', error);
+  }
 }
 </script>
 
