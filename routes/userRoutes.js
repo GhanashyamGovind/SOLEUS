@@ -50,6 +50,11 @@ router.get('/allproducts', userController.loadAllProductPage);
 router.get('/productFilter', userController.filterProduct);
 router.get('/clearSearch', userController.clearSearch);
 
+//other pages
+router.get('/about', userController.aboutUs);
+router.get('/contact', userController.contact);
+router.post('/contact/message', userController.emailMessage)
+
 
 //profileMangement
 router.get('/forgot-password', profileController.getForgotPassPage);

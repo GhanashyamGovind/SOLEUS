@@ -429,7 +429,7 @@
         const validUserName = () => {
             let isValid = true;
             const newUsername = usenameInput.value.trim();
-            const usernameRegex = /^[A-Za-z]+( [A-Za-z]+)?$/
+            const usernameRegex = /^[A-Za-z]+( [A-Za-z]+)*$/
             
             //reset error message
             userNameError.classList.add('hidden');
@@ -501,49 +501,73 @@
             }
         });
 
-        // Phone Number Modal JavaScript
+
+        //mobile number validation
         const openPhoneModalBtn = document.querySelector('button[data-field="mobile"]');
-        const phoneModal = document.getElementById('phoneModal');
-        const cancelPhoneModalBtn = document.getElementById('cancelPhoneModal');
-        const phoneForm = document.getElementById('phoneForm');
+            const phoneModal = document.getElementById('phoneModal');
+            const cancelPhoneModalBtn = document.getElementById('cancelPhoneModal');
+            const phoneForm = document.getElementById('phoneForm');
 
-        openPhoneModalBtn.addEventListener('click', () => {
-            phoneModal.classList.add('show');
-        });
+            openPhoneModalBtn.addEventListener('click', () => {
+                phoneModal.classList.add('show');
+            });
 
-        cancelPhoneModalBtn.addEventListener('click', () => {
-            phoneModal.classList.remove('show');
-        });
+            cancelPhoneModalBtn.addEventListener('click', () => {
+                phoneModal.classList.remove('show');
+            });
 
-        // Handle phone number form submission with fetch
-        phoneForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const formData = new FormData(phoneForm);
-            const phone = formData.get('phone');
+            phoneForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const formData = new FormData(phoneForm);
+                const phone = formData.get('phone').trim();
+                const phoneRegex = /^[5-9][0-9]{9}$/;
 
-            try {
-                const res = await fetch('/updatePhone', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ phone })
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    alert('Phone number updated successfully!');
-                    phoneModal.classList.remove('show');
-                    window.location.reload();
-                } else {
-                    alert(`Error: ${data.message}`);
-                    console.error("Error updating phone number:", data.message);
+                if (!phoneRegex.test(phone) || phone === '0000000000') {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Phone Number',
+                        text: 'Enter a valid 10-digit mobile number starting with 5, 6, 7, 8, or 9.',
+                    });
+                    return;
                 }
-            } catch (error) {
-                alert('An error occurred while updating the phone number.');
-                console.error("Error in fetch:", error);
-            }
-        });
+
+                try {
+                    const res = await fetch('/updatePhone', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ phone })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Phone number updated!',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+
+                        phoneModal.classList.remove('show');
+                        window.location.reload();
+                    } else {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Update Failed',
+                            text: data.message || 'Something went wrong.',
+                        });
+                    }
+                } catch (error) {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'Unable to update the phone number.',
+                    });
+                    console.error("Error in fetch:", error);
+                }
+            });
 
         // Verify Email Modal JavaScript
         const openVerifyEmailModalBtn = document.querySelector('button[data-field="email"]');

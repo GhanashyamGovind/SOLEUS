@@ -1,0 +1,158 @@
+<%- include('../../views/partials/user/header', {title: 'Contact'}) %>
+
+    <style>
+        body {
+            font-family: 'Quantico', sans-serif;
+            background: white;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 85% 10%, rgba(234, 179, 8, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.2) 0%, transparent 45%),
+                radial-gradient(circle at 25% 90%, rgba(234, 179, 8, 0.25) 0%, transparent 35%),
+                radial-gradient(circle at 90% 60%, rgba(59, 130, 246, 0.15) 0%, transparent 30%),
+                radial-gradient(circle at 10% 70%, rgba(234, 179, 8, 0.18) 0%, transparent 38%);
+        }
+    </style>
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-center mb-6 sm:mb-8">CONTACT</h1>
+        <div class="flex flex-col lg:flex-row gap-6 sm:gap-8">
+            <!-- Left Side: Contact Form -->
+            <div class="w-full lg:w-1/2 bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl sm:text-2xl font-semibold mb-4">SEND US MESSAGE</h2>
+                <!-- form -->
+                <form id="contactForm">
+                    <div class="mb-4">
+                        <div class="flex items-center border border-gray-300 rounded-md p-2">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9 6 9-6"></path>
+                            </svg>
+                            <input type="email" name="email" id="email" placeholder="YOUR EMAIL ADDRESS" class="w-full outline-none text-sm sm:text-base" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <textarea name="message" id="message" placeholder="HOW CAN WE HELP YOU?" class="w-full h-24 sm:h-32 border border-gray-300 rounded-md p-2 outline-none resize-none text-sm sm:text-base" required></textarea>
+                    </div>
+                    <button type="submit" class="bg-gray-800 text-white font-semibold py-2 px-4 sm:px-6 rounded-full hover:bg-gray-700 transition duration-300 text-sm sm:text-base">SUBMIT</button>
+                </form>
+            </div>
+            <!-- Right Side: Address, Contact Info, and Map -->
+            <div class="w-full lg:w-1/2 flex flex-col gap-6">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <h3 class="text-lg sm:text-xl font-semibold">ADDRESS</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm sm:text-base">
+                        1600 Pennsylvania Avenue NW, Kasaragod, Kerala, India. This is a placeholder address for demonstration purposes.
+                    </p>
+                </div>
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9-6 9 6v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l9 6 9-6"></path>
+                        </svg>
+                        <h3 class="text-lg sm:text-xl font-semibold">LET'S TALK</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm sm:text-base">2003soleus@gmail.com</p>
+                    <p class="text-gray-600 mt-2 text-sm sm:text-base">+91-90876-54321</p>
+                </div>
+                <div class="bg-gray-200 rounded-lg shadow-lg overflow-hidden">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3105.318745693683!2d-77.03652948422992!3d38.89767697957039!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89b7b7bcdecbb1df%3A0x715969d86d0b76bf!2sWhite%20House!5e0!3m2!1sen!2sus!4v1697041234567!5m2!1sen!2sus"
+                        width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<%- include('../../views/partials/user/footer') %>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.21.0/dist/sweetalert2.all.min.js"></script>
+<script>
+
+    const form = document.getElementById('contactForm');
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value;
+        const message = document.getElementById('message').value
+
+        try {
+            const response = await fetch('/contact/message',{
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({email, message}),
+            });
+
+            const result = await response.json();
+            
+            if (!result.success && result.message?.toLowerCase().includes('login')) {
+                Swal.fire({
+                    toast: true,
+                    icon: 'info',
+                    title: 'Login Required',
+                    text: result.message,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                });
+                return;
+            }
+
+            if (result.success) {
+                await Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: result.message ,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true
+                }).then(() => {
+                    form.reset();
+                })
+                 
+            } else {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: result.message ,
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+            }
+        } catch (error) {
+            console.error(error)
+                Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Something went wrong!'
+            });
+        }
+    })
+
+</script>

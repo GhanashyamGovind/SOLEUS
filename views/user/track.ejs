@@ -202,37 +202,79 @@
                     <div class="tracking-step">
                         <div class="step-icon <%= order.status !== 'Cancelled' && ['Pending', 'Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'step-completed' : 'step-pending' %>">⏳</div>
                         <div class="font-bold <%= order.status !== 'Cancelled' && ['Pending', 'Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-900' : 'text-gray-500' %>">Pending</div>
-                        <div class="text-sm <%= order.status !== 'Cancelled' && ['Pending', 'Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-600' : 'text-gray-500' %> mt-1">April 27, 2025</div>
-                        <div class="text-xs <%= order.status !== 'Cancelled' && ['Pending', 'Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-500' : 'text-gray-400' %> mt-1">1:45 PM</div>
+                        <div class="text-sm <%= order.status !== 'Cancelled' && ['Pending', 'Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-600' : 'text-gray-500' %> mt-1">
+                            <%= order.createdOn.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                        </div>
+                        <div class="text-xs <%= order.status !== 'Cancelled' && ['Pending', 'Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-500' : 'text-gray-400' %> mt-1">
+                            <%= order.createdOn.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %>
+                        </div>
                     </div>
 
                     <div class="tracking-step">
                         <div class="step-icon <%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'step-completed' : order.status === 'Processing' ? 'step-current' : 'step-pending' %>">📦</div>
                         <div class="font-bold <%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-900' : order.status === 'Processing' ? 'text-amber-600' : 'text-gray-500' %>">Processing</div>
-                        <div class="text-sm <%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-600' : 'text-gray-500' %> mt-1"><%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'April 29, 2025' : 'Pending' %></div>
-                        <div class="text-xs <%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-500' : 'text-gray-400' %> mt-1"><%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'In Progress' : 'Expected June 2' %></div>
+                        <div class="text-sm <%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-600' : 'text-gray-500' %> mt-1">
+                            <% if (order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status)) { %>
+                                <%= new Date(order.createdOn.getTime() + 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                            <% } else { %>
+                                Pending
+                            <% } %>
+                        </div>
+                        <div class="text-xs <%= order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status) ? 'text-gray-500' : 'text-gray-400' %> mt-1">
+                            <% if (order.status !== 'Cancelled' && ['Processing', 'Shipped', 'Delivered'].includes(order.status)) { %>
+                                In Progress
+                            <% } else { %>
+                                Expected <%= new Date(order.createdOn.getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                            <% } %>
+                        </div>
                     </div>
 
                     <div class="tracking-step">
                         <div class="step-icon <%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'step-completed' : order.status === 'Shipped' ? 'step-current' : 'step-pending' %>">🚚</div>
                         <div class="font-bold <%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'text-gray-900' : order.status === 'Shipped' ? 'text-amber-600' : 'text-gray-500' %>">Shipped</div>
-                        <div class="text-sm <%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'text-gray-600' : 'text-gray-500' %> mt-1"><%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'May 1, 2025' : 'Pending' %></div>
-                        <div class="text-xs <%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'text-gray-500' : 'text-gray-400' %> mt-1"><%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'In Transit' : 'Expected June 2' %></div>
+                        <div class="text-sm <%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'text-gray-600' : 'text-gray-500' %> mt-1">
+                            <% if (order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status)) { %>
+                                <%= new Date(order.createdOn.getTime() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                            <% } else { %>
+                                Pending
+                            <% } %>
+                        </div>
+                        <div class="text-xs <%= order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status) ? 'text-gray-500' : 'text-gray-400' %> mt-1">
+                            <% if (order.status !== 'Cancelled' && ['Shipped', 'Delivered'].includes(order.status)) { %>
+                                In Transit
+                            <% } else { %>
+                                Expected <%= new Date(order.createdOn.getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                            <% } %>
+                        </div>
                     </div>
 
                     <div class="tracking-step">
                         <div class="step-icon <%= order.status === 'Delivered' ? 'step-completed' : order.status === 'Delivered' ? 'step-current' : 'step-pending' %>">🏠</div>
                         <div class="font-bold <%= order.status === 'Delivered' ? 'text-gray-900' : order.status === 'Delivered' ? 'text-amber-600' : 'text-gray-500' %>">Delivered</div>
-                        <div class="text-sm <%= order.status === 'Delivered' ? 'text-gray-600' : 'text-gray-500' %> mt-1"><%= order.status === 'Delivered' ? 'June 2, 2025' : 'Pending' %></div>
-                        <div class="text-xs <%= order.status === 'Delivered' ? 'text-gray-500' : 'text-gray-400' %> mt-1"><%= order.status === 'Delivered' ? 'Completed' : 'Expected by 6 PM' %></div>
+                        <div class="text-sm <%= order.status === 'Delivered' ? 'text-gray-600' : 'text-gray-500' %> mt-1">
+                            <% if (order.status === 'Delivered') { %>
+                                <%= new Date(order.createdOn.getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                            <% } else { %>
+                                Pending
+                            <% } %>
+                        </div>
+                        <div class="text-xs <%= order.status === 'Delivered' ? 'text-gray-500' : 'text-gray-400' %> mt-1">
+                            <% if (order.status === 'Delivered') { %>
+                                Completed
+                            <% } else { %>
+                                Expected by <%= new Date(order.createdOn.getTime() + 3 * 24 * 60 * 60 * 1000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) %>
+                            <% } %>
+                        </div>
                     </div>
 
                     <% if (order.status === 'Cancelled') { %>
                     <div class="tracking-step">
                         <div class="step-icon step-cancelled">🛑</div>
                         <div class="font-bold text-gray-900">Cancelled</div>
-                        <div class="text-sm text-gray-600 mt-1">April 27, 2025</div>
-                        <div class="text-xs text-gray-500 mt-1">2:30 PM</div>
+                        <div class="text-sm text-gray-600 mt-1">
+                            <%= order.createdOn.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                        </div>
+                        <!-- <div class="text-xs text-gray-500 mt-1"></div> -->
                     </div>
                     <% } %>
                 </div>
@@ -248,7 +290,7 @@
                 <% products.forEach(product => { %>
                 <div class="product-card glass-card rounded-xl p-6 shadow-lg">
                     <div class="flex gap-4">
-                        <img src="/Uploads/re-image/<%= product.image[0] %>" alt="<%= product.name %>" class="w-24 h-24 object-cover rounded-lg bg-gray-100">
+                        <img src="/Uploads/re-image/<%= product.image[0] %>" alt="<%= product.name %>" class="w-24 h-24 object-cover rounded-lg"></img>
                         <div class="flex-1">
                             <h4 class="text-lg font-bold text-gray-900"><%= product.name %></h4>
                             <p class="text-gray-600 mt-1">Size: <%= product.size %> | <%= product.color %></p>

@@ -31,16 +31,6 @@
           </div>
         </div>
         <div class="mb-6">
-          <h3 class="font-semibold mb-2">ON FIRE</h3>
-          <div class="space-y-2">
-            <label class="flex items-center">
-              <input type="checkbox" name="onFire[]" value="newArrival" <%= selectedOnFire && selectedOnFire.includes('newArrival') ? 'checked' : '' %> class="mr-2 rounded border-gray-300 focus:ring-yellow-400"> NEW ARRIVAL
-            </label>
-            <label class="flex items-center">
-              <input type="checkbox" name="onFire[]" value="topSelling" <%= selectedOnFire && selectedOnFire.includes('topSelling') ? 'checked' : '' %> class="mr-2 rounded border-gray-300 focus:ring-yellow-400"> TOP SELLING
-            </label>
-          </div>
-        </div>
         <button type="submit" class="w-full bg-yellow-400 text-white rounded-lg px-4 py-2 hover:bg-yellow-500 transition-all duration-300">Apply Filters</button>
       </form>
     </aside>

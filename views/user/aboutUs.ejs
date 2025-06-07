@@ -1,0 +1,277 @@
+<%- include('../../views/partials/user/header', {title: 'About Us'}) %>
+
+<head>
+  <!-- Google Fonts for Bangers, Stardos Stencil, and Quantico -->
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Quantico:wght@400;700&family=Stardos+Stencil:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
+<style>
+  .bangers {
+    font-family: 'Bangers', cursive;
+    letter-spacing: 4px;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4), -2px -2px 4px rgba(255, 255, 255, 0.3);
+  }
+  .stardos-stencil {
+    font-family: 'Stardos Stencil', sans-serif;
+  }
+  .quantico {
+    font-family: 'Quantico', sans-serif;
+  }
+  
+  /* Apply patched background to body */
+  body {
+    background: linear-gradient(45deg, #ffffff 25%, #ffeb3b 25%, #ffeb3b 50%, #ffffff 50%, #ffffff 75%, #000000 75%, #000000),
+                linear-gradient(-45deg, #ffffff 25%, #ffeb3b 25%, #ffeb3b 50%, #ffffff 50%, #ffffff 75%, #000000 75%, #000000);
+    background-size: 60px 60px;
+    background-position: 0 0, 30px 30px;
+    animation: slidePatches 20s linear infinite;
+    min-height: 100vh;
+  }
+  
+  /* Patched Background */
+  .patched-bg {
+    background: linear-gradient(45deg, #ffffff 25%, #ffeb3b 25%, #ffeb3b 50%, #ffffff 50%, #ffffff 75%, #000000 75%, #000000),
+                linear-gradient(-45deg, #ffffff 25%, #ffeb3b 25%, #ffeb3b 50%, #ffffff 50%, #ffffff 75%, #000000 75%, #000000);
+    background-size: 60px 60px;
+    background-position: 0 0, 30px 30px;
+    animation: slidePatches 20s linear infinite;
+  }
+  
+  @keyframes slidePatches {
+    0% { background-position: 0 0, 30px 30px; }
+    100% { background-position: 60px 60px, 90px 90px; }
+  }
+  
+  /* Enhanced circular logo */
+  .soleus-circle {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    background: linear-gradient(135deg, #000000, #333333);
+  }
+  .soleus-circle:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Clothesline and hanging shoes */
+  .clothesline-container {
+    position: relative;
+    padding: 60px 0;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .clothesline {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8B4513, #A0522D);
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .clothesline::before,
+  .clothesline::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #654321;
+    border-radius: 50%;
+    top: -4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .clothesline::before {
+    left: -6px;
+  }
+  
+  .clothesline::after {
+    right: -6px;
+  }
+  
+  .hanging-shoe {
+    position: relative;
+    background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: sway 3s ease-in-out infinite;
+    margin-top: 20px;
+  }
+  
+  .hanging-shoe:nth-child(1) { animation-delay: 0s; }
+  .hanging-shoe:nth-child(2) { animation-delay: 0.5s; }
+  .hanging-shoe:nth-child(3) { animation-delay: 1s; }
+  .hanging-shoe:nth-child(4) { animation-delay: 1.5s; }
+  
+  @keyframes sway {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  
+  .hanging-shoe:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    animation-play-state: paused;
+  }
+  
+  .clothespin {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 20px;
+    background: linear-gradient(180deg, #D2691E, #CD853F);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .clothespin::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 6px;
+    background: #8B4513;
+    border-radius: 50%;
+  }
+  
+  .rope {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(180deg, #8B4513, #A0522D);
+    border-radius: 1px;
+  }
+  
+  /* Enhanced content sections */
+  .content-section {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(255, 235, 59, 0.3);
+  }
+  
+  /* Navigation enhancement */
+  nav {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Enhanced footer */
+  footer {
+    background: linear-gradient(135deg, #000000, #333333);
+    color: #ffeb3b;
+  }
+  
+  /* Animated elements */
+  .fade-in {
+    animation: fadeIn 1s ease-in;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Shoe image styling */
+  .shoe-placeholder {
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border: 3px dashed #ffeb3b;
+    color: #666;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+  
+  .shoe-placeholder:hover {
+    background: linear-gradient(145deg, #ffeb3b, #ffd700);
+    color: #000;
+    border-color: #000;
+  }
+</style>
+
+<!-- Main Content -->
+<main class="container mx-auto p-8">
+  <!-- About Us Heading -->
+  <h1 class="text-6xl md:text-9xl bangers text-center mb-16 text-black fade-in">ABOUT US</h1>
+
+  <!-- Soleus Logo and Paragraph Section -->
+  <section class="content-section p-8 mb-16 fade-in">
+    <div class="flex flex-col md:flex-row items-center md:items-start justify-between">
+      <!-- Left: Soleus Logo -->
+      <div class="md:w-1/3 flex justify-center md:justify-start mb-8 md:mb-0">
+        <div class="w-56 h-56 md:w-72 md:h-72 rounded-full flex items-center justify-center soleus-circle">
+          <img src="/images/soleus_log.png" alt="logo" class="rounded-full">
+        </div>
+      </div>
+      <!-- Right: Soleus Heading and Paragraph -->
+      <div class="md:w-2/3 text-center md:text-left">
+        <h3 class="text-4xl md:text-5xl stardos-stencil mb-6 text-black">SOLEUS</h3>
+        <p class="text-base md:text-lg quantico leading-relaxed text-gray-800">
+Welcome to Soleus — founded in 2025 as a part of a visionary project, Soleus began with a simple goal: to create a space dedicated to premium men's footwear. What started as a personal project has grown into a platform built with passion, precision, and purpose. <br>
+
+At Soleus, we believe that shoes are more than just fashion — they're an extension of identity, confidence, and lifestyle. Whether you're searching for casual comfort or sharp formal styles, our collection is crafted to meet the needs of the modern man. <br>
+
+From design to delivery, we focus on quality, functionality, and satisfaction. As we grow, our mission remains the same: to offer footwear that speaks to both style and substance. <br>
+
+Thank you for being a part of our journey.
+
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Why Choose Us Section with Hanging Shoes -->
+<section class="container mx-auto p-8 mb-8 fade-in">
+  <div class="content-section p-8">
+    <div class="flex flex-col md:flex-row items-start justify-between">
+      <!-- Left: Why Choose Us Text -->
+      <div class="md:w-1/2 mb-8 md:mb-0 pr-0 md:pr-8">
+        <h4 class="text-2xl md:text-3xl quantico font-bold mb-6 text-black">WHY CHOOSE US</h4>
+        <p class="text-base md:text-lg quantico leading-relaxed text-gray-800">
+          'LOREM IPSUM DOLOR SIT AMET, CONSECTETUR ADIPISCING ELIT, SED DO EIUSMOD TEMPOR INCIDIDUNT UT LABORE ET DOLORE MAGNA ALIQUA. UT ENIM AD MINIM VENIAM, QUIS NOSTRUD EXERCITATION ULLAMCO LABORIS NISI UT ALIQUIP EX EA COMMODO CONSEQUAT. DUIS AUTE IRURE DOLOR IN REPREHENDERIT IN VOLUPTATE VELIT ESSE CILLUM DOLORE EU FUGIAT NULLA PARIATUR. EXCEPTEUR SINT OCCAECAT CUPIDATAT NON PROIDENT, SUNT IN CULPA QUI OFFICIA DESERUNT MOLLIT ANIM ID EST LABORUM.'
+        </p>
+      </div>
+      <!-- Right: Hanging Shoes on Clothesline -->
+      <div class="md:w-1/2 clothesline-container">
+        <div class="clothesline"></div>
+        <div class="grid grid-cols-2 gap-6 relative">
+          <div class="hanging-shoe h-36 md:h-52 flex items-center justify-center shoe-placeholder">
+            <div class="rope"></div>
+            <div class="clothespin"></div>
+            <img src="/images/nb-banner.jpg" alt="shoes1" class="w-full h-full object-cover">
+          </div>
+          <div class="hanging-shoe h-36 md:h-52 flex items-center justify-center shoe-placeholder">
+            <div class="rope"></div>
+            <div class="clothespin"></div>
+            <img src="/images/messi-banner.jpg" alt="shoes2" class="w-full h-full object-cover">
+          </div>
+          <div class="hanging-shoe h-36 md:h-52 flex items-center justify-center shoe-placeholder">
+            <div class="rope"></div>
+            <div class="clothespin"></div>
+            <img src="/images/neymar-banner.jpg" alt="shoes3" class="w-full h-full object-cover">
+          </div>
+          <div class="hanging-shoe h-36 md:h-52 flex items-center justify-center shoe-placeholder" >
+            <div class="rope"></div>
+            <div class="clothespin"></div>
+            <img src="/images/nike-banner.jpg" alt="shoes4" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('../../views/partials/user/footer') %>

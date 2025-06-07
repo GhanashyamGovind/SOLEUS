@@ -5,6 +5,8 @@ const Brand = require('../../models/brandSchema');
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
+const {Resend} = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 
@@ -562,6 +564,68 @@ const clearSearch = async (req, res) => {
 };
 
 
+const aboutUs = async (req, res, next) => {
+  try {
+    return res.render('user/aboutUs');
+  } catch (error) {
+    next(error);
+  }
+}
+
+const contact = async (req, res, next) => {
+  try {
+    return res.render('user/contact')
+  } catch (error) {
+    next(error)
+  }
+}
+
+const emailMessage = async (req, res, next) => {
+  try {
+
+    const userId = req.session.user;
+    if(!userId){
+      return res.json({success: false, message: "Please Login To send EMAIL"})
+    }
+    console.log("got the userid", userId)
+
+    const user = await User.findById(userId);
+    console.log("got the user", user)
+    
+    const {email, message} = req.body;
+    console.log(email, message)
+
+    if(!email || !message) {
+      return res.json({success: false, message: "Fields are missing"});
+    }
+
+    if(email != user.email){
+      return res.json({success: false, message: "Please enter the email that belong to your account, dont enter other email"});
+    }
+
+
+    //emial sending with resennd
+    const response = await resend.emails.send({
+      from: 'Acme <onboarding@resend.dev>', //domain purchase cheythitt ith maattanam
+      to: process.env.COMPANY_EMAIL,
+      subject: `New message from ${user.name}`,
+      text: `Name: ${user.name} \nEmail: ${email} \n\n${message}`,
+      replyTo: email
+    })
+
+    console.log(response)
+
+    if (response.error) {
+      return res.status(500).json({ success: false, message: "Failed to send message to the company. Please try again." });
+    }
+
+    return res.status(200).json({ success: true, message: "Message sent successfully." });
+  } catch (error) {
+    console.error(error)
+    next(error)
+  }
+}
+
 module.exports = {
     loadHomepage,
     loadLogin,
@@ -575,5 +639,8 @@ module.exports = {
     pageNotFound,
     loadAllProductPage,
     clearSearch,
-    filterProduct
+    filterProduct,
+    aboutUs,
+    contact,
+    emailMessage,
 }
