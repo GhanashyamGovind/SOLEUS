@@ -37,7 +37,7 @@ const loadCheckOut = async (req, res, next) => {
                 return res.redirect('/cart?error=Buy Now session expired');
             }
             const product = await Product.findById(productId);
-            if (!product) {
+            if (product.isBlocked || !product) {
                 req.session.buyNow = null;
                 return res.redirect('/cart?error=Product not found');
             }
@@ -73,7 +73,7 @@ const loadCheckOut = async (req, res, next) => {
 
             cartItems = cart.items.map(item => {
                 const product = item.productId;
-                if (!product || !product.variants || !product.variants.length) {
+                if (!product || !product.variants || !product.variants.length || product.isBlocked) {
                     console.warn(`Product not found or has no variants: ${item.productId}`);
                     return null;
                 }
@@ -94,6 +94,12 @@ const loadCheckOut = async (req, res, next) => {
                     image: product.productImage && product.productImage.length > 0 ? product.productImage[0] : null
                 };
             }).filter(item => item !== null);
+
+            // If no valid items remain after filtering, redirect to cart
+            if (!cartItems.length) {
+                console.log('No valid items in cart after filtering blocked products');
+                return res.redirect('/cart?error=All items in your cart are unavailable or blocked');
+            }
 
             priceDetails.subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
             priceDetails.deliveryCharges = priceDetails.subtotal >= 2500 ? 0 : 99;
@@ -139,26 +145,18 @@ const proceedToPayment = async (req, res, next) => {
             });
         }
 
-        //new change in schema i need to do deep copy the address otherwise the ordered addres change while user profile editing
-
-        const userAddressDoc = await Address.findOne({userId});
-        console.log("user address doc ==> ", userAddressDoc);
-
+        const userAddressDoc = await Address.findOne({ userId });
         const selectedAddress = userAddressDoc.address.id(addressId);
-        console.log("selected address, => ", selectedAddress);
-
         const clonedAddress = structuredClone(selectedAddress.toObject());
-        console.log("structured clone", clonedAddress)
 
-        // Handle COD
         let order;
         if (isBuyNow && req.session.buyNow) {
             // Handle Buy Now for COD
             const { productId, size, sku, quantity, price } = req.session.buyNow;
             const product = await Product.findById(productId);
-            if (!product) {
+            if (!product || product.isBlocked) {
                 req.session.buyNow = null;
-                return res.status(404).json({ success: false, message: 'Product not found' });
+                return res.status(404).json({ success: false, message: 'Product not found or blocked' });
             }
 
             const variant = product.variants.find(v => v.sku === sku && v.size === size);
@@ -188,8 +186,6 @@ const proceedToPayment = async (req, res, next) => {
                     quantity,
                     price,
                     color,
-                    // returnStatus: null,
-                    // returnReason: null,
                 }],
                 totalPrice,
                 discount,
@@ -216,26 +212,56 @@ const proceedToPayment = async (req, res, next) => {
                 return res.status(400).json({ success: false, message: 'Cart is empty' });
             }
 
-            const items = cart.items.map(item => {
-                const variant = item.productId.variants.find(v => v.size === item.size && v.sku === item.sku);
-                if (!variant) {
-                    throw new Error(`Invalid variant for product ${item.productId.productName}`);
-                }
-                if (variant.stock < item.quantity) {
-                    throw new Error(`Insufficient stock for ${item.productId.productName} (Size: ${item.size})`);
+            // Filter out blocked products and invalid items
+            const validItems = [];
+            const invalidItems = [];
+
+            for (const item of cart.items) {
+                const product = item.productId;
+                if (!product || product.isBlocked) {
+                    invalidItems.push(item);
+                    continue;
                 }
 
-                return {
+                const variant = product.variants.find(v => v.size === item.size && v.sku === item.sku);
+                if (!variant) {
+                    invalidItems.push(item);
+                    continue;
+                }
+                if (variant.stock < item.quantity) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Insufficient stock for ${product.productName} (Size: ${item.size})`
+                    });
+                }
+
+                validItems.push({
                     product: item.productId._id,
                     size: item.size,
                     sku: variant.sku,
                     quantity: item.quantity,
                     price: variant.salePrice,
                     color: item.productId.color,
-                };
-            });
+                });
+            }
 
-            const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            // If no valid items remain, return an error
+            if (!validItems.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'All items in your cart are unavailable or blocked'
+                });
+            }
+
+            // Optionally, remove invalid items from the cart
+            if (invalidItems.length > 0) {
+                await Cart.findOneAndUpdate(
+                    { userId },
+                    { $pull: { items: { _id: { $in: invalidItems.map(item => item._id) } } } }
+                );
+            }
+
+            const totalPrice = validItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
             const deliveryCharges = totalPrice >= 2500 ? 0 : 99;
             const discount = req.session.couponDiscount || 0;
             const finalAmount = totalPrice + deliveryCharges - discount;
@@ -243,7 +269,7 @@ const proceedToPayment = async (req, res, next) => {
             order = new Order({
                 orderId: uuidv4(),
                 user: userId,
-                orderedItems: items,
+                orderedItems: validItems,
                 totalPrice,
                 discount,
                 finalAmount,
@@ -255,7 +281,7 @@ const proceedToPayment = async (req, res, next) => {
                 couponApplied: !!discount
             });
             await order.save();
-
+            
             // user ne order to user's orderHistory (ith njn first cheyyan marann poy so histroy first kittiyila)
             await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
 
@@ -275,7 +301,6 @@ const proceedToPayment = async (req, res, next) => {
             }
         }
 
-        
         const redirectUrl = `/order/success?orderId=${order._id}`;
         console.log(`Order created: ${order._id}, Payment Method: COD, Redirecting to: ${redirectUrl}`);
 
@@ -318,7 +343,6 @@ const successPage = async (req, res, next) => {
 
         //delivery address
         const findAddress = order.address
-        // console.log("find address  :::+> ", findAddress)
         const deliveryAddress = findAddress;
         if (!deliveryAddress) {
             return res.status(404).json({ success: false, message: 'Delivery address not found' });

@@ -113,7 +113,6 @@ const addToCart = async (req, res) => {
 
 const updateCart = async (req, res, next) => {
     try {
-
         const userId = req.session.user;
         const {productId, size, sku, quantity} = req.body;
 
@@ -121,63 +120,70 @@ const updateCart = async (req, res, next) => {
             return res.status(401).json({ message: 'Unauthorized: Please login to update cart' });
         }
 
-        //min 1 max 3 
+        // Validate quantity (min 1, max 3)
         if(quantity < 1) {
            return res.status(400).json({ message: 'Quantity cannot be less than 1' });
         }
 
-        if(quantity > 3) {
-            return res.status(400).json({ message: `Maximum 3 units of a product (${size}) are allowed in the cart` });
-        }
-
-        //cart finding and cart items
-        const cart = await Cart.findOne({userId});
+        // Find the cart
+        const cart = await Cart.findOne({userId}).populate('items.productId');
         if(!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
 
-        const cartItem = cart.items.find(item => item.productId.toString() === productId && item.size === size && item.sku === sku);
+        // Find the cart item
+        const cartItem = cart.items.find(item => 
+            item.productId._id.toString() === productId && 
+            item.size === size && 
+            item.sku === sku
+        );
+        
         if (!cartItem) {
             return res.status(404).json({ message: 'Item not found in cart' });
         }
 
-        //product with variants :/
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
+        // Check product and variant
+        const product = cartItem.productId;
         const variant = product.variants.find(v => v.size === size && v.sku === sku);
         if (!variant) {
             return res.status(404).json({ message: 'Product variant not found' });
         }
 
-        // calculation :(
-        const oldQuantity = cartItem.quantity;
-        const quantityChange = quantity - oldQuantity;
-
-        // checking the enough stock 
-        if (quantityChange > 0) {
-            if (variant.stock < quantityChange) {
-                return res.status(400).json({ message: `Insufficient stock. Only ${variant.stock} units available for size ${size}` });
-            }
+        // Enforce maximum quantity of 3 per variant
+        if (quantity > 3) {
+            return res.status(400).json({ 
+                message: `Maximum 3 units allowed per product variant. You already have ${cartItem.quantity} in your cart.` 
+            });
         }
 
-        //update stock
-        // variant.stock -= quantityChange;
+        // Check stock availability
+        if (quantity > variant.stock) {
+            return res.status(400).json({ 
+                message: `Only ${variant.stock} units available for ${product.productName} (${size})` 
+            });
+        }
 
-        await product.save();
-
-        // Update cart item quantity
+        // Update cart
         cartItem.quantity = quantity;
-
         cart.totalPrice = cart.items.reduce((total, item) => {
             return total + (item.price * item.quantity);
         }, 0);
 
         await cart.save();
 
-        return res.status(200).json({ message: 'Cart updated successfully' });
+        return res.status(200).json({ 
+            message: 'Cart updated successfully',
+            cart: {
+                totalPrice: cart.totalPrice
+            },
+            cartItem: {
+                quantity: cartItem.quantity,
+                price: cartItem.price,
+                productId: cartItem.productId,
+                size: cartItem.size,
+                sku: cartItem.sku
+            }
+        });
         
     } catch (error) {
         next(error);

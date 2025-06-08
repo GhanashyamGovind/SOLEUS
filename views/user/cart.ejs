@@ -67,24 +67,25 @@
         </div>
 
         <!-- Checkout Summary -->
-        <div class="w-full md:w-1/3">
-            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">ORDER SUMMARY</h2>
-            <div class="bg-white shadow-md rounded-lg p-6">
-                <div class="flex justify-between mb-4 text-gray-700">
-                    <p>Subtotal</p>
-                    <p>₹<%= cart && cart.totalPrice ? cart.totalPrice.toFixed(2) : '0.00' %></p>
-                </div>
-                <div class="flex justify-between mb-4 text-gray-700">
-                    <p>Delivery Charge</p>
-                    <p>₹0.00</p>
-                </div>
-                <div class="flex justify-between font-bold text-lg border-t pt-4 text-gray-800">
-                    <p>TOTAL</p>
-                    <p>₹<%= cart && cart.totalPrice ? cart.totalPrice.toFixed(2) : '0.00' %></p>
-                </div>
-                <button onclick="proceedToCheckout()" class="w-full bg-green-500 text-white py-3 mt-6 rounded-lg hover:bg-green-600 transition-all duration-200 font-semibold">CHECK OUT</button>
-            </div>
-        </div>
+<!-- Checkout Summary -->
+<div class="w-full md:w-1/3">
+    <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800">ORDER SUMMARY</h2>
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between mb-4 text-gray-700">
+    <p>Subtotal</p>
+    <p>₹<%= cart && cart.totalPrice ? cart.totalPrice.toFixed(2) : '0.00' %></p>
+</div>
+<div class="flex justify-between mb-4 text-gray-700">
+    <p>Delivery Charge</p>
+    <p><%= cart && cart.totalPrice >= 2500 ? 'FREE' : '₹99.00' %></p>
+</div>
+<div class="flex justify-between font-bold text-lg border-t pt-4 text-gray-800">
+    <p>TOTAL</p>
+    <p>₹<%= cart ? (cart.totalPrice >= 2500 ? cart.totalPrice.toFixed(2) : (cart.totalPrice + 99).toFixed(2)) : '0.00' %></p>
+</div>
+        <button onclick="proceedToCheckout()" class="w-full bg-green-500 text-white py-3 mt-6 rounded-lg hover:bg-green-600 transition-all duration-200 font-semibold">CHECK OUT</button>
+    </div>
+</div>
     </div>
 
     <%- include('../../views/partials/user/footer') %>
@@ -96,47 +97,84 @@
         const cartItems = '<%- JSON.stringify(cart && cart.items ? cart.items : []) %>'
 
         // Update quantity
-        async function updateQuantity(productId, size, sku, newQuantity) {
-            if (newQuantity < 1) return;
-            try {
-                const response = await fetch('/cart/update', {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userId, productId, size, sku, quantity: newQuantity })
-                });
+async function updateQuantity(productId, size, sku, newQuantity) {
+    if (newQuantity < 1) return;
+    try {
+        const response = await fetch('/cart/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, productId, size, sku, quantity: newQuantity })
+        });
 
-                const data = await response.json();
-                if (response.status === 401) {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'info',
-                        title: 'Login Required',
-                        text: 'Please login to update your cart',
-                        showConfirmButton: false,
-                        timer: 1500,
-                        timerProgressBar: true
-                    });
-                    return;
+        const data = await response.json();
+        if (response.status === 401) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'Login Required',
+                text: 'Please login to update your cart',
+                showConfirmButton: false,
+                timer: 1500,
+                timerProgressBar: true
+            });
+            return;
+        }
+        if (!response.ok) throw new Error(data.message || 'Failed to update cart');
+
+        // Update the specific row
+        const rows = document.querySelectorAll('#cartItems tr');
+        for (const row of rows) {
+            const buttons = row.querySelectorAll('button[onclick*="updateQuantity"]');
+            if (buttons.length > 0) {
+                const onclickAttr = buttons[0].getAttribute('onclick');
+                const [_, rowProductId, rowSize, rowSku] = onclickAttr.match(/updateQuantity\('(.+?)', '(.+?)', '(.+?)'/);
+                
+                if (rowProductId === productId && rowSize === size && rowSku === sku) {
+                    const quantitySpan = row.querySelector('td:nth-child(2) span');
+                    quantitySpan.textContent = data.cartItem.quantity;
+                    
+                    const priceCell = row.querySelector('td:nth-child(3)');
+                    priceCell.textContent = `₹${(data.cartItem.price * data.cartItem.quantity).toFixed(2)}`;
+                    
+                    const qtyButtons = row.querySelectorAll('td:nth-child(2) button');
+                    qtyButtons[0].setAttribute('onclick', `updateQuantity('${productId}', '${size}', '${sku}', ${data.cartItem.quantity - 1})`);
+                    qtyButtons[1].setAttribute('onclick', `updateQuantity('${productId}', '${size}', '${sku}', ${data.cartItem.quantity + 1})`);
+                    break;
                 }
-                if (!response.ok) throw new Error(data.message || 'Failed to update cart');
-
-                window.location.reload();
-            } catch (error) {
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'warning',
-                    title: 'LIMIT',
-                    text: error.message || 'Failed to update quantity',
-                    showConfirmButton: false,
-                    timer: 2000,
-                    timerProgressBar: true
-                });
             }
         }
+
+        // Update order summary with proper selectors
+        const subtotalElement = document.querySelector('.flex.justify-between.mb-4.text-gray-700:first-child p:last-child');
+        const deliveryElement = document.querySelectorAll('.flex.justify-between.mb-4.text-gray-700')[1]?.querySelector('p:last-child');
+        const grandTotalElement = document.querySelector('.flex.justify-between.font-bold.text-lg.border-t.pt-4.text-gray-800 p:last-child');
+        
+        if (subtotalElement && deliveryElement && grandTotalElement) {
+            const subtotal = data.cart.totalPrice;
+            const deliveryCharge = subtotal >= 2500 ? 0 : 99;
+            const grandTotal = subtotal + deliveryCharge;
+
+            subtotalElement.textContent = `₹${subtotal.toFixed(2)}`;
+            deliveryElement.textContent = deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge.toFixed(2)}`;
+            grandTotalElement.textContent = `₹${grandTotal.toFixed(2)}`;
+        }
+
+    } catch (error) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: error.message.includes('Maximum') ? 'MAX LIMIT' : 'ERROR',
+            text: error.message || 'Failed to update quantity',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+    }
+}
 
         // Delete item
         async function deleteItem(productId, size, sku) {
