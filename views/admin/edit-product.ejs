@@ -546,9 +546,9 @@
           displayErrorMessage('sizes-error', `Sale price for size ${size} cannot be negative.`);
           isValid = false;
         }
-        if (regularPrice && salePrice && parseFloat(regularPrice) <= parseFloat(salePrice)) {
+        if (regularPrice && salePrice && parseFloat(salePrice) > parseFloat(regularPrice)) {
           console.log(`Price comparison validation failed for size ${size}`);
-          displayErrorMessage('sizes-error', `Regular price must be greater than sale price for size ${size}.`);
+          displayErrorMessage('sizes-error', `Sale price must not be greater than regular price for size ${size}.`);
           isValid = false;
         }
         if (!stock || parseInt(stock) <= 0) {

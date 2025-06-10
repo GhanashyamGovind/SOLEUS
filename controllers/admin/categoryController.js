@@ -123,6 +123,88 @@ try {
 
 }
 
+const addCategoryOffer = async (req, res, next) => {
+  try {
+    const { categoryId, percentage } = req.body;
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ status: false, message: "Category not found" });
+    }
+
+    const parsedPercentage = parseInt(percentage);
+    category.categoryOffer = parsedPercentage;
+    await category.save();
+
+    const products = await Product.find({ category: categoryId });
+    for (const product of products) {
+      // Determine which offer to apply (category vs product)
+      let offerToApply = parsedPercentage;
+      let offerType = 'category';
+
+      if (product.productOffer > parsedPercentage) {
+        offerToApply = product.productOffer;
+        offerType = 'product';
+      }
+
+      // Update each variant's sale price
+      product.variants.forEach(variant => {
+        variant.salePrice = Math.floor(variant.regularPrice * (1 - offerToApply / 100));
+      });
+
+      // Update main product fields
+      product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
+      product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
+      product.appliedOffer = offerToApply;
+      product.offerType = offerType;
+
+      await product.save();
+    }
+
+    res.json({ status: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const removeCategoryOffer = async (req, res, next) => {
+  try {
+    const { categoryId } = req.body;
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res.status(404).json({ status: false, message: "Category not found" });
+    }
+
+    const products = await Product.find({ category: category._id });
+    for (const product of products) {
+      const offerToApply = product.productOffer || 0;
+      const offerType = offerToApply > 0 ? 'product' : 'none';
+
+      // Recalculate variant sale prices
+      product.variants.forEach(variant => {
+        variant.salePrice = offerToApply > 0
+          ? Math.floor(variant.regularPrice * (1 - offerToApply / 100))
+          : variant.regularPrice;
+      });
+
+      // Update main product fields
+      product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
+      product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
+      product.appliedOffer = offerToApply;
+      product.offerType = offerType;
+
+      await product.save();
+    }
+
+    category.categoryOffer = 0;
+    await category.save();
+
+    return res.status(200).json({ status: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 module.exports = {
     categoryInfo,
@@ -131,4 +213,6 @@ module.exports = {
     getUnlistCategory,
     getEditCategory,
     editCategory,
+    addCategoryOffer,
+    removeCategoryOffer,
 }

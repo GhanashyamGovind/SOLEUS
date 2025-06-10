@@ -549,6 +549,91 @@ const editProduct = async (req, res) => {
   }
 };
 
+const addProductOffer = async (req, res, next) => {
+  try {
+    const { productId, percentage } = req.body;
+    if (!productId || !percentage) {
+      return res.status(400).json({ success: false, message: "Product ID and percentage are required" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const category = await Category.findById(product.category);
+    if (!category) {
+      return res.status(404).json({ success: false, message: "Category not found" });
+    }
+
+    const productOffer = parseInt(percentage);
+    const categoryOffer = category.categoryOffer || 0;
+
+    // Decide which offer to apply
+    const finalOffer = Math.max(productOffer, categoryOffer);
+    const offerType = finalOffer === productOffer ? 'product' : 'category';
+
+    // Update variants with the applied offer
+    product.variants.forEach(variant => {
+      variant.salePrice = Math.floor(variant.regularPrice * (1 - finalOffer / 100));
+    });
+
+    // Update product-level fields
+    product.productOffer = productOffer;
+    product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
+    product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
+    product.appliedOffer = finalOffer;
+    product.offerType = offerType;
+
+    await product.save();
+
+    return res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const removeProductOffer = async (req, res, next) => {
+  try {
+    const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({ success: false, message: "Product ID is required" });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const category = await Category.findById(product.category);
+    const categoryOffer = category?.categoryOffer || 0;
+
+    // Apply category offer if present
+    const offerToApply = categoryOffer;
+    const offerType = offerToApply > 0 ? 'category' : 'none';
+
+    product.variants.forEach(variant => {
+      variant.salePrice = offerToApply > 0
+        ? Math.floor(variant.regularPrice * (1 - offerToApply / 100))
+        : variant.regularPrice;
+    });
+
+    product.productOffer = 0;
+    product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
+    product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
+    product.quantity = product.variants.reduce((sum, v) => sum + v.stock, 0);
+    product.appliedOffer = offerToApply;
+    product.offerType = offerType;
+
+    await product.save();
+
+    return res.status(200).json({ success: true, message: "Product offer removed" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 module.exports = {
     getProductPage,
@@ -558,4 +643,6 @@ module.exports = {
     productUnBlock,
     getEditProduct,
     editProduct,
+    addProductOffer,
+    removeProductOffer,
 }

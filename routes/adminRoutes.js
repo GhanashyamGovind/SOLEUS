@@ -31,11 +31,12 @@ router.get('/blockandUnblock', adminAuth, customerController.blockAndUnblock)
 //Category managemnt
 router.get('/category', adminAuth, categoryController.categoryInfo);
 router.post('/addCategory', adminAuth, categoryController.addCategory);
-
 router.get('/listCategory', adminAuth, categoryController.getListCategory);
 router.get('/unlistCategory', adminAuth, categoryController.getUnlistCategory);
 router.get('/editCategory', adminAuth, categoryController.getEditCategory);
 router.post('/editCategory/:id', adminAuth, categoryController.editCategory);
+router.post('/addCategoryOffer', adminAuth, categoryController.addCategoryOffer);
+router.post('/removeCategoryOffer', adminAuth, categoryController.removeCategoryOffer)
 
 
 //brand controller 
@@ -53,6 +54,8 @@ router.get('/blockProduct', adminAuth, productController.productBlock);
 router.get('/unBlockProduct', adminAuth, productController.productUnBlock);
 router.get('/editProduct', adminAuth, productController.getEditProduct);
 router.post('/editProduct/:id', adminAuth, uploads.array("images", 4), productController.editProduct);
+router.post('/addProductOffer', adminAuth, productController.addProductOffer);
+router.post('/removeProductOffer', adminAuth, productController.removeProductOffer)
 
 //order controller 
 router.get('/orders', adminAuth, orderController.getAdminOrder);

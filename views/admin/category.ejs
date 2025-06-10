@@ -62,43 +62,34 @@
         <% cat.reverse().forEach((category, index) => { %>
           <tr>
             <td class="p-2 md:p-3 text-sm md:text-base"><%= category.name %></td>
-
             <td class="p-2 md:p-3 text-sm md:text-base"><%= category.description %></td>
-
             <td class="p-2 md:p-3 text-sm md:text-base">
                 <% if (category.categoryOffer) { %>
-                  <%= category.Offer %>
+                  <%= category.categoryOffer %>%
                 <% }else { %>
                     0%
                 <% } %>          
             </td>
-
             <td class="p-2 md:p-3">
               <div class="flex justify-center space-x-1 md:space-x-2">
                 <% if (category.categoryOffer === 0) { %>
-                    <button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
-                        <a href="" class="text-white" onclick="addOffer('<%= category._id %>')">Add</a>
-                    </button>
+                    <button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); addOffer('<%= category._id %>')">Add</button>
                 <% }else { %>
-                <button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
-                        <a href="" class="text-white" onclick="removeOffer('<%= category._id %>')">Remove</a>
-                </button>
+                <button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); removeOffer('<%= category._id %>')">Remove</button>
                 <% } %>
               </div>
             </td>
-
             <td class="p-2 md:p-3">
               <% if (category.isListed) { %>
-              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm  bg-green-200 text-green-800 ">
+              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-green-200 text-green-800">
                 Listed
               </span>
               <% }else { %>
-              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm  bg-red-200 text-red-800 %>">
+              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-red-200 text-red-800">
                 Unlisted
               </span>
               <% } %>
             </td>
-
             <td class="p-2 md:p-3">
               <% if (category.isListed) { %>
               <button class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-red-500 text-white">
@@ -110,7 +101,6 @@
               </button>
               <% } %>
             </td>
-
             <td class="p-2 md:p-3">
               <button class="bg-blue-300 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
                 <a href="/admin/editCategory?id=<%= category._id %>" class="text-white">Edit</a>
@@ -127,7 +117,6 @@
     <% if (currentPage > 1) { %>
       <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded">« Previous</a>
     <% } %>
-
     <% for (let i = 1; i <= totalPage; i++) { %>
       <% if (i === currentPage) { %>
         <span class="current-page px-3 py-1 bg-yellow-500 text-white rounded"><%= i %></span>
@@ -135,13 +124,13 @@
         <a href="?page=<%= i %>" class="px-3 py-1 bg-gray-200 rounded"><%= i %></a>
       <% } %>
     <% } %>
-
     <% if (currentPage < totalPage) { %>
       <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded">Next »</a>
     <% } %>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 function handleFormSubmit(event) {
     event.preventDefault();
@@ -223,8 +212,91 @@ function clearErrorMessage() {
     });
 }
 
+async function addOffer(categoryId) {
+  try {
+    const { value: amount } = await Swal.fire({
+      title: "Offer in percentage",
+      input: "number",
+      inputLabel: "Percentage",
+      inputPlaceholder: "%"
+    });
 
+    if (amount) {
+      const response = await fetch('/admin/addCategoryOffer', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          percentage: amount,
+          categoryId: categoryId,
+        }),
+      });
 
+      const data = await response.json();
+      if (response.ok && data.status === true) {
+        await Swal.fire({
+          toast: true,
+          icon: 'success',
+          title: 'Offer Added',
+          text: 'The offer has been added',
+          showConfirmButton: false,
+          timer: 3000,
+          background: '#000',     
+          color: 'yellow',       
+          iconColor: '#00ff00' 
+        }).then(() => location.reload());
+      } else {
+        await Swal.fire("Failed", data.message || "Adding offer failed", "error");
+      }
+    }
+  } catch (error) {
+    await Swal.fire(
+      "Error",
+      "An error occurred while adding the offer",
+      "error"
+    );
+    console.error("Error while adding the offer", error);
+  }
+}
+
+async function removeOffer(categoryId) {
+  try {
+    const response = await fetch('/admin/removeCategoryOffer', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        categoryId: categoryId
+      })
+    });
+
+    const data = await response.json();
+    if (response.ok && data.status === true) {
+      await Swal.fire({
+          toast: true,
+          icon: 'success',
+          title: 'Offer Removed',
+          text: 'The offer has been removed',
+          showConfirmButton: false,
+          timer: 3000,
+          background: '#000',     
+          color: 'yellow',       
+          iconColor: '#00ff00' 
+        }).then(() => location.reload());
+    } else {
+      await Swal.fire("Failed", data.message || "Removing offer failed", "error");
+    }
+  } catch (error) {
+    await Swal.fire(
+      "Error",
+      "An error occurred while removing the offer",
+      "error"
+    );
+    console.error("Error while removing the offer => ", error);
+  }
+}
 </script>
 
 <%- include('../../views/partials/admin/footer') %>

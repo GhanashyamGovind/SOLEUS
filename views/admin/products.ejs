@@ -38,10 +38,14 @@
                 <td class="p-3"><%= data[i].productName %></td>
                 <td class="p-3"><%= data[i].brand.brandName %></td>
                 <td class="p-3"><%= data[i].category.name %></td>
-                <td class="p-3"><%= data[i].offerPrice || 'N/A' %></td> <!-- Added fallback for offerPrice -->
+                <td class="p-3"><%= data[i].productOffer || 'N/A' %></td> <!-- Added fallback for offerPrice -->
                 <td class="p-3"><%= data[i].quantity %></td>
                 <td class="p-3">
-                    <button class="bg-blue-500 text-white px-2 py-1 text-sm rounded hover:bg-blue-600">ADD</button>
+                    <% if (data[i].productOffer === 0) { %>
+                        <button onclick="addProductOffer('<%= data[i]._id %>')" class="bg-blue-500 text-white px-2 py-1 text-sm rounded hover:bg-blue-600">ADD</button>
+                    <% } else { %>
+                        <button onclick="removeProductOffer('<%= data[i]._id %>')" class="bg-blue-500 text-white px-2 py-1 text-sm rounded hover:bg-blue-600">Remove</button>    
+                    <% } %>
                 </td>
                 <td class="p-3">
                     <% if (data[i].isBlocked === false) { %>
@@ -93,5 +97,95 @@
         </div>
     </div>
 </div>
+
+<script>
+
+    async function addProductOffer(productId) {
+        try {
+            const {value: amount} = await Swal.fire({
+                title: "Offer in percentage",
+                input: "number",
+                inputLabel: "Percentage",
+                inputPlaceholder: "%"
+            });
+
+            if(amount) {
+                const response = await fetch('/admin/addProductOffer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        percentage: amount,
+                        productId: productId
+                    })
+                });
+
+                const result = await response.json();
+                if(response.ok && result.success == true){
+                    await Swal.fire({
+                        toast: true,
+                        icon: 'success',
+                        title: 'Offer Added',
+                        text: 'The offer has been added',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        background: '#000',     
+                        color: 'yellow',       
+                        iconColor: '#00ff00' 
+                    }).then(() => location.reload());
+                } else {
+                    await Swal.fire("Failed", result.message || "Adding offer failed", "error");
+                }
+            }
+        } catch (error) {
+            await Swal.fire(
+            "Error",
+            "An error occurred while adding the offer",
+            "error"
+            );
+            console.error("Error while adding the offer", error);
+        }
+    }
+
+    async function removeProductOffer(productId) {
+        try {
+            const response = await fetch('/admin/removeProductOffer',{
+                method: 'POST',
+                headers:{
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    productId: productId
+                })
+            });
+
+            const result = await response.json();
+            if (response.ok && result.success == true) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Offer Removed',
+                    text: 'The offer has been removed',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    background: '#000',     
+                    color: 'yellow',       
+                    iconColor: '#00ff00' 
+                }).then(() => location.reload());
+            } else {
+                await Swal.fire("Failed", result.message || "Removing offer failed", "error");
+            }
+        } catch (error) {
+            await Swal.fire(
+                "Error",
+                "An error occurred while removing the offer",
+                "error"
+            );
+            console.error("Error while removing the offer => ", error);
+        }
+    }
+
+</script>
 
 <%- include('../../views/partials/admin/footer') %>

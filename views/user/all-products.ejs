@@ -76,6 +76,9 @@
           <% products.forEach(product => { %>
             <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-yellow-400 hover:bg-gray-200">
               <div class="relative overflow-hidden rounded-lg mb-3 h-48 bg-gray-100 flex items-center justify-center group">
+                <% if (product.appliedOffer > 0) { %>
+                  <p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10"><%= product.appliedOffer %>% off</p>
+                <% } %>
                 <img src="/Uploads/re-image/<%= product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg' %>" alt="<%= product.productName || 'Product' %>" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
                 <button onclick="addToWishlist('<%= product._id %>')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -88,11 +91,6 @@
               <div class="flex justify-between items-center">
                 <p class="text-lg font-bold text-yellow-600">₹ <%= product.salePrice || 'N/A' %></p>
                 <p class="text-sm text-gray-500 line-through">₹ <%= product.regularPrice || 'N/A' %></p>
-                <button class="p-2 bg-black text-white rounded-full hover:bg-yellow-600 transition-all duration-300 hover:scale-110 hover:shadow-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                </button>
               </div>
             </div>
           <% }) %>
@@ -170,6 +168,7 @@
               const productCard = `
                 <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-yellow-400 hover:bg-gray-200">
                   <div class="relative overflow-hidden rounded-lg mb-3 h-48 bg-gray-100 flex items-center justify-center group">
+                    ${product.appliedOffer > 0 ? `<p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10 block opacity-100">${product.appliedOffer}% off</p>` : ''}
                     <img src="/Uploads/re-image/${escapeHTML(product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg')}" alt="${escapeHTML(product.productName || 'Product')}" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
                     <button onclick="addToWishlist('${product._id}')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,11 +183,6 @@
                   <div class="flex justify-between items-center">
                     <p class="text-lg font-bold text-yellow-600">₹${product.salePrice || 'N/A'}</p>
                     <p class="text-sm text-gray-500 line-through">₹${product.regularPrice || 'N/A'}</p>
-                    <button class="p-2 bg-black text-white rounded-full hover:bg-yellow-600 transition-all duration-300 hover:scale-110 hover:shadow-md">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                    </button>
                   </div>
                 </div>
               `;

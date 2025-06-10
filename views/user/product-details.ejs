@@ -9,7 +9,7 @@
 
 <!-- Main Content -->
 <main class="flex-grow w-full py-8 px-4">
-    <div class="w-full max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <div class="w-full max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-6 md:p-8 relative">
         <!-- Product Section -->
         <div class="flex flex-col md:flex-row gap-8">
             <!-- Image Section -->
@@ -48,6 +48,30 @@
                 <div class="flex items-center mb-4">
                     <span class="text-xl md:text-2xl font-bold text-gray-800" id="price-display">₹<%= variants[0].salePrice %></span>
                     <span class="text-sm text-gray-500 line-through ml-2" id="regular-price-display">₹<%= variants[0].regularPrice %></span>
+                    <% if (product.appliedOffer > 0) { %>
+                        <p class="offer-stamp">
+                            <%= product.appliedOffer %>% <%= product.offerType === 'product' ? 'Product Offer' : 'Category Offer' %>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <div class="glitter"></div>
+                            <!-- Confetti particles -->
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                            <div class="confetti"></div>
+                        </p>
+                    <% } %>
                 </div>
                 <!-- Available Sizes -->
                 <div class="mb-4">
@@ -89,6 +113,9 @@
                 <% relatedProducts.forEach(product => { %>
                     <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-yellow-400 hover:bg-gray-200">
                         <div class="relative overflow-hidden rounded-lg mb-3 h-48 bg-gray-100 flex items-center justify-center group">
+                            <% if (product.appliedOffer > 0) { %>
+                             <p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10"><%= product.appliedOffer %>% off</p>
+                            <% } %>
                             <img src="/uploads/re-image/<%= product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg' %>" alt="<%= product.productName || 'Product' %>" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
                             <button onclick="addTowhislist('<%= product._id %>')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,11 +130,6 @@
                         <div class="flex justify-between items-center">
                             <p class="text-lg font-bold text-yellow-600">₹<%= product.salePrice || 'N/A' %></p>
                             <p class="text-sm text-gray-500 line-through">₹<%= product.regularPrice || 'N/A' %></p>
-                            <button class="p-2 bg-black text-white rounded-full hover:bg-yellow-600 transition-all duration-300 hover:scale-110 hover:shadow-md">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                </svg>
-                            </button>
                         </div>
                     </div>
                 <% }) %>
@@ -566,4 +588,129 @@ async function buyNow(productId) {
         border-color: #facc15;
         color: #1f2937;
     }
+
+.offer-stamp {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 70px;
+    height: 70px;
+    background: #22c55e;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);
+    z-index: 10;
+    animation: stamp-pop 2s ease-out infinite;
+}
+
+.glitter {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #ffd700;
+    border-radius: 50%;
+    top: 10px;
+    animation: glitter-fall 3s linear infinite;
+}
+
+.glitter:nth-child(1) { right: 15px; animation-delay: 0s; }
+.glitter:nth-child(2) { right: 25px; animation-delay: 0.3s; }
+.glitter:nth-child(3) { right: 35px; animation-delay: 0.6s; }
+.glitter:nth-child(4) { right: 45px; animation-delay: 0.9s; }
+.glitter:nth-child(5) { right: 55px; animation-delay: 1.2s; }
+.glitter:nth-child(6) { right: 20px; animation-delay: 1.5s; }
+.glitter:nth-child(7) { right: 30px; animation-delay: 1.8s; }
+.glitter:nth-child(8) { right: 40px; animation-delay: 2.1s; }
+.glitter:nth-child(9) { right: 50px; animation-delay: 2.4s; }
+.glitter:nth-child(10) { right: 60px; animation-delay: 2.7s; }
+
+.confetti {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    top: 35px;
+    animation: confetti-pop 2s ease-out infinite;
+}
+
+.confetti:nth-child(11) { 
+    background: #ff6b6b; 
+    right: 10px; 
+    animation-delay: 0s;
+    transform: rotate(45deg);
+}
+.confetti:nth-child(12) { 
+    background: #4ecdc4; 
+    right: 20px; 
+    animation-delay: 0.1s;
+}
+.confetti:nth-child(13) { 
+    background: #45b7d1; 
+    right: 30px; 
+    animation-delay: 0.2s;
+    transform: rotate(90deg);
+}
+.confetti:nth-child(14) { 
+    background: #f9ca24; 
+    right: 40px; 
+    animation-delay: 0.3s;
+}
+.confetti:nth-child(15) { 
+    background: #6c5ce7; 
+    right: 50px; 
+    animation-delay: 0.4s;
+    transform: rotate(135deg);
+}
+.confetti:nth-child(16) { 
+    background: #fd79a8; 
+    right: 60px; 
+    animation-delay: 0.5s;
+}
+.confetti:nth-child(17) { 
+    background: #00b894; 
+    right: 25px; 
+    animation-delay: 0.6s;
+    transform: rotate(180deg);
+}
+.confetti:nth-child(18) { 
+    background: #e17055; 
+    right: 45px; 
+    animation-delay: 0.7s;
+}
+
+@keyframes stamp-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes glitter-fall {
+    0% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(400px);
+        opacity: 0;
+    }
+}
+
+@keyframes confetti-pop {
+    0% {
+        transform: translateY(0px) translateX(0px) rotate(0deg);
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100px) translateX(var(--random-x, 20px)) rotate(360deg);
+        opacity: 0;
+    }
+}
 </style>
