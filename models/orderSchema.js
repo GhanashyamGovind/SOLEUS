@@ -92,6 +92,19 @@ const orderSchema = new Schema({
     couponApplied: {
         type: Boolean, 
         default: false
+    },
+    razorpayPaymentId: {
+        type: String,
+        required: false
+    },
+    razorpayOrderId: {
+        type: String,
+        required: false
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Completed', 'Failed'],
+        default: 'Pending'
     }
 });
 

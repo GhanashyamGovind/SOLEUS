@@ -105,11 +105,17 @@ router.put('/cart/update', userAuth, cartController.updateCart);
 router.delete('/cart/remove', userAuth, cartController.removeFromCart);
 //single buy
 router.post('/buyNow', userAuth, cartController.buyNow);
+
 //checkout and payment
 router.get('/check-out', userAuth, checkoutController.loadCheckOut);
 router.post('/proceedToPayment', userAuth, checkoutController.proceedToPayment);
+router.post('/create-razorpay-order', userAuth, checkoutController.createRazorpayOrder);
+router.post('/verify-razorpay-payment', userAuth, checkoutController.verifyRazorpayPayment);
 //success
 router.get('/order/success', userAuth, checkoutController.successPage);
+//faliure
+router.get('/order/failure', userAuth, checkoutController.failurePage);
+
 
 
 //orders

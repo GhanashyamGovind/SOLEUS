@@ -3,7 +3,23 @@ const Address = require('../../models/addressSchema');
 const Cart = require('../../models/cartSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
-const {v4: uuidv4} = require('uuid')
+const {v4: uuidv4} = require('uuid');
+const crypto = require('crypto');
+const Razorpay = require('razorpay');
+
+
+function generateOrderId(shopName) {
+  const digits = () => Math.floor(1000 + Math.random() * 9000);         // 4 random digits
+  const letters = () => Math.random().toString(36).substring(2, 5);     // 3 random lowercase letters
+  const moreDigits = () => Math.floor(100 + Math.random() * 900);       // 3 random digits
+
+  return `${digits()}${letters()}${moreDigits()}${shopName}`;
+}
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET
+})
 
 
 const loadCheckOut = async (req, res, next) => {
@@ -12,6 +28,12 @@ const loadCheckOut = async (req, res, next) => {
         console.log('User ID:', userId);
 
         if (!userId) {
+            return res.redirect('/login');
+        }
+
+        const user = await User.findById(userId).select('name email phone');
+        if (!user) {
+            req.session.user = null; // Clear invalid session
             return res.redirect('/login');
         }
 
@@ -113,7 +135,8 @@ const loadCheckOut = async (req, res, next) => {
             address,
             cartItems,
             priceDetails,
-            isBuyNow
+            isBuyNow,
+            user
         });
     } catch (error) {
         console.error('Error in loadCheckOut:', error);
@@ -137,11 +160,19 @@ const proceedToPayment = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Invalid payment method' });
         }
 
-        // Handle Razorpay and Wallet (not implemented)
-        if (paymentMethod === 'Razorpay' || paymentMethod === 'Wallet') {
+        // Handle Razorpay separately
+        if (paymentMethod === 'Razorpay') {
+            return res.status(400).json({
+                success: false,
+                message: 'Use /create-razorpay-order for Razorpay payments'
+            });
+        }
+
+        // Handle Wallet (not implemented)
+        if (paymentMethod === 'Wallet') {
             return res.status(501).json({
                 success: false,
-                message: `Payment method ${paymentMethod} is not implemented yet. Order will be created after payment confirmation.`
+                message: 'Payment method Wallet is not implemented yet'
             });
         }
 
@@ -177,7 +208,7 @@ const proceedToPayment = async (req, res, next) => {
             const finalAmount = totalPrice + deliveryCharges - discount;
 
             order = new Order({
-                orderId: uuidv4(),
+                orderId: generateOrderId('SOLEUS'),
                 user: userId,
                 orderedItems: [{
                     product: productId,
@@ -267,7 +298,7 @@ const proceedToPayment = async (req, res, next) => {
             const finalAmount = totalPrice + deliveryCharges - discount;
 
             order = new Order({
-                orderId: uuidv4(),
+                orderId: generateOrderId('SOLEUS'),
                 user: userId,
                 orderedItems: validItems,
                 totalPrice,
@@ -314,6 +345,241 @@ const proceedToPayment = async (req, res, next) => {
         res.status(500).json({
             success: false,
             message: error.message || 'Something went wrong'
+        });
+    }
+};
+
+
+const createRazorpayOrder = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized user' });
+        }
+
+        const { isBuyNow, addressId } = req.body;
+        if (!addressId) {
+            return res.status(400).json({ success: false, message: 'Please select a shipping address' });
+        }
+
+        let totalPrice, deliveryCharges, discount, finalAmount, items;
+
+        if (isBuyNow && req.session.buyNow) {
+            const { productId, size, sku, quantity, price } = req.session.buyNow;
+            const product = await Product.findById(productId);
+            if (!product || product.isBlocked) {
+                req.session.buyNow = null;
+                return res.status(404).json({ success: false, message: 'Product not found or blocked' });
+            }
+
+            const variant = product.variants.find(v => v.sku === sku && v.size === size);
+            if (!variant) {
+                req.session.buyNow = null;
+                return res.status(404).json({ success: false, message: 'Invalid size or SKU' });
+            }
+
+            if (variant.stock < quantity) {
+                return res.status(400).json({ success: false, message: 'Insufficient stock' });
+            }
+
+            totalPrice = price * quantity;
+            deliveryCharges = totalPrice >= 2500 ? 0 : 99;
+            discount = req.session.couponDiscount || 0;
+            finalAmount = totalPrice + deliveryCharges - discount;
+
+            items = [{
+                product: productId,
+                size,
+                sku,
+                quantity,
+                price,
+                color: product.color
+            }];
+        } else {
+            const cart = await Cart.findOne({ userId }).populate('items.productId');
+            if (!cart || !cart.items.length) {
+                return res.status(400).json({ success: false, message: 'Cart is empty' });
+            }
+
+            const validItems = [];
+            const invalidItems = [];
+
+            for (const item of cart.items) {
+                const product = item.productId;
+                if (!product || product.isBlocked) {
+                    invalidItems.push(item);
+                    continue;
+                }
+
+                const variant = product.variants.find(v => v.size === item.size && v.sku === item.sku);
+                if (!variant) {
+                    invalidItems.push(item);
+                    continue;
+                }
+                if (variant.stock < item.quantity) {
+                    return res.status(400).json({
+                        success: false,
+                        message: `Insufficient stock for ${product.productName} (Size: ${item.size})`
+                    });
+                }
+
+                validItems.push({
+                    product: item.productId._id,
+                    size: item.size,
+                    sku: variant.sku,
+                    quantity: item.quantity,
+                    price: variant.salePrice,
+                    color: item.productId.color
+                });
+            }
+
+            if (!validItems.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'All items in your cart are unavailable or blocked'
+                });
+            }
+
+            if (invalidItems.length > 0) {
+                await Cart.findOneAndUpdate(
+                    { userId },
+                    { $pull: { items: { _id: { $in: invalidItems.map(item => item._id) } } } }
+                );
+            }
+
+            items = validItems;
+            totalPrice = validItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            deliveryCharges = totalPrice >= 2500 ? 0 : 99;
+            discount = req.session.couponDiscount || 0;
+            finalAmount = totalPrice + deliveryCharges - discount;
+        }
+
+        const options = {
+            amount: Math.round(finalAmount * 100), // Convert to paise
+            currency: 'INR',
+            receipt: `order_${generateOrderId('SOLEUS')}`
+        };
+
+        const razorpayOrder = await razorpay.orders.create(options);
+
+        // Store order details in session
+        req.session.razorpayOrderDetails = {
+            isBuyNow,
+            addressId,
+            items,
+            totalPrice,
+            deliveryCharges,
+            discount,
+            finalAmount,
+            razorpayOrderId: razorpayOrder.id
+        };
+
+        res.status(200).json({
+            success: true,
+            order: razorpayOrder,
+            key_id: process.env.RAZORPAY_KEY_ID
+        });
+    } catch (error) {
+        console.error('Error creating Razorpay order:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to create Razorpay order'
+        });
+    }
+};
+
+
+const verifyRazorpayPayment = async (req, res) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized user' });
+        }
+
+        const {
+            razorpay_payment_id,
+            razorpay_order_id,
+            razorpay_signature,
+            isBuyNow,
+            addressId,
+            paymentMethod
+        } = req.body;
+
+        if (!req.session.razorpayOrderDetails || req.session.razorpayOrderDetails.razorpayOrderId !== razorpay_order_id) {
+            return res.status(400).json({ success: false, message: 'Invalid order details' });
+        }
+
+        // Verify payment signature
+        const generatedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(razorpay_order_id + '|' + razorpay_payment_id)
+            .digest('hex');
+
+        if (generatedSignature !== razorpay_signature) {
+            return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+        }
+
+        const { items, totalPrice, deliveryCharges, discount, finalAmount } = req.session.razorpayOrderDetails;
+
+        const userAddressDoc = await Address.findOne({ userId });
+        const selectedAddress = userAddressDoc.address.id(addressId);
+        const clonedAddress = structuredClone(selectedAddress.toObject());
+
+        // Create order
+        const order = new Order({
+            orderId: generateOrderId('SOLEUS'),
+            user: userId,
+            orderedItems: items,
+            totalPrice,
+            discount,
+            finalAmount,
+            address: clonedAddress,
+            invoiceDate: new Date(),
+            paymentMethod: 'Razorpay',
+            paymentStatus: 'Completed',
+            status: 'Pending',
+            createdOn: new Date(),
+            couponApplied: !!discount,
+            razorpayPaymentId: razorpay_payment_id,
+            razorpayOrderId: razorpay_order_id
+        });
+
+        await order.save();
+        await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
+
+        // Update stock
+        for (const item of order.orderedItems) {
+            const result = await Product.findByIdAndUpdate(
+                item.product,
+                { $inc: { 'variants.$[elem].stock': -item.quantity } },
+                { arrayFilters: [{ 'elem.sku': item.sku }], new: true }
+            );
+            if (!result) {
+                throw new Error(`Failed to update stock for product ${item.product}`);
+            }
+        }
+
+        // Clear cart if not Buy Now
+        if (!isBuyNow) {
+            await Cart.findOneAndUpdate({ userId }, { items: [], totalPrice: 0 });
+        }
+
+        // Clear session data
+        req.session.buyNow = null;
+        req.session.couponDiscount = null;
+        req.session.razorpayOrderDetails = null;
+
+        const redirectUrl = `/order/success?orderId=${order._id}`;
+        res.status(200).json({
+            success: true,
+            message: 'Payment verified and order placed successfully',
+            redirectUrl
+        });
+    } catch (error) {
+        console.error('Error verifying Razorpay payment:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to verify payment'
         });
     }
 };
@@ -371,7 +637,7 @@ const successPage = async (req, res, next) => {
             title: 'success',
             orderNumber: order.orderId,
             orderDate: order.createdOn.toLocaleDateString('en-IN'),
-            paymentMethod: order.paymentMethod || 'COD',
+            paymentMethod: order.paymentMethod,
             orderItems,
             priceDetails,
             deliveryAddress,
@@ -383,10 +649,32 @@ const successPage = async (req, res, next) => {
     }
 }
 
+const failurePage = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            return res.redirect('/login');
+        }
+
+        const { razorpayOrderId } = req.query;
+
+        return res.render('user/failureOrder', {
+            title: 'Order Failed',
+            razorpayOrderId
+        });
+    } catch (error) {
+        console.error('Error in failurePage:', error);
+        next(error);
+    }
+};
+
 
 
 module.exports = {
     loadCheckOut,
     proceedToPayment,
+    createRazorpayOrder,
+    verifyRazorpayPayment,
     successPage,
+    failurePage,
 }

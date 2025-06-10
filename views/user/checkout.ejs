@@ -207,6 +207,8 @@
         </div>
     </div>
 
+    <!-- Added Razorpay Checkout script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -305,31 +307,116 @@
                 return;
             }
 
-            const response = await fetch('/proceedToPayment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ isBuyNow, addressId, paymentMethod })
-            });
+            if (paymentMethod === 'Razorpay') {
+                // Fetch Razorpay order from backend
+                const response = await fetch('/create-razorpay-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ isBuyNow, addressId })
+                });
 
-            const data = await response.json();
-            if (data.success && data.redirectUrl) {
-                await Swal.fire({
-                    toast: true,
-                    icon: 'success',
-                    title: 'Order placed successfully',
-                    showConfirmButton: false,
-                    timer: 1500
+                const data = await response.json();
+                if (!data.success) {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to create payment order',
+                        showConfirmButton: true
+                    });
+                    return;
+                }
+
+                const order = data.order;
+                const options = {
+                    key: data.key_id, // Fetched from backend
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'Soleus Shoes',
+                    description: 'Order Payment',
+                    order_id: order.id,
+                    handler: async function (response) {
+                        // Verify payment on backend
+                        const verifyResponse = await fetch('/verify-razorpay-payment', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                isBuyNow,
+                                addressId,
+                                paymentMethod
+                            })
+                        });
+
+                        const verifyData = await verifyResponse.json();
+                        if (verifyData.success) {
+                            await Swal.fire({
+                                toast: true,
+                                icon: 'success',
+                                title: 'Payment successful',
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+                            window.location.href = verifyData.redirectUrl;
+                        } else {
+                            await Swal.fire({
+                                icon: 'error',
+                                title: 'Payment Failed',
+                                text: verifyData.message || 'Payment verification failed',
+                                showConfirmButton: true
+                            });
+                            window.location.href = `/order/failure?razorpayOrderId=${order.id}`;
+                        }
+                    },
+                    prefill: {
+                        // Fetch user details from backend or session
+                        name: '<%= user.name || "" %>',
+                        email: '<%= user.email || "" %>',
+                        contact: '<%= user.phone || "" %>'
+                    },
+                    theme: {
+                        color: '#3399cc'
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    window.location.href = `/order/failure?razorpayOrderId=${order.id}`;
                 });
-                window.location.href = data.redirectUrl;
+                rzp.open();
             } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Failed to proceed to payment',
-                    showConfirmButton: true
+                // Existing logic for COD and Wallet
+                const response = await fetch('/proceedToPayment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ isBuyNow, addressId, paymentMethod })
                 });
+
+                const data = await response.json();
+                if (data.success && data.redirectUrl) {
+                    await Swal.fire({
+                        toast: true,
+                        icon: 'success',
+                        title: 'Order placed successfully',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    window.location.href = data.redirectUrl;
+                } else {
+                    await Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to proceed to payment',
+                        showConfirmButton: true
+                    });
+                }
             }
         } catch (error) {
             console.error('Error in proceedToPayment:', error);
