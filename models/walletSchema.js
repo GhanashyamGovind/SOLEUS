@@ -27,7 +27,7 @@ const walletSchema = new Schema({
                 default: "Wallet transaction"
             },
             orderId: {
-                type: Schema.Types.ObjectId,
+                type: String,
                 ref: "Order",
                 default: null
             },

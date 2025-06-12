@@ -320,7 +320,7 @@ const proceedToPayment = async (req, res, next) => {
                 type: 'debit',
                 amount: finalAmount,
                 reason: `Order payment for order ${order.orderId}`,
-                orderId: order._id,
+                orderId: order.orderId,
                 createdAt: new Date()
             });
 

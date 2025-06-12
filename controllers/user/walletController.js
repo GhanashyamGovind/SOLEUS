@@ -15,11 +15,15 @@ const loadWallet = async (req, res, next) => {
         
         const balance = wallet.balance;
         const transactions = wallet.transactions
-        console.log(transactions)
+        // console.log(transactions)
+        let totalDebit = transactions.filter((val) => val.type === 'debit').reduce((acc, val) => acc + val.amount, 0);
+        let totalCredit = transactions.filter((val) => val.type === 'credit').reduce((acc, val) => acc + val.amount, 0);
 
         return res.render('user/wallet', {
             balance,
-            transactions
+            transactions,
+            credit: totalCredit || 0,
+            debit: totalDebit || 0
         })
     } catch (error) {
         next(error)

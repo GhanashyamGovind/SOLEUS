@@ -3,6 +3,7 @@ const User = require('../../models/userSchema');
 const Address = require('../../models/addressSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
+const Wallet = require('../../models/walletSchema');
 const mongoose = require('mongoose')
 const { render } = require('ejs');
 
@@ -165,6 +166,32 @@ const cancelOrder = async (req, res, next) => {
             product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
 
             await product.save();
+        }
+
+        //return money if razor or wallet
+        if(order.paymentMethod === 'Razorpay'){
+            const wallet = await Wallet.findOne({userId});
+            wallet.balance += order.finalAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: order.finalAmount,
+                reason: "Razorpay: Order Cancellation",
+                orderId: order.orderId,
+                createdAt: new Date()
+            });
+            await wallet.save();
+            console.log("razorpay order is returned")
+        } else if (order.paymentMethod === 'Wallet'){
+            const wallet = await Wallet.findOne({userId});
+            wallet.balance += order.finalAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: order.finalAmount,
+                reason: "Wallet: Order Cancellation",
+                orderId: order.orderId,
+                createdAt: new Date()
+            })
+            await wallet.save()
         }
 
         // Update order status

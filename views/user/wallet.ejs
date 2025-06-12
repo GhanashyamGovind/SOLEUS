@@ -108,7 +108,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm text-gray-600">Total Credits</p>
-                                <p class="text-lg font-bold text-gray-900">₹5,200</p>
+                                <p class="text-lg font-bold text-gray-900">₹<%= credit %></p>
                             </div>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm text-gray-600">Total Debits</p>
-                                <p class="text-lg font-bold text-gray-900">₹2,750</p>
+                                <p class="text-lg font-bold text-gray-900">₹<%= debit %></p>
                             </div>
                         </div>
                     </div>
@@ -133,15 +133,15 @@
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                             <h3 class="text-xl font-semibold text-gray-900 mb-4 sm:mb-0">Transaction History</h3>
                             <div class="flex space-x-3">
-                                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    <option>All Transactions</option>
-                                    <option>Credits</option>
-                                    <option>Debits</option>
+                                <select id="transactionTypeFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="all">All Transactions</option>
+                                    <option value="credit">Credits</option>
+                                    <option value="debit">Debits</option>
                                 </select>
-                                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-                                    <option>Last 30 Days</option>
-                                    <option>Last 7 Days</option>
-                                    <option>Last Year</option>
+                                <select id="timeFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="30days">Last 30 Days</option>
+                                    <option value="7days">Last 7 Days</option>
+                                    <option value="1year">Last Year</option>
                                 </select>
                             </div>
                         </div>
@@ -149,122 +149,49 @@
 
                     <div class="p-6">
                         <% if (transactions.length > 0) { %>
-                        <div class="space-y-4">
+                        <div id="transactionList" class="space-y-4">
                             <!-- Transaction Item -->
+                            <% transactions.slice(0, 15).forEach(trans => { %>
                             <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
                                 <div class="flex items-center">
-                                    <div class="bg-green-100 p-2 rounded-lg">
-                                        <i data-feather="plus" class="w-5 h-5 text-green-600"></i>
-                                    </div>
+                                    <% if (trans.type == 'credit') { %>
+                                        <div class="bg-green-100 p-2 rounded-lg">
+                                            <i data-feather="plus" class="w-5 h-5 text-green-600"></i>
+                                        </div>
+                                    <% } else { %>
+                                         <div class="bg-red-100 p-2 rounded-lg">
+                                            <i data-feather="shopping-bag" class="w-5 h-5 text-red-600"></i>
+                                        </div> 
+                                    <% } %>
                                     <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">Money Added</p>
-                                        <p class="text-sm text-gray-600">Wallet top-up via UPI</p>
-                                        <p class="text-xs text-gray-500">June 10, 2025 • 2:30 PM</p>
+                                        <p class="font-semibold text-gray-900"><%= trans.type %></p>
+                                        <p class="text-sm text-gray-600"><%= trans.reason %></p>
+                                        <% if (trans.orderId) { %>
+                                         <p class="text-sm text-gray-600">order: <%= trans.orderId %></p>
+                                        <% } %>
+                                        <p class="text-xs text-gray-500"><%= trans.createdAt.toString().split('GMT')[0].trim() %></p>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="font-bold text-green-600">+₹1,000.00</p>
+                                    <% if (trans.type == 'credit') { %>
+                                        <p class="font-bold text-green-600">+₹<%= trans.amount %></p>
+                                    <% } else { %>
+                                         <p class="font-bold text-red-600">-₹<%= trans.amount %></p>
+                                    <% } %>
                                     <p class="text-xs text-gray-500">Completed</p>
                                 </div>
                             </div>
-
-                            <!-- Transaction Item -->
-                            <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
-                                <div class="flex items-center">
-                                    <div class="bg-red-100 p-2 rounded-lg">
-                                        <i data-feather="shopping-bag" class="w-5 h-5 text-red-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">Order Payment</p>
-                                        <p class="text-sm text-gray-600">Nike Air Max 270 - Black</p>
-                                        <p class="text-xs text-gray-500">June 9, 2025 • 4:15 PM</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-red-600">-₹12,999.00</p>
-                                    <p class="text-xs text-gray-500">Completed</p>
-                                </div>
-                            </div>
-
-                            <!-- Transaction Item -->
-                            <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
-                                <div class="flex items-center">
-                                    <div class="bg-green-100 p-2 rounded-lg">
-                                        <i data-feather="rotate-ccw" class="w-5 h-5 text-green-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">Refund Received</p>
-                                        <p class="text-sm text-gray-600">Adidas Ultraboost 22 - White</p>
-                                        <p class="text-xs text-gray-500">June 8, 2025 • 10:20 AM</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-green-600">+₹8,499.00</p>
-                                    <p class="text-xs text-gray-500">Completed</p>
-                                </div>
-                            </div>
-
-                            <!-- Transaction Item -->
-                            <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
-                                <div class="flex items-center">
-                                    <div class="bg-red-100 p-2 rounded-lg">
-                                        <i data-feather="shopping-bag" class="w-5 h-5 text-red-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">Order Payment</p>
-                                        <p class="text-sm text-gray-600">Converse Chuck Taylor All Star</p>
-                                        <p class="text-xs text-gray-500">June 7, 2025 • 6:45 PM</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-red-600">-₹3,999.00</p>
-                                    <p class="text-xs text-gray-500">Completed</p>
-                                </div>
-                            </div>
-
-                            <!-- Transaction Item -->
-                            <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
-                                <div class="flex items-center">
-                                    <div class="bg-green-100 p-2 rounded-lg">
-                                        <i data-feather="plus" class="w-5 h-5 text-green-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">Money Added</p>
-                                        <p class="text-sm text-gray-600">Wallet top-up via Credit Card</p>
-                                        <p class="text-xs text-gray-500">June 6, 2025 • 1:10 PM</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-green-600">+₹5,000.00</p>
-                                    <p class="text-xs text-gray-500">Completed</p>
-                                </div>
-                            </div>
-
-                            <!-- Transaction Item -->
-                            <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
-                                <div class="flex items-center">
-                                    <div class="bg-blue-100 p-2 rounded-lg">
-                                        <i data-feather="gift" class="w-5 h-5 text-blue-600"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">Cashback Received</p>
-                                        <p class="text-sm text-gray-600">Welcome bonus</p>
-                                        <p class="text-xs text-gray-500">June 5, 2025 • 9:00 AM</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold text-blue-600">+₹500.00</p>
-                                    <p class="text-xs text-gray-500">Completed</p>
-                                </div>
-                            </div>
+                            <% }) %>
                         </div>
 
                         <!-- Load More Button -->
+                        <% if (transactions.length > 15) { %>
                         <div class="mt-6 text-center">
-                            <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
+                            <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
                                 Load More Transactions
                             </button>
                         </div>
+                        <% } %>
                         <% } else { %>
                          <p>no transaction history</p>
                         <% } %> 
@@ -321,6 +248,132 @@
                     }, 150);
                 });
             });
+
+            // Load More Transactions
+            let currentPage = 1;
+            const transactionsPerPage = 15;
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const transactionList = document.getElementById('transactionList');
+            const allTransactions = <%- JSON.stringify(transactions) %>;
+
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', function() {
+                    const startIndex = currentPage * transactionsPerPage;
+                    const nextTransactions = allTransactions.slice(startIndex, startIndex + transactionsPerPage);
+
+                    if (nextTransactions.length > 0) {
+                        nextTransactions.forEach(trans => {
+                            const transItem = document.createElement('div');
+                            transItem.className = 'transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200';
+                            transItem.innerHTML = `
+                                <div class="flex items-center">
+                                    <div class="${trans.type === 'credit' ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-lg">
+                                        <i data-feather="${trans.type === 'credit' ? 'plus' : 'shopping-bag'}" class="w-5 h-5 ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="font-semibold text-gray-900">${trans.type}</p>
+                                        <p class="text-sm text-gray-600">${trans.reason}</p>
+                                        ${trans.orderId ? `<p class="text-sm text-gray-600">order: ${trans.orderId}</p>` : ''}
+                                        <p class="text-xs text-gray-500">${new Date(trans.createdAt).toString().split('GMT')[0].trim()}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-bold ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}">${trans.type === 'credit' ? '+' : '-'}₹${trans.amount}</p>
+                                    <p class="text-xs text-gray-500">Completed</p>
+                                </div>
+                            `;
+                            transactionList.appendChild(transItem);
+                            feather.replace(); // Re-initialize Feather icons for new items
+                        });
+
+                        currentPage++;
+                        if (startIndex + nextTransactions.length >= allTransactions.length) {
+                            loadMoreBtn.parentNode.remove(); // Remove button if no more transactions
+                        }
+                    }
+                });
+            }
+
+            // Filter Transactions
+            const typeFilter = document.getElementById('transactionTypeFilter');
+            const timeFilter = document.getElementById('timeFilter');
+
+            function applyFilters() {
+                const typeValue = typeFilter.value;
+                const timeValue = timeFilter.value;
+                let filteredTransactions = allTransactions;
+
+                // Filter by type
+                if (typeValue !== 'all') {
+                    filteredTransactions = filteredTransactions.filter(trans => trans.type === typeValue);
+                }
+
+                // Filter by time range
+                const now = new Date();
+                if (timeValue === '7days') {
+                    filteredTransactions = filteredTransactions.filter(trans => {
+                        const transDate = new Date(trans.createdAt);
+                        return (now - transDate) / (1000 * 60 * 60 * 24) <= 7;
+                    });
+                } else if (timeValue === '30days') {
+                    filteredTransactions = filteredTransactions.filter(trans => {
+                        const transDate = new Date(trans.createdAt);
+                        return (now - transDate) / (1000 * 60 * 60 * 24) <= 30;
+                    });
+                } else if (timeValue === '1year') {
+                    filteredTransactions = filteredTransactions.filter(trans => {
+                        const transDate = new Date(trans.createdAt);
+                        return (now - transDate) / (1000 * 60 * 60 * 24) <= 365;
+                    });
+                }
+
+                // Update transaction list
+                transactionList.innerHTML = '';
+                filteredTransactions.slice(0, transactionsPerPage).forEach(trans => {
+                    const transItem = document.createElement('div');
+                    transItem.className = 'transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200';
+                    transItem.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="${trans.type === 'credit' ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-lg">
+                                <i data-feather="${trans.type === 'credit' ? 'plus' : 'shopping-bag'}" class="w-5 h-5 ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-900">${trans.type}</p>
+                                <p class="text-sm text-gray-600">${trans.reason}</p>
+                                ${trans.orderId ? `<p class="text-sm text-gray-600">order: ${trans.orderId}</p>` : ''}
+                                <p class="text-xs text-gray-500">${new Date(trans.createdAt).toString().split('GMT')[0].trim()}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}">${trans.type === 'credit' ? '+' : '-'}₹${trans.amount}</p>
+                            <p class="text-xs text-gray-500">Completed</p>
+                        </div>
+                    `;
+                    transactionList.appendChild(transItem);
+                });
+                feather.replace(); // Re-initialize Feather icons
+
+                // Update Load More button visibility
+                if (filteredTransactions.length > transactionsPerPage && !loadMoreBtn) {
+                    const newLoadMoreBtn = document.createElement('div');
+                    newLoadMoreBtn.className = 'mt-6 text-center';
+                    newLoadMoreBtn.innerHTML = `
+                        <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
+                            Load More Transactions
+                        </button>
+                    `;
+                    transactionList.parentNode.appendChild(newLoadMoreBtn);
+                    document.getElementById('loadMoreBtn').addEventListener('click', () => {
+                        currentPage++;
+                        applyFilters();
+                    });
+                } else if (filteredTransactions.length <= transactionsPerPage && loadMoreBtn) {
+                    loadMoreBtn.parentNode.remove();
+                }
+            }
+
+            typeFilter.addEventListener('change', applyFilters);
+            timeFilter.addEventListener('change', applyFilters);
         });
     </script>
 <%- include('../../views/partials/user/footer') %>

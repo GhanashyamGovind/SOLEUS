@@ -2,6 +2,7 @@ const User = require('../../models/userSchema');
 const Address = require('../../models/addressSchema');
 const Order = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
+const Wallet = require('../../models/walletSchema');
 
 
 const getAdminOrder = async (req, res, next) => {
@@ -153,6 +154,7 @@ const approveReturn = async (req, res, next) => {
         }
 
         const orders = await Order.findOne({orderId}).populate('orderedItems.product').exec()
+        const userId = orders.user;
 
         //find the item of the sku
         const item = orders.orderedItems.find(v => v.sku === sku);
@@ -180,6 +182,33 @@ const approveReturn = async (req, res, next) => {
         //change the status
         item.returnStatus = 'Returned';
         await orders.save();
+
+        //refund
+        const totalItemAmount = orders.orderedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        const shippingCharge = orders.finalAmount - totalItemAmount;
+        
+        const itemTotal = item.price * item.quantity;
+        const proportionalShipping = (itemTotal/totalItemAmount) * shippingCharge;
+        const refundAmount = parseFloat((itemTotal + proportionalShipping).toFixed(2))
+
+        if(orders.paymentMethod === 'Razorpay' || orders.paymentMethod === 'Wallet') {
+            const wallet = await Wallet.findOne({userId});
+            if (!wallet) {
+                return res.status(404).json({ success: false, message: "Wallet not found" });
+            }
+
+            wallet.balance += refundAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: refundAmount,
+                reason: `Refund for returned product SKU: ${sku} (incl. shipping share)`,
+                orderId: orders.orderId,
+                productId: product._id,
+                quantity: item.quantity,
+                createdAt: new Date()
+            });
+            await wallet.save();
+        }
 
         return res.status(200).json({success: true, message: "Return approved product stock updated"})
 
