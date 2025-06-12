@@ -3,6 +3,7 @@ const Address = require('../../models/addressSchema');
 const Cart = require('../../models/cartSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
+const Wallet = require('../../models/walletSchema');
 const {v4: uuidv4} = require('uuid');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
@@ -168,21 +169,17 @@ const proceedToPayment = async (req, res, next) => {
             });
         }
 
-        // Handle Wallet (not implemented)
-        if (paymentMethod === 'Wallet') {
-            return res.status(501).json({
-                success: false,
-                message: 'Payment method Wallet is not implemented yet'
-            });
-        }
-
         const userAddressDoc = await Address.findOne({ userId });
         const selectedAddress = userAddressDoc.address.id(addressId);
         const clonedAddress = structuredClone(selectedAddress.toObject());
 
         let order;
+        let totalPrice = 0;
+        let deliveryCharges = 0;
+        let discount = req.session.couponDiscount || 0;
+        let finalAmount = 0;
         if (isBuyNow && req.session.buyNow) {
-            // Handle Buy Now for COD
+            // Handle Buy Now for COD and Wallet
             const { productId, size, sku, quantity, price } = req.session.buyNow;
             const product = await Product.findById(productId);
             if (!product || product.isBlocked) {
@@ -201,11 +198,9 @@ const proceedToPayment = async (req, res, next) => {
             }
 
             const color = product.color;
-
-            const totalPrice = price * quantity;
-            const deliveryCharges = totalPrice >= 2500 ? 0 : 99;
-            const discount = req.session.couponDiscount || 0;
-            const finalAmount = totalPrice + deliveryCharges - discount;
+            totalPrice = price * quantity;
+            deliveryCharges = totalPrice >= 2500 ? 0 : 99;
+            finalAmount = totalPrice + deliveryCharges - discount;
 
             order = new Order({
                 orderId: generateOrderId('SOLEUS'),
@@ -229,15 +224,8 @@ const proceedToPayment = async (req, res, next) => {
                 couponApplied: !!discount
             });
 
-            await order.save();
-
-            // Add order to user's orderHistory
-            await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
-
-            req.session.buyNow = null;
-            req.session.couponDiscount = null;
         } else {
-            // Handle cart-based payment for COD
+            // Handle cart-based payment for COD and wallet
             const cart = await Cart.findOne({ userId }).populate('items.productId');
             if (!cart || !cart.items.length) {
                 return res.status(400).json({ success: false, message: 'Cart is empty' });
@@ -292,10 +280,9 @@ const proceedToPayment = async (req, res, next) => {
                 );
             }
 
-            const totalPrice = validItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            const deliveryCharges = totalPrice >= 2500 ? 0 : 99;
-            const discount = req.session.couponDiscount || 0;
-            const finalAmount = totalPrice + deliveryCharges - discount;
+            totalPrice = validItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            deliveryCharges = totalPrice >= 2500 ? 0 : 99;
+            finalAmount = totalPrice + deliveryCharges - discount;
 
             order = new Order({
                 orderId: generateOrderId('SOLEUS'),
@@ -312,13 +299,46 @@ const proceedToPayment = async (req, res, next) => {
                 couponApplied: !!discount
             });
             await order.save();
-            
-            // user ne order to user's orderHistory (ith njn first cheyyan marann poy so histroy first kittiyila)
-            await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
 
-            await Cart.findOneAndUpdate({ userId }, { items: [], totalPrice: 0 });
-            req.session.couponDiscount = null;
         }
+
+        //handle Wallet payment
+        if(paymentMethod === 'Wallet') {
+            const wallet = await Wallet.findOne({userId});
+            if(!wallet) {
+                return res.status(400).json({success: false, message: "Wallet not found for this user"});
+            }
+
+            if(wallet.balance < finalAmount){
+                return res.status(400).json({success: false, message: `Insufficient wallet Balance ${wallet.balance}`})
+            }
+
+            // debit money form the wallet and add transaction
+            wallet.balance -= finalAmount;
+            wallet.transactions.push({
+                type: 'debit',
+                amount: finalAmount,
+                reason: `Order payment for order ${order.orderId}`,
+                orderId: order._id,
+                createdAt: new Date()
+            });
+
+            await wallet.save();
+            order.paymentStatus = 'Completed';
+        }
+
+        await order.save();
+
+
+        //add order to user orderHistory
+        await User.findByIdAndUpdate(userId, {$push: {orderHistory: order._id}});
+
+        if(isBuyNow){
+            req.session.buyNow = null;
+        } else {
+            await Cart.findOneAndUpdate({userId}, {items: [], totalPrice: 0})
+        }
+        req.session.couponDiscount = null
 
         // Update stock
         for (const item of order.orderedItems) {

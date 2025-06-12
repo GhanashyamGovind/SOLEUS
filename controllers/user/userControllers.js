@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
 const {Resend} = require('resend');
+const Wallet = require('../../models/walletSchema');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 
@@ -193,7 +194,6 @@ const verifyOtp = async (req, res, next) => {
     try {
 
         const {otp} = req.body;
-        // console.log(`user enterd otp ${otp}`);
 
         if(otp === req.session.userOtp){
             const user = req.session.userData; // session ill ulla otp aay compare cheyyunu
@@ -206,8 +206,20 @@ const verifyOtp = async (req, res, next) => {
                 password: passwordHash,
             });
 
-            await saveUserData.save(); // saved user data in DB
+            //save user first 
+            const createdUser = await saveUserData.save(); // saved user data in DB
             // req.session.user = saveUserData._id =====> (ith karanam user reg cheyyummbol thanne login akunnu)
+
+            // creat a wallet for the new user
+            const newWallet = new Wallet({
+              userId: createdUser._id
+            });
+            const savedWallet = await newWallet.save();
+
+            //update user walleid
+            createdUser.walletId = savedWallet._id;
+            await createdUser.save();
+
             res.json({success: true, redirectUrl: "/login"})
         }else {
             res.status(400).json({success: false, message: "Invalid OTP, Please try again"})

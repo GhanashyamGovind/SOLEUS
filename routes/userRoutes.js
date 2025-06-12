@@ -8,6 +8,7 @@ const cartController = require('../controllers/user/cartController');
 const checkoutController = require('../controllers/user/checkoutController');
 const orderController = require('../controllers/user/orderController');
 const invoiceController = require('../controllers/user/invoiceController');
+const walletController = require('../controllers/user/walletController')
 const passport = require('passport');
 const { userAuth } = require('../middlewares/auth');
 const {userStorage} = require('../helpers/multer');
@@ -123,9 +124,11 @@ router.get('/getOrders', userAuth, orderController.loadOrder);
 router.get('/ordeTracking/:orderId', userAuth, orderController.getTrackPage);
 router.put('/orders/cancel/:orderId', userAuth, orderController.cancelOrder);
 router.put('/order/return/:orderId', userAuth, orderController.returnOrderRequest);
-
 //invoice
-router.get('/order/invoice/downloadPDF/:orderId', userAuth, invoiceController.downloadPDF)
+router.get('/order/invoice/downloadPDF/:orderId', userAuth, invoiceController.downloadPDF);
+
+//wallet
+router.get('/getWallet', userAuth, walletController.loadWallet)
 
 
 
