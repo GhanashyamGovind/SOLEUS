@@ -195,7 +195,7 @@
                     </div>
 
                     <!-- Place Order Button -->
-                    <button onclick="proceedToPayment('<%= isBuyNow %>')" class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 text-sm uppercase tracking-wide">
+                    <button onclick='proceedToPayment("<%= isBuyNow ? 'true' : 'false' %>")' class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 text-sm uppercase tracking-wide">
                         Place Order
                     </button>
                     

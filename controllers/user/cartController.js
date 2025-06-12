@@ -15,6 +15,11 @@ const getCart = async (req, res, next) => {
         const cart = await Cart.findOne({ userId }).populate('items.productId');
         const cartData = cart || { items: [], totalPrice: 0 };
 
+        // If cart doesn't exist or is empty, render empty cart
+        if (!cart || cart.items.length === 0) {
+            return res.render('user/cart', { cart: { items: [], totalPrice: 0 } });
+        }
+
         // Ensure cartData.items have SKU and variant data
         if (cartData.items.length > 0) {
             for (let item of cartData.items) {

@@ -32,23 +32,33 @@ const updateStatus = async (req, res, next) => {
         const {orderId} = req.params;
         const {status} = req.body;
 
-        const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Returned', 'Cancelled'];
+        const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
         if(!validStatuses.includes(status)) {
             return res.status(400).json({error: 'Invalid status'});
         }
 
-        const order = await Order.findOneAndUpdate(
-            {orderId},
-            {status},
-            {new: true}
-        ).select('orderId status');
+        // Fetch the order first to check its current values
+        const order = await Order.findOne({ orderId });
 
-        if(!order) {
-            return res.status(404).json({error: "Order not found"});
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
         }
 
-        return res.json({ orderId: order.orderId, orderStatus: order.orderStatus });
-        
+        if (status === 'Delivered' && order.paymentStatus === 'Pending' && order.paymentMethod === 'COD') {
+            order.status = status;
+            order.paymentStatus = 'Completed';
+            await order.save();
+        } else {
+            order.status = status;
+            await order.save();
+        }
+
+        return res.json({
+            orderId: order.orderId,
+            orderStatus: order.status,
+            paymentStatus: order.paymentStatus
+        });
+
     } catch (error) {
         next(error)
     }

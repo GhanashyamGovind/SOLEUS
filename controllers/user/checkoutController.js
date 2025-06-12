@@ -42,7 +42,7 @@ const loadCheckOut = async (req, res, next) => {
         const isBuyNow = buyNow === 'true' && req.session.buyNow;
         const addressDoc = await Address.findOne({ userId });
         const address = addressDoc && addressDoc.address.length > 0 ? addressDoc.address : null;
-        console.log('Addresses:', address);
+        // console.log('Addresses:', address);
 
         let cartItems = [];
         let priceDetails = {
@@ -154,6 +154,7 @@ const proceedToPayment = async (req, res, next) => {
         }
 
         const { isBuyNow, addressId, paymentMethod } = req.body;
+        const isBuyNowBoolean = isBuyNow === 'true'
         if (!addressId) {
             return res.status(400).json({ success: false, message: 'Please select a shipping address' });
         }
@@ -178,7 +179,7 @@ const proceedToPayment = async (req, res, next) => {
         let deliveryCharges = 0;
         let discount = req.session.couponDiscount || 0;
         let finalAmount = 0;
-        if (isBuyNow && req.session.buyNow) {
+        if (isBuyNowBoolean) {
             // Handle Buy Now for COD and Wallet
             const { productId, size, sku, quantity, price } = req.session.buyNow;
             const product = await Product.findById(productId);
@@ -325,18 +326,19 @@ const proceedToPayment = async (req, res, next) => {
 
             await wallet.save();
             order.paymentStatus = 'Completed';
+            console.log("wallet paymetn is done")
         }
 
         await order.save();
 
 
         //add order to user orderHistory
-        await User.findByIdAndUpdate(userId, {$push: {orderHistory: order._id}});
+        await User.findByIdAndUpdate(userId, {$push: {orderHistory: order._id}}, {new: true});
 
-        if(isBuyNow){
+        if(isBuyNowBoolean){
             req.session.buyNow = null;
         } else {
-            await Cart.findOneAndUpdate({userId}, {items: [], totalPrice: 0})
+           const newCart = await Cart.findOneAndUpdate({ userId }, {$set: {items: [], totalPrice: 0 }}, {new: true});
         }
         req.session.couponDiscount = null
 
@@ -525,6 +527,8 @@ const verifyRazorpayPayment = async (req, res) => {
             paymentMethod
         } = req.body;
 
+        const isBuyNowBoolean = isBuyNow === 'true';
+
         if (!req.session.razorpayOrderDetails || req.session.razorpayOrderDetails.razorpayOrderId !== razorpay_order_id) {
             return res.status(400).json({ success: false, message: 'Invalid order details' });
         }
@@ -580,8 +584,9 @@ const verifyRazorpayPayment = async (req, res) => {
         }
 
         // Clear cart if not Buy Now
-        if (!isBuyNow) {
-            await Cart.findOneAndUpdate({ userId }, { items: [], totalPrice: 0 });
+        if (!isBuyNowBoolean) {
+           const newCart = await Cart.findOneAndUpdate({ userId }, {$set: {items: [], totalPrice: 0 }}, {new: true});
+           console.log("new cart", newCart)
         }
 
         // Clear session data
