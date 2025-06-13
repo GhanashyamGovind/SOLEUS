@@ -6,6 +6,7 @@ const categoryController = require('../controllers/admin/categoryController');
 const brandController = require('../controllers/admin/brandController');
 const productController = require('../controllers/admin/productController');
 const orderController = require('../controllers/admin/orderController');
+const couponController = require('../controllers/admin/couponController');
 const {userAuth, adminAuth} = require('../middlewares/auth');
 const multer = require('multer');
 const {storage} = require('../helpers/multer');
@@ -62,8 +63,15 @@ router.get('/orders', adminAuth, orderController.getAdminOrder);
 router.patch('/orders/status/:orderId', adminAuth, orderController.updateStatus);
 router.get('/orders/products/:orderId', adminAuth, orderController.getOrderProducts);
 router.put('/orders/cancel/:orderId',adminAuth, orderController.cancellOrder);
-router.put('/orders/return/approve/:orderId', adminAuth, orderController.approveReturn)
-router.put('/orders/return/reject/:orderId', adminAuth, orderController.rejectReturn)
+router.put('/orders/return/approve/:orderId', adminAuth, orderController.approveReturn);
+router.put('/orders/return/reject/:orderId', adminAuth, orderController.rejectReturn);
 
+//coupon controller
+router.get('/coupon', adminAuth, couponController.getAdminCoupon)
+router.post('/coupon/add', adminAuth, couponController.addCoupon);
+router.get('/coupons/edit/:code', adminAuth, couponController.getEditCoupon);
+router.put('/coupons/edit/:code', adminAuth, couponController.editCoupon);
+router.patch('/coupons/edit/:code/toggle', adminAuth, couponController.listAndUnlit);
+router.delete('/coupons/delete/:code', adminAuth, couponController.deleteCoupon)
 
 module.exports = router
