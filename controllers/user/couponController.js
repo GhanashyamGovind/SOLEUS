@@ -20,7 +20,7 @@ const loadCoupon = async (req, res, next) => {
                 {isPublic: true},
                 {givenTo: userId}
             ],
-            usedBy: { $ne: userId } // user offer use cheythittila
+            usedBy: { $nin: [userId] } // user offer use cheythittila
         })
 
         return res.render('user/coupon', {coupons});

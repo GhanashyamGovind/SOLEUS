@@ -59,7 +59,7 @@ const loadOrder = async (req, res, next) => {
                     : 'Address not available',
                 productImage,
                 totalItems,
-                totalAmount: order.finalAmount || order.totalPrice || 0,
+                totalAmount: order.finalAmount || 0,
                 status: order.status || 'Processing',
                 trackingAvailable: ['Shipped', 'Delivered'].includes(order.status)
             };

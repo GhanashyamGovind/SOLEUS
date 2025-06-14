@@ -113,6 +113,8 @@ router.get('/check-out', userAuth, checkoutController.loadCheckOut);
 router.post('/proceedToPayment', userAuth, checkoutController.proceedToPayment);
 router.post('/create-razorpay-order', userAuth, checkoutController.createRazorpayOrder);
 router.post('/verify-razorpay-payment', userAuth, checkoutController.verifyRazorpayPayment);
+router.post('/applyCoupon', userAuth, checkoutController.applyCoupon);
+router.post('/removeCoupon', userAuth, checkoutController.removeCoupon);
 //success
 router.get('/order/success', userAuth, checkoutController.successPage);
 //faliure

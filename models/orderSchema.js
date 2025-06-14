@@ -105,6 +105,10 @@ const orderSchema = new Schema({
         type: String,
         enum: ['Pending', 'Completed', 'Failed'],
         default: 'Pending'
+    },
+    couponCode: {
+        type: String,
+        default: null
     }
 });
 

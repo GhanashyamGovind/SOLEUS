@@ -155,9 +155,12 @@
                     <!-- Coupon Section -->
                     <div class="mt-6 pt-4 border-t border-gray-200">
                         <div class="flex gap-2">
-                            <input type="text" id="couponCode" placeholder="Enter coupon code" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <button onclick="applyCoupon()" class="bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 whitespace-nowrap">
+                            <input type="text" id="couponCode" placeholder="Enter coupon code" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" value="<%= priceDetails.discount > 0 && session.appliedCoupon ? session.appliedCoupon.code : '' %>">
+                            <button id="applyCouponBtn" onclick="applyCoupon('<%= isBuyNow ? 'true' : 'false' %>')" class="bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 whitespace-nowrap <%= priceDetails.discount > 0 ? 'hidden' : '' %>">
                                 Apply
+                            </button>
+                            <button id="removeCouponBtn" onclick="removeCoupon('<%= isBuyNow ? 'true' : 'false' %>')" class="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200 whitespace-nowrap <%= priceDetails.discount > 0 ? '' : 'hidden' %>">
+                                Remove
                             </button>
                         </div>
                         <p class="text-xs text-green-600 mt-2 flex items-center gap-1">
@@ -166,6 +169,19 @@
                             </svg>
                             Free delivery on orders above ₹2500
                         </p>
+                        <!-- Applicable Coupons -->
+                        <% if (applicableCoupons && applicableCoupons.length > 0) { %>
+                            <div class="mt-4 max-h-32 overflow-y-auto">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-2">Available Coupons</h3>
+                                <% applicableCoupons.forEach(coupon => { %>
+                                    <div class="border border-gray-200 rounded-lg p-3 mb-2 cursor-pointer hover:bg-gray-100" onclick="applyCouponFromList('<%= coupon.code %>', '<%= isBuyNow ? 'true' : 'false' %>')">
+                                        <p class="text-sm font-medium text-gray-900"><%= coupon.name %> (<%= coupon.code %>)</p>
+                                        <p class="text-xs text-gray-600">Discount: <%= coupon.discountType === 'fixed' ? '₹' + coupon.offerPrice : coupon.offerPrice + '%' %></p>
+                                        <p class="text-xs text-gray-600">Min. Purchase: ₹<%= coupon.minimumPrice %></p>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
 
@@ -176,20 +192,20 @@
                     <div class="space-y-3">
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Subtotal (<%= priceDetails.itemCount %> items)</span>
-                            <span class="text-gray-900">₹<%= priceDetails.subtotal %></span>
+                            <span id="subtotalValue" class="text-gray-900">₹<%= priceDetails.subtotal %></span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Delivery charges</span>
-                            <span class="text-green-600"><%= priceDetails.deliveryCharges === 0 ? 'Free' : `₹${priceDetails.deliveryCharges}` %></span>
+                            <span id="deliveryChargesValue" class="text-green-600"><%= priceDetails.deliveryCharges === 0 ? 'Free' : `₹${priceDetails.deliveryCharges}` %></span>
                         </div>
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-600">Discount</span>
-                            <span class="text-gray-900">₹<%= priceDetails.discount %></span>
+                            <span id="discountValue" class="text-gray-900">₹<%= priceDetails.discount %></span>
                         </div>
                         <div class="border-t border-gray-200 pt-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-lg font-semibold text-gray-900">Total Amount</span>
-                                <span class="text-xl font-bold text-gray-900">₹<%= priceDetails.totalAmount %></span>
+                                <span id="totalValue" class="text-xl font-bold text-gray-900">₹<%= priceDetails.totalAmount %></span>
                             </div>
                         </div>
                     </div>
@@ -231,7 +247,12 @@
         }
     });
 
-    async function applyCoupon() {
+    function applyCouponFromList(couponCode, isBuyNow) {
+        document.getElementById('couponCode').value = couponCode;
+        applyCoupon(isBuyNow);
+    }
+
+    async function applyCoupon(isBuyNow) {
         try {
             const couponCode = document.getElementById('couponCode').value.trim();
             if (!couponCode) {
@@ -249,7 +270,7 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ couponCode })
+                body: JSON.stringify({ couponCode, isBuyNow })
             });
 
             const data = await response.json();
@@ -261,7 +282,18 @@
                     showConfirmButton: false,
                     timer: 1500
                 });
-                window.location.reload();
+
+                // Update price details in the UI
+                document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
+                document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
+                document.getElementById('discountValue').textContent = `₹${data.priceDetails.discount}`;
+                document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
+
+                // Show remove coupon button, hide apply button, set coupon code
+                document.getElementById('removeCouponBtn').classList.remove('hidden');
+                document.getElementById('applyCouponBtn').classList.add('hidden');
+                document.getElementById('couponCode').value = couponCode;
+                document.getElementById('couponCode').placeholder = 'Coupon applied';
             } else {
                 await Swal.fire({
                     icon: 'error',
@@ -276,6 +308,56 @@
                 icon: 'error',
                 title: 'Error',
                 text: 'Failed to apply coupon.',
+                showConfirmButton: true
+            });
+        }
+    }
+
+    async function removeCoupon(isBuyNow) {
+        try {
+            const response = await fetch('/removeCoupon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isBuyNow })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Coupon removed!',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+                // Update price details in the UI
+                document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
+                document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
+                document.getElementById('discountValue').textContent = `₹${data.priceDetails.discount}`;
+                document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
+
+                // Hide remove coupon button, show apply button, clear coupon input
+                document.getElementById('removeCouponBtn').classList.add('hidden');
+                document.getElementById('applyCouponBtn').classList.remove('hidden');
+                document.getElementById('couponCode').value = '';
+                document.getElementById('couponCode').placeholder = 'Enter coupon code';
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to remove coupon.',
+                    showConfirmButton: true
+                });
+            }
+        } catch (error) {
+            console.error('Error removing coupon:', error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to remove coupon.',
                 showConfirmButton: true
             });
         }
@@ -330,7 +412,7 @@
 
                 const order = data.order;
                 const options = {
-                    key: data.key_id, // Fetched from backend
+                    key: data.key_id,
                     amount: order.amount,
                     currency: order.currency,
                     name: 'Soleus Shoes',
@@ -374,7 +456,6 @@
                         }
                     },
                     prefill: {
-                        // Fetch user details from backend or session
                         name: '<%= user.name || "" %>',
                         email: '<%= user.email || "" %>',
                         contact: '<%= user.phone || "" %>'
