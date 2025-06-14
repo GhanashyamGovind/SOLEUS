@@ -4,6 +4,7 @@ const Cart = require('../../models/cartSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
 const Wallet = require('../../models/walletSchema');
+const Coupon = require('../../models/couponSchema');
 const {v4: uuidv4} = require('uuid');
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
@@ -16,6 +17,29 @@ function generateOrderId(shopName) {
 
   return `${digits()}${letters()}${moreDigits()}${shopName}`;
 }
+
+const rewardEligibleCoupon = async (userId, amountPaid) =>{
+    try {
+
+        const bestCoupon = await Coupon.findOne({
+            rewardThreshold: { $lte: amountPaid },
+            givenTo:{ $ne: userId},
+            isListed: true,
+            expireOn: { $gt: new Date() },
+        }).sort({ rewardThreshold: -1 }); // get highest qualifyig coupon
+
+        if(bestCoupon) {
+            bestCoupon.givenTo.push(userId);
+            console.log(`Coupon '${bestCoupon.name}'- ${bestCoupon.code} is given to user ${userId} `);
+            bestCoupon.save();
+        } else {
+            console.log('No eligible coupon found to reward.');
+        }
+        
+    } catch (error) {
+        console.error('Error giving coupon to user:', error);
+    }
+};
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -327,6 +351,8 @@ const proceedToPayment = async (req, res, next) => {
             await wallet.save();
             order.paymentStatus = 'Completed';
             console.log("wallet paymetn is done")
+
+            await rewardEligibleCoupon(userId, order.finalAmount); // => coupon for wallet (not for code)
         }
 
         await order.save();
@@ -570,6 +596,7 @@ const verifyRazorpayPayment = async (req, res) => {
 
         await order.save();
         await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
+        await rewardEligibleCoupon(userId, order.finalAmount) // => coupon kittumo enn nokkan
 
         // Update stock
         for (const item of order.orderedItems) {
@@ -630,7 +657,7 @@ const successPage = async (req, res, next) => {
         }
 
         const addressId = order.address;
-        console.log("first", order.address)
+        // console.log("first", order.address)
 
         //delivery address
         const findAddress = order.address

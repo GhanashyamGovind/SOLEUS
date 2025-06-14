@@ -257,6 +257,8 @@
         if (addModal) {
             addModal.classList.add('opacity-0');
             document.getElementById('addCouponForm').reset();
+            document.getElementById('rewardThreshold').disabled = false;
+            document.getElementById('isPublic').disabled = false;
         } else {
             console.error('Add modal not found');
         }
@@ -276,6 +278,8 @@
         if (editModal) {
             editModal.classList.add('opacity-0');
             document.getElementById('editCouponForm').reset();
+            document.getElementById('editRewardThreshold').disabled = false;
+            document.getElementById('editIsPublic').disabled = false;
         } else {
             console.error('Edit modal not found');
         }
@@ -372,6 +376,10 @@
             document.getElementById('editExpiryDate').value = coupon.expireOn ? new Date(coupon.expireOn).toISOString().split('T')[0] : '';
             document.getElementById('editIsPublic').checked = coupon.isPublic || false;
             document.getElementById('editRewardThreshold').value = coupon.rewardThreshold != null ? coupon.rewardThreshold : 0;
+
+            // Apply mutual exclusivity logic
+            document.getElementById('editRewardThreshold').disabled = coupon.isPublic;
+            document.getElementById('editIsPublic').disabled = coupon.rewardThreshold > 0;
 
             openEditModal();
         } catch (error) {
@@ -528,5 +536,47 @@
             }
         }
     }
+
+    // Add event listeners for mutual exclusivity in Add Coupon Modal
+    document.getElementById('isPublic').addEventListener('change', function() {
+        const rewardThreshold = document.getElementById('rewardThreshold');
+        if (this.checked) {
+            rewardThreshold.disabled = true;
+            rewardThreshold.value = 0;
+        } else {
+            rewardThreshold.disabled = false;
+        }
+    });
+
+    document.getElementById('rewardThreshold').addEventListener('input', function() {
+        const isPublic = document.getElementById('isPublic');
+        if (this.value > 0) {
+            isPublic.disabled = true;
+            isPublic.checked = false;
+        } else {
+            isPublic.disabled = false;
+        }
+    });
+
+    // Add event listeners for mutual exclusivity in Edit Coupon Modal
+    document.getElementById('editIsPublic').addEventListener('change', function() {
+        const editRewardThreshold = document.getElementById('editRewardThreshold');
+        if (this.checked) {
+            editRewardThreshold.disabled = true;
+            editRewardThreshold.value = 0;
+        } else {
+            editRewardThreshold.disabled = false;
+        }
+    });
+
+    document.getElementById('editRewardThreshold').addEventListener('input', function() {
+        const editIsPublic = document.getElementById('editIsPublic');
+        if (this.value > 0) {
+            editIsPublic.disabled = true;
+            editIsPublic.checked = false;
+        } else {
+            editIsPublic.disabled = false;
+        }
+    });
 </script>
 <%- include('../../views/partials/admin/footer') %>
