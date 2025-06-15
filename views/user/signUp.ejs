@@ -21,6 +21,8 @@
 
                     <input type="password" name="confirmPassword" placeholder="Confirm password" id="confirmPassword" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
                     <div id="error5" class="text-red-500 text-black"></div>
+
+                    <input type="text" name="referralCode" placeholder="Enter Referral Code if you have" id="referralCode" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
                 </div>
                 <br>
                 <% if (locals.message && message.length > 0) { %>
@@ -31,12 +33,12 @@
                 <button type="submit" class="w-full bg-black text-white p-3 rounded-lg mt-6 hover:bg-white hover:text-black hover:ring-2 hover:ring-black">CREATE</button>
             </form>
 
-            <div class="text-center mt-4 ">
+            <!-- <div class="text-center mt-4 ">
                 <a href="/auth/google" class="w-full bg-white text-black p-3 rounded-lg border border-gray-300 flex items-center justify-center hover:ring-2 hover:ring-white-400 hover:bg-black hover:text-white transition-colors">
                     <img src="https://www.google.com/favicon.ico" alt="Google Logo" class="h-5 mr-2">
                     Continue with your GOOGLE account
                 </a>
-            </div>
+            </div> -->
 
             <div class="text-center mt-4">
                 <p class="text-sm">ALREADY HAVE AN ACCOUNT ? <a href="/login" class="underline hover:text-yellow-600">/Login</a></p>
@@ -54,6 +56,7 @@
         const phone = document.getElementById('phone');
         const password = document.getElementById('password');
         const confirmPassword = document.getElementById('confirmPassword');
+        const referalCode = document.getElementById('referralCode');
 
         const error1 = document.getElementById('error1');
         const error2 = document.getElementById('error2');

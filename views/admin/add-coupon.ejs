@@ -37,6 +37,7 @@
                     <tr>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Name</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Offer</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Created On</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires On</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -56,11 +57,16 @@
                                 <td class="px-3 py-4 whitespace-nowrap hidden sm:table-cell">
                                     <div class="text-sm text-gray-900"><%= c.name %></div>
                                 </td>
+                                <td class="px-3 py-4 whitespace-nowrap hidden sm:table-cell">
+                                    <div class="text-sm text-gray-900">
+                                        <%= c.discountType === 'percentage' ? `${c.offerPrice}%` : `₹${c.offerPrice}` %>
+                                    </div>
+                                </td>
                                 <td class="px-3 py-4 whitespace-nowrap hidden md:table-cell">
-                                    <div class="text-sm text-gray-900"><%= c.createdOn %></div>
+                                    <div class="text-sm text-gray-900"><%= c.createdOn.toDateString() %></div>
                                 </td>
                                 <td class="px-3 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900"><%= c.expireOn %></div>
+                                    <div class="text-sm text-gray-900"><%= c.expireOn.toDateString() %></div>
                                 </td>
                                 <td class="px-3 py-4 whitespace-nowrap">
                                     <% if (c.isListed === true) { %>
@@ -77,25 +83,25 @@
                                     <div class="flex flex-col sm:flex-row sm:space-x-2 space-y-1 sm:space-y-0">
                                         <button 
                                             onclick="editCoupon('<%= c.code %>')" 
-                                            class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-900 px-2 py-1 rounded border border-indigo-200 hover:border-indigo-300">
+                                            class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-900 px-2 py-1 rounded border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-500 hover:text-white">
                                             Edit
                                         </button>
                                         <% if (c.isListed === true) { %>
                                             <button 
                                                 onclick="ListStatus('<%= c.code %>')" 
-                                                class="text-xs sm:text-sm text-orange-600 hover:text-orange-900 px-2 py-1 rounded border border-orange-200 hover:border-orange-300">
+                                                class="text-xs sm:text-sm text-orange-600 hover:text-orange-900 px-2 py-1 rounded border border-orange-200 hover:border-orange-300 hover:bg-orange-500 hover:text-white">
                                                 Unlist
                                             </button>
                                         <% } else { %>
                                             <button 
                                                 onclick="ListStatus('<%= c.code %>')" 
-                                                class="text-xs sm:text-sm text-green-600 hover:text-green-900 px-2 py-1 rounded border border-green-200 hover:border-green-300">
+                                                class="text-xs sm:text-sm text-green-600 hover:text-green-900 px-2 py-1 rounded border border-green-200 hover:border-green-300 hover:bg-green-500 hover:text-white">
                                                 List
                                             </button>
                                         <% } %>
                                         <button 
                                             onclick="deleteCoupon('<%= c.code %>')" 
-                                            class="text-xs sm:text-sm text-red-600 hover:text-red-900 px-2 py-1 rounded border border-red-200 hover:border-red-300">
+                                            class="text-xs sm:text-sm text-red-600 hover:text-red-900 px-2 py-1 rounded border border-red-200 hover:border-red-300 hover:bg-red-500 hover:text-white">
                                             Delete
                                         </button>
                                     </div>

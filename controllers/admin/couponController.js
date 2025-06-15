@@ -1,4 +1,5 @@
 const Coupon = require('../../models/couponSchema');
+const Referral = require('../../models/referralSchema')
 
 const getAdminCoupon = async (req, res, next) => {
     try {
@@ -192,6 +193,54 @@ const deleteCoupon = async (req, res, next) => {
     }
 }
 
+const getReferral = async (req, res, next) => {
+    try {
+
+        let settings = await Referral.findOne();
+        if(!settings) settings = await Referral.create({});
+        
+        return res.render('admin/referral', {settings})
+    } catch (error) {
+        next(error)
+    }
+}
+
+const editReferral = async (req, res, next) => {
+    try {
+        const { referrerAmount, refereeAmount } = req.body;
+        let settings = await Referral.findOne();
+        if (!settings) settings = new Referral();
+        settings.referrerAmount = parseInt(referrerAmount) || 50;
+        settings.refereeAmount = parseInt(refereeAmount) || 100;
+        const saveReferralAmounts = await settings.save(); 
+        if(!saveReferralAmounts) {
+            return res.status(400).json({success: false, message: "Unable to change the save"})
+        }
+
+        return res.status(200).json({success: true, message: "Referal Updated"})
+    } catch (error) {
+        next(error)
+    }
+}
+
+const onAndOff = async (req, res, next) => {
+    try {
+        const  { isActive } = req.body;
+        let settings = await Referral.findOne();
+        if(!settings) if (!settings) settings = new Referral();
+        settings.isActive = isActive;
+        const savedReferral = await settings.save();
+        if (!savedReferral) {
+        return res.status(400).json({ success: false, message: "Unable to toggle referral program" });
+        }
+        return res.status(200).json({ success: true, message: "Referral program toggled" });
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+
 module.exports = {
     getAdminCoupon,
     addCoupon,
@@ -199,4 +248,7 @@ module.exports = {
     editCoupon,
     listAndUnlit,
     deleteCoupon,
+    getReferral,
+    editReferral,
+    onAndOff,
 }

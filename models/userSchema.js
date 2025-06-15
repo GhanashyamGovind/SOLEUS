@@ -55,16 +55,6 @@ const userSchema = new Schema({
         type: Date,
         default: Date.now,
     },
-    referalCode: {
-        type: String,
-    },
-    redeemed: {
-        type: Boolean,
-    },
-    redeemedUsers: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-    },
     profileImage: {
         type: String,
         default: null
@@ -81,7 +71,11 @@ const userSchema = new Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    referralCode: {
+        type: String, 
+        unique: true
+    }
 });
 
 const User = mongoose.model('User', userSchema);

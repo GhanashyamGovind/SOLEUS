@@ -172,7 +172,7 @@
                 <p class="text-gray-600 mt-2">Monitor your order status and delivery progress</p>
             </div>
             <button class="btn-primary text-black font-bold uppercase py-3 px-6 rounded-lg">
-                ← Back to Orders
+                ← Back
             </button>
         </div>
 
@@ -386,10 +386,14 @@
                                 <span class="font-semibold">99</span>
                             <% } %>
                         </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Coupon discount:</span>
+                            <span class="font-semibold <%= order.discount ? 'text-green-600' : '' %>">-₹ <%= order.discount %></span>
+                        </div>
                         <div class="border-t pt-3 mt-3">
                             <div class="flex justify-between">
                                 <span class="text-lg font-bold">Total Amount:</span>
-                                <span class="text-lg font-bold text-gray-900">₹ <%= order.finalAmount %></span>
+                                <span class="text-xl font-bold text-gray-900">₹ <%= order.finalAmount %></span>
                             </div>
                         </div>
                     </div>

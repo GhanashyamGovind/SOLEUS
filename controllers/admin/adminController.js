@@ -18,26 +18,24 @@ const loadLogin = async (req, res, next) => {
 
 // submit-login
 const login = async (req, res, next) => {
-    try{
-        const {email, password} = req.body;
-        const admin = await User.findOne({email, isAdmin: true});
-        console.log(admin)
+    try {
+        const { email, password } = req.body;
+        const admin = await User.findOne({ email, isAdmin: true });
+        console.log(admin);
 
-        if(admin){
-            const passwordMatch = await bcrypt.compare(password, admin.password);
-
-            if(passwordMatch){
-                // console.log("password is  matching")
-                req.session.admin = admin._id;
-                return res.redirect('/admin');
-            }else {
-                
-            }
-
+        if (!admin) {
+            return res.render('admin/admin-login', { message: "Enter the proper email" });
         }
 
-    }catch (error){
-        next(error)
+        const passwordMatch = await bcrypt.compare(password, admin.password);
+        if (!passwordMatch) {
+            return res.render('admin/admin-login', { message: "Wrong password" });
+        }
+
+        req.session.admin = admin._id;
+        return res.redirect('/admin');
+    } catch (error) {
+        next(error);
     }
 }
 
@@ -58,15 +56,10 @@ const loadDashboard = async (req, res, next) =>{
 //logOut
 const logout = async (req, res, next) => {
     try {
-        req.session.destroy(err => {
-            if(err){
-                const error = new Error('Error while destroying the admin session')
-                error.statusCode = 500;
-                throw error;
-            }
-                console.log("session is deleted")
-             return  res.redirect('/admin/login');
-        })
+        delete req.session.admin;
+        res.clearCookie(req.sessionID)
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        return  res.redirect('/admin/login');
     } catch (error) {
         next(error)
     }

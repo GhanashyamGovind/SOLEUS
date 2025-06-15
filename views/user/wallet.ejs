@@ -202,24 +202,40 @@
 
         <!-- Quick Actions -->
         <div class="mt-8">
-            <h3 class="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <button class="bg-white p-6 rounded-xl card-shadow hover:shadow-lg transition duration-200 text-center">
-                    <div class="bg-yellow-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
-                        <i data-feather="download" class="w-6 h-6 text-yellow-600"></i>
+            <% if (on) { %>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Referral Code</h3>
+
+            <div class="grid grid-cols-1 gap-6 max-w-md mx-auto">
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-8 rounded-2xl shadow-xl border border-yellow-200 hover:shadow-2xl hover:scale-105 transform transition-all duration-300 text-center group">    
+                    <div 
+                        class="relative w-full border-3 border-amber-400 rounded-xl p-4 flex items-center justify-center gap-3 mb-6 bg-white shadow-inner hover:bg-yellow-50 transition-colors duration-200 cursor-pointer"
+                        onclick="copyText('referralCode')"
+                    >
+                        <i data-feather="copy" class="w-7 h-7 text-amber-500 group-hover:text-amber-600 transition-colors duration-200"></i>
+                        <h6 id="referralCode" class="font-black text-amber-600 text-xl tracking-wider select-all"><%= referal %></h6>
+                        <i data-feather="gift" class="w-6 h-6 text-amber-500 animate-bounce"></i>
                     </div>
-                    <p class="font-semibold text-gray-900">Download Statement</p>
-                </button>
-                <button class="bg-white p-6 rounded-xl card-shadow hover:shadow-lg transition duration-200 text-center">
-                    <div class="bg-green-100 w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3">
-                        <i data-feather="help-circle" class="w-6 h-6 text-green-600"></i>
+
+                    <div class="space-y-3">
+                        <p class="font-bold text-gray-800 text-lg leading-relaxed">
+                            🎉 Invite your friends with this code
+                        </p>
+                        <p class="text-amber-700 font-semibold text-base">
+                            💰 Earn rewards in your wallet
+                        </p>
+                        <div class="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
+                            <i data-feather="users" class="w-4 h-4"></i>
+                            <span>Share & Earn Together</span>
+                        </div>
                     </div>
-                    <p class="font-semibold text-gray-900">Help & Support</p>
-                </button>
+                </div>
             </div>
+
+            <% } %>
         </div>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Initialize Feather icons
         feather.replace();
@@ -375,5 +391,26 @@
             typeFilter.addEventListener('change', applyFilters);
             timeFilter.addEventListener('change', applyFilters);
         });
+
+        async function copyText(id) {
+            const el = document.getElementById(id);
+            const text = el?.innerText || el?.textContent;
+            await navigator.clipboard.writeText(text);
+
+            await Swal.fire({
+            icon: 'success',
+            title: 'Referral code copied!',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            background: '#fff3cd',
+            iconColor: '#198754',
+            customClass: {
+                popup: 'shadow-lg text-sm font-medium border border-yellow-300'
+            }
+            });
+        }
     </script>
 <%- include('../../views/partials/user/footer') %>

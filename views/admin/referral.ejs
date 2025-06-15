@@ -1,0 +1,223 @@
+<%- include('../../views/partials/admin/header', {title: 'Referral Settings'}) %>
+
+<div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden"></div>
+
+<main class="flex-1 lg:ml-0 p-4 lg:p-6 text-black bg-gray-50 min-h-screen">
+
+  <!-- Header Card with Enhanced Toggle -->
+  <div class="bg-gradient-to-r from-white to-gray-50 rounded-2xl shadow-xl border border-gray-200 p-6 mb-6 backdrop-blur-sm">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl flex items-center justify-center shadow-lg">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-800">Referral Program</h1>
+          <p class="text-sm text-gray-600">Manage your referral system settings</p>
+        </div>
+      </div>
+      
+      <!-- Enhanced Toggle Switch -->
+      <div class="flex items-center space-x-4">
+        <span class="text-sm font-semibold <%= !settings.isActive ? 'text-gray-600' : 'text-gray-400' %> transition-all duration-300">OFF</span>
+        
+        <button id="toggle-button" class="relative inline-flex items-center h-8 rounded-full w-16 transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-yellow-200 <%= settings.isActive ? 'bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-200' : 'bg-gradient-to-r from-gray-300 to-gray-400 shadow-md' %> hover:scale-105" data-active="<%= settings.isActive %>">
+          <span class="inline-block h-7 w-7 transform bg-white rounded-full shadow-lg transition-all duration-300 ease-in-out flex items-center justify-center <%= settings.isActive ? 'translate-x-8' : 'translate-x-0.5' %> hover:shadow-xl">
+            <div class="w-3 h-3 rounded-full <%= settings.isActive ? 'bg-green-400' : 'bg-gray-400' %> transition-colors duration-300"></div>
+          </span>
+          
+          <!-- Status indicator -->
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span class="text-xs font-bold text-white opacity-0 <%= settings.isActive ? 'opacity-100' : '' %> transition-opacity duration-300">
+              <%= settings.isActive ? '✓' : '' %>
+            </span>
+          </div>
+        </button>
+        
+        <span class="text-sm font-semibold <%= settings.isActive ? 'text-green-600' : 'text-gray-400' %> transition-all duration-300">ON</span>
+        
+        <!-- Status Badge -->
+        <div class="ml-3 px-3 py-1 rounded-full text-xs font-medium <%= settings.isActive ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-gray-100 text-gray-600 border border-gray-200' %> transition-all duration-300">
+          <%= settings.isActive ? 'Active' : 'Inactive' %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Form Card -->
+  <div class="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 backdrop-blur-sm">
+    <div class="mb-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-2">Reward Configuration</h2>
+      <p class="text-gray-600 text-sm">Set the reward amounts for referrers and referees</p>
+    </div>
+    
+    <form id="referral-form">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Referrer Amount -->
+        <div class="group">
+          <label class="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-yellow-600 transition-colors duration-200">
+            <div class="flex items-center space-x-2">
+              <div class="w-5 h-5 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+              <span>Referrer Reward Amount</span>
+            </div>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span class="text-gray-500 font-medium">₹</span>
+            </div>
+            <input type="number" name="referrerAmount" value="<%= settings.referrerAmount %>" min="0" 
+                   class="block w-full pl-8 pr-4 py-3 text-lg font-medium rounded-xl border-2 border-gray-200 shadow-sm focus:border-yellow-400 focus:ring-4 focus:ring-yellow-100 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white group-focus-within:shadow-lg">
+          </div>
+          <p class="mt-2 text-xs text-gray-500">Amount credited to the person who refers</p>
+        </div>
+
+        <!-- Referee Amount -->
+        <div class="group">
+          <label class="block text-sm font-semibold text-gray-700 mb-2 group-focus-within:text-yellow-600 transition-colors duration-200">
+            <div class="flex items-center space-x-2">
+              <div class="w-5 h-5 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
+              </div>
+              <span>Referee Reward Amount</span>
+            </div>
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span class="text-gray-500 font-medium">₹</span>
+            </div>
+            <input type="number" name="refereeAmount" value="<%= settings.refereeAmount %>" min="0" 
+                   class="block w-full pl-8 pr-4 py-3 text-lg font-medium rounded-xl border-2 border-gray-200 shadow-sm focus:border-yellow-400 focus:ring-4 focus:ring-yellow-100 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white group-focus-within:shadow-lg">
+          </div>
+          <p class="mt-2 text-xs text-gray-500">Amount credited to the new user who joins</p>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="flex justify-end">
+        <button type="submit" class="group relative px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white font-bold rounded-xl hover:from-yellow-600 hover:to-yellow-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-yellow-200 active:scale-95">
+          <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span>SAVE SETTINGS</span>
+          </div>
+          <div class="absolute inset-0 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<script>
+  // Handle toggle button
+  const toggleButton = document.getElementById('toggle-button');
+  toggleButton.addEventListener('click', async () => {
+    const isActive = toggleButton.dataset.active === 'true';
+    try {
+      const response = await fetch('/admin/referral', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !isActive })
+      });
+      const result = await response.json();
+      if (result.success) {
+        toggleButton.dataset.active = !isActive;
+        toggleButton.classList.toggle('bg-gradient-to-r', true);
+        toggleButton.classList.toggle('from-green-400', !isActive);
+        toggleButton.classList.toggle('to-green-500', !isActive);
+        toggleButton.classList.toggle('shadow-lg', !isActive);
+        toggleButton.classList.toggle('shadow-green-200', !isActive);
+        toggleButton.classList.toggle('from-gray-300', isActive);
+        toggleButton.classList.toggle('to-gray-400', isActive);
+        toggleButton.classList.toggle('shadow-md', isActive);
+        
+        // Update the toggle thumb position and indicator
+        const thumb = toggleButton.querySelector('span');
+        const indicator = thumb.querySelector('div');
+        thumb.classList.toggle('translate-x-8', !isActive);
+        thumb.classList.toggle('translate-x-0.5', isActive);
+        indicator.classList.toggle('bg-green-400', !isActive);
+        indicator.classList.toggle('bg-gray-400', isActive);
+        
+        // Update the checkmark
+        const checkmark = toggleButton.querySelector('.absolute span');
+        checkmark.classList.toggle('opacity-100', !isActive);
+        
+        // Update the ON/OFF labels
+        const onOffLabels = document.querySelectorAll('.flex.items-center.space-x-4 span.text-sm');
+        onOffLabels[0].classList.toggle('text-gray-600', isActive);
+        onOffLabels[0].classList.toggle('text-gray-400', !isActive);
+        onOffLabels[1].classList.toggle('text-green-600', !isActive);
+        onOffLabels[1].classList.toggle('text-gray-400', isActive);
+        
+        // Update status badge
+        const statusBadge = document.querySelector('.ml-3.px-3.py-1');
+        statusBadge.classList.toggle('bg-green-100', !isActive);
+        statusBadge.classList.toggle('text-green-800', !isActive);
+        statusBadge.classList.toggle('border-green-200', !isActive);
+        statusBadge.classList.toggle('bg-gray-100', isActive);
+        statusBadge.classList.toggle('text-gray-600', isActive);
+        statusBadge.classList.toggle('border-gray-200', isActive);
+        statusBadge.textContent = !isActive ? 'Active' : 'Inactive';
+        
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error toggling referral program',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      console.error('Fetch error:', error);
+    }
+  });
+
+  // Handle form submission with fetch and SweetAlert2
+  const form = document.getElementById('referral-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const data = {
+      referrerAmount: parseInt(formData.get('referrerAmount')) || 50,
+      refereeAmount: parseInt(formData.get('refereeAmount')) || 100
+    };
+
+    try {
+      const response = await fetch('/admin/referral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: result.message || 'Settings updated successfully',
+        timer: 3000,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error updating settings',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      console.error('Fetch error:', error);
+    }
+  });
+</script>
+
+<%- include('../../views/partials/admin/footer') %>

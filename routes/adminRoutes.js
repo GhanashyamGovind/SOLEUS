@@ -72,6 +72,11 @@ router.post('/coupon/add', adminAuth, couponController.addCoupon);
 router.get('/coupons/edit/:code', adminAuth, couponController.getEditCoupon);
 router.put('/coupons/edit/:code', adminAuth, couponController.editCoupon);
 router.patch('/coupons/edit/:code/toggle', adminAuth, couponController.listAndUnlit);
-router.delete('/coupons/delete/:code', adminAuth, couponController.deleteCoupon)
+router.delete('/coupons/delete/:code', adminAuth, couponController.deleteCoupon);
 
-module.exports = router
+//referral
+router.get('/referral', adminAuth, couponController.getReferral);
+router.post('/referral', adminAuth, couponController.editReferral);
+router.patch('/referral', adminAuth, couponController.onAndOff)
+
+module.exports = router;

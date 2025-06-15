@@ -2,6 +2,7 @@ const User = require('../../models/userSchema');
 const Category = require('../../models/categorySchema');
 const Product = require('../../models/productSchema');
 const Brand = require('../../models/brandSchema');
+const Referral = require('../../models/referralSchema');
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -13,6 +14,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 function generateOtp(){
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function createReferralCode (name, userId){
+  try {
+    let namePart = name.slice(0, 3).toUpperCase();
+    let userIdPart = userId.toString().slice(4, 7).toUpperCase()
+
+    return `${namePart}${userIdPart}`
+  } catch (error) {
+    console.error("Error while generating referral code", error);
+    return false;
+  }
 }
 
 async function sendVerificationEmail(email, otp){
@@ -46,6 +59,8 @@ async function sendVerificationEmail(email, otp){
         return false;
     }
 }
+
+
 
 //home page
 const loadHomepage = async (req, res, next) => {
@@ -143,12 +158,10 @@ const loadSignUp = async (req, res, next) => {
 
 
 
-
-
 // submit signUp
 const signUp = async (req, res, next) => {
     try {
-        const {name, email, password, confirmPassword, phone} = req.body;
+        const {name, email, password, confirmPassword, phone, referralCode} = req.body;
 
         if(password !== confirmPassword){
             return res.render('user/signUp', {message: "Password not Matchig"})
@@ -167,7 +180,7 @@ const signUp = async (req, res, next) => {
         }
 
         req.session.userOtp = otp;
-        req.session.userData = {name,phone,email,password};
+        req.session.userData = {name,phone,email,password, referralCode};
 
         res.render("user/verify-otp");
         console.log("otp sent", otp)
@@ -191,12 +204,12 @@ const securePassword = async (password) => {
 }
 
 const verifyOtp = async (req, res, next) => {
-    try {
+  try {
 
         const {otp} = req.body;
 
-        if(otp === req.session.userOtp){
-            const user = req.session.userData; // session ill ulla otp aay compare cheyyunu
+       if(otp === req.session.userOtp){ // session ill ulla otp aay compare cheyyunu
+            const user = req.session.userData; 
             const passwordHash = await securePassword(user.password);
 
             const saveUserData = new User({
@@ -206,9 +219,13 @@ const verifyOtp = async (req, res, next) => {
                 password: passwordHash,
             });
 
+            const refCod = user.referralCode;
+
             //save user first 
             const createdUser = await saveUserData.save(); // saved user data in DB
-            // req.session.user = saveUserData._id =====> (ith karanam user reg cheyyummbol thanne login akunnu)
+
+            createdUser.referralCode = await createReferralCode (createdUser.name, createdUser._id);
+            console.log("referal code ====> ",createdUser.referralCode)
 
             // creat a wallet for the new user
             const newWallet = new Wallet({
@@ -220,16 +237,45 @@ const verifyOtp = async (req, res, next) => {
             createdUser.walletId = savedWallet._id;
             await createdUser.save();
 
+            //reffer part
+            const refer = await Referral.findOne({isActive: true});
+            let referreUser = await User.findOne({referralCode: refCod.trim().toUpperCase()});
+            console.log("referrer user", referreUser.name);
+
+            if(refCod && refer && referreUser){
+              await Wallet.updateOne(
+                {userId: referreUser._id},
+                {
+                  $inc: { balance: refer.referrerAmount },
+                  $push: {
+                    transactions: {
+                      type: 'credit',
+                      amount: refer.referrerAmount,
+                      reason: `Referral - Reward for inviting a user(${createdUser.name})`
+                    }
+                  }
+                }
+              )
+              console.log("1st money ok")
+
+              savedWallet.balance += refer.refereeAmount;
+              savedWallet.transactions.push({
+                type: 'credit',
+                amount: refer.refereeAmount,
+                reason: `Welcome reward for using a referral`
+              })
+              console.log("second money ok")
+              await savedWallet.save();
+            }
+            
             res.json({success: true, redirectUrl: "/login"})
         }else {
             res.status(400).json({success: false, message: "Invalid OTP, Please try again"})
         }
 
-    } catch (error) {
+  } catch (error) {
       next(error)
-        // console.error("otp verification error ====>", error);
-        // res.status(500).json({success:false, message: "An error occured"})
-    }
+   }
 }
 
 const resendOtp = async (req, res, next) => {
