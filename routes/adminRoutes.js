@@ -21,6 +21,8 @@ router.get('/login', adminController.loadLogin);
 router.post('/login', adminController.login);
 router.get('/',adminAuth, adminController.loadDashboard);
 router.get('/logout', adminController.logout);
+router.post('/sales-report', adminAuth, adminController.saleReport);
+router.post('/download-pdf', adminAuth, adminController.downloadPDF);
 
 //Customer management
 router.get('/users',adminAuth, customerController.customerInfo);

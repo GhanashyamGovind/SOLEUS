@@ -1,102 +1,327 @@
 <%- include('../../views/partials/admin/header', {title: 'Dashboard'}) %>
 
-        <!-- Main Content -->
-        <div class="main-content flex-1 p-6 overflow-auto">
-            <!-- Dashboard Content -->
-            <div class="bg-white text-black p-6 rounded-lg shadow-lg">
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4">OVER ALL</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-rupee-sign text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL SALE</h3>
-                            <p class="text-2xl font-bold text-gray-900">₹9000</p>
-                        </div>
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-shopping-cart text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL ORDERS</h3>
-                            <p class="text-2xl font-bold text-gray-900">100</p>
-                        </div>
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-users text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL CUSTOMER</h3>
-                            <p class="text-2xl font-bold text-gray-900">125</p>
-                        </div>
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-wallet text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL INCOME</h3>
-                            <p class="text-2xl font-bold text-gray-900">₹100K</p>
-                        </div>
-                    </div>
-                </div>
+<!-- Include Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
-                <!-- Sales Reports -->
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4">SALE REPORTS</h2>
-                    <div class="border border-gray-200 p-4 rounded-lg bg-gray-50">
-                        <svg class="w-full h-64" viewBox="0 0 600 240" preserveAspectRatio="xMidYMid meet">
-                            <!-- Y-Axis Labels -->
-                            <text x="20" y="20" fill="black" font-size="12">₹999K</text>
-                            <text x="20" y="60" fill="black" font-size="12">₹100K</text>
-                            <text x="20" y="100" fill="black" font-size="12">₹50K</text>
-                            <text x="20" y="140" fill="black" font-size="12">₹25K</text>
-                            <text x="20" y="180" fill="black" font-size="12">₹10K</text>
-                            <text x="20" y="220" fill="black" font-size="12">₹1000</text>
-                            <!-- Grid Lines -->
-                            <line x1="50" y1="10" x2="600" y2="10" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="50" x2="600" y2="50" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="90" x2="600" y2="90" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="130" x2="600" y2="130" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="170" x2="600" y2="170" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="210" x2="600" y2="210" stroke="#e5e7eb" stroke-width="1"/>
-                            <!-- X-Axis Labels -->
-                            <text x="50" y="230" fill="black" font-size="12">JAN</text>
-                            <text x="100" y="230" fill="black" font-size="12">FEB</text>
-                            <text x="150" y="230" fill="black" font-size="12">MAR</text>
-                            <text x="200" y="230" fill="black" font-size="12">APR</text>
-                            <text x="250" y="230" fill="black" font-size="12">MAY</text>
-                            <text x="300" y="230" fill="black" font-size="12">JUN</text>
-                            <text x="350" y="230" fill="black" font-size="12">JUL</text>
-                            <text x="400" y="230" fill="black" font-size="12">AUG</text>
-                            <text x="450" y="230" fill="black" font-size="12">SEP</text>
-                            <text x="500" y="230" fill="black" font-size="12">OCT</text>
-                            <text x="550" y="230" fill="black" font-size="12">NOV</text>
-                            <text x="600" y="230" fill="black" font-size="12">DEC</text>
-                            <!-- Sales Line -->
-                            <polyline points="50,190 100,170 150,130 200,150 250,110 300,90 350,120 400,100 450,80 500,70 550,60 600,50" fill="none" stroke="#FFC107" stroke-width="2"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Top Selling Products -->
-                <div>
-                    <h2 class="text-xl font-semibold mb-4">TOP SELLING PRODUCTS</h2>
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-100">
-                                <tr class="border-b border-gray-200">
-                                    <th class="p-4 font-semibold text-gray-700">PRODUCT</th>
-                                    <th class="p-4 font-semibold text-gray-700 text-right">SALES</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-4">CASUAL SHOES WHITE</td>
-                                    <td class="p-4 text-right font-medium">101</td>
-                                </tr>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-4">BLACK LEATHER SHOES</td>
-                                    <td class="p-4 text-right font-medium">69</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="p-4">FOOTBALL BOOTS</td>
-                                    <td class="p-4 text-right font-medium">44</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+<!-- Main Content -->
+<div class="main-content flex-1 p-3 sm:p-6 overflow-auto">
+  <!-- Dashboard Content -->
+  <div class="bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg">
+    
+    <!-- Overview Cards -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">OVERVIEW</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-center mb-2">
+            <i class="fas fa-rupee-sign text-blue-500 text-lg sm:text-xl"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL SALE</h3>
+          <p class="text-lg sm:text-2xl font-bold text-gray-900">₹<%= totalSale.toLocaleString() %></p>
         </div>
+        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-green-50 to-green-100 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-center mb-2">
+            <i class="fas fa-shopping-cart text-green-500 text-lg sm:text-xl"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL ORDERS</h3>
+          <p class="text-lg sm:text-2xl font-bold text-gray-900"><%= totalOrders %></p>
+        </div>
+        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-center mb-2">
+            <i class="fas fa-users text-purple-500 text-lg sm:text-xl"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL CUSTOMERS</h3>
+          <p class="text-lg sm:text-2xl font-bold text-gray-900"><%= totalCustomers %></p>
+        </div>
+        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-center mb-2">
+            <i class="fas fa-wallet text-orange-500 text-lg sm:text-xl"></i>
+          </div>
+          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL INCOME</h3>
+          <p class="text-lg sm:text-2xl font-bold text-gray-900">₹<%= totalIncome.toLocaleString() %></p>
+        </div>
+      </div>
+    </div>
 
-<%- include('../../views/partials/admin/footer') %> 
+    <!-- Sales Report Controls -->
+    <div class="mb-8 bg-gray-50 p-4 sm:p-6 rounded-lg">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">SALES REPORT CONTROLS</h2>
+      <button class="block sm:hidden bg-blue-600 text-white p-2 rounded-md mb-4" onclick="document.getElementById('reportControls').classList.toggle('hidden')">
+        Toggle Filters
+      </button>
+      <div id="reportControls" class="hidden sm:block">
+        <!-- Filter Form -->
+        <form id="salesReportForm" action="/admin/sales-report" method="POST" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2" for="reportPeriod">Report Period</label>
+            <select id="reportPeriod" name="period" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+              <option value="custom">Custom Range</option>
+            </select>
+          </div>
+          <div id="customDateRange" class="hidden">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+            <div class="flex gap-2">
+              <input type="date" id="startDate" name="startDate" class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <input type="date" id="endDate" name="endDate" class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+          </div>
+          <div class="flex items-end">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors">
+              <i class="fas fa-chart-line mr-2"></i>Generate Report
+            </button>
+          </div>
+        </form>
+        <!-- PDF Download Form -->
+        <form id="downloadPDFForm" action="/admin/download-pdf" method="POST" class="flex flex-wrap gap-2">
+          <input type="hidden" name="period" id="pdfPeriod">
+          <input type="hidden" name="startDate" id="pdfStartDate">
+          <input type="hidden" name="endDate" id="pdfEndDate">
+          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
+            <i class="fas fa-file-pdf mr-2"></i>Download PDF
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sales Summary Cards -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">SALES SUMMARY</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-blue-700">OVERALL SALES COUNT</h3>
+              <p class="text-2xl font-bold text-blue-900"><%= summary.salesCount %></p>
+            </div>
+            <i class="fas fa-chart-bar text-blue-500 text-2xl"></i>
+          </div>
+        </div>
+        <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-green-700">OVERALL ORDER AMOUNT</h3>
+              <p class="text-2xl font-bold text-green-900">₹<%= summary.orderAmount.toLocaleString() %></p>
+            </div>
+            <i class="fas fa-money-bill-wave text-green-500 text-2xl"></i>
+          </div>
+        </div>
+        <div class="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-orange-700">OVERALL DISCOUNT</h3>
+              <p class="text-2xl font-bold text-orange-900">₹<%= summary.discount.toLocaleString() %></p>
+            </div>
+            <i class="fas fa-percentage text-orange-500 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">SALES ANALYTICS</h2>
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <!-- Line Chart -->
+        <div class="xl:col-span-2 bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+          <h3 class="text-lg font-semibold mb-4">Sales Trend</h3>
+          <div class="relative h-64 sm:h-80">
+            <canvas id="salesLineChart"></canvas>
+          </div>
+        </div>
+        <!-- Pie Chart -->
+        <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+          <h3 class="text-lg font-semibold mb-4">Sales Distribution</h3>
+          <div class="relative h-64 sm:h-80">
+            <canvas id="salesPieChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discount & Coupons Section -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">DISCOUNT & COUPONS ANALYSIS</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Discount Table -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Discount Breakdown</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-4 font-semibold text-gray-700 text-sm">TYPE</th>
+                  <th class="p-4 font-semibold text-gray-700 text-sm text-right">AMOUNT</th>
+                  <th class="p-4 font-semibold text-gray-700 text-sm text-right">COUNT</th>
+                </tr>
+              </thead>
+              <tbody class="text-sm">
+                <% discountBreakdown.forEach(item => { %>
+                  <tr class="border-b border-gray-200 hover:bg-gray-50">
+                    <td class="p-4"><%= item.type %></td>
+                    <td class="p-4 text-right font-medium">₹<%= item.amount.toLocaleString() %></td>
+                    <td class="p-4 text-right"><%= item.count %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Coupon Performance Chart -->
+        <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+          <h3 class="text-lg font-semibold mb-4">Coupon Performance</h3>
+          <div class="relative h-64">
+            <canvas id="couponChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Selling Products -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">TOP SELLING PRODUCTS</h2>
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-gray-100">
+              <tr class="border-b border-gray-200">
+                <th class="p-4 font-semibold text-gray-700">PRODUCT</th>
+                <th class="p-4 font-semibold text-gray-700 text-right">SALES</th>
+                <th class="p-4 font-semibold text-gray-700 text-right">REVENUE</th>
+                <th class="p-4 font-semibold text-gray-700 text-right">DISCOUNT</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% topProducts.forEach(product => { %>
+                <tr class="border-b border-gray-200 hover:bg-gray-50">
+                  <td class="p-4 font-medium"><%= product.name %></td>
+                  <td class="p-4 text-right font-medium"><%= product.salesCount %></td>
+                  <td class="p-4 text-right text-green-600 font-medium">₹<%= product.totalRevenue.toLocaleString() %></td>
+                  <td class="p-4 text-right text-orange-600 font-medium">₹<%= product.discountsApplied.toLocaleString() %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  th {
+    @apply sticky top-0 bg-gray-100 z-10;
+  }
+</style>
+
+<script>
+// Initialize charts with initial data
+document.addEventListener('DOMContentLoaded', function() {
+  initializeCharts();
+  setupEventListeners();
+});
+
+function initializeCharts() {
+  // Sales Line Chart
+  const salesCtx = document.getElementById('salesLineChart').getContext('2d');
+  window.salesLineChart = new Chart(salesCtx, {
+    type: 'line',
+    data: {
+      labels: <%- JSON.stringify(salesTrend.labels) %>,
+      datasets: [{
+        label: 'Sales (₹)',
+        data: <%- JSON.stringify(salesTrend.data) %>,
+        borderColor: '#FFC107',
+        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: function(value) { return '₹' + (value/1000) + 'K'; } }
+        }
+      }
+    }
+  });
+
+  // Sales Pie Chart
+  const pieCtx = document.getElementById('salesPieChart').getContext('2d');
+  window.salesPieChart = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: <%- JSON.stringify(salesDistribution.labels) %>,
+      datasets: [{
+        data: <%- JSON.stringify(salesDistribution.data) %>,
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 12, font: { size: window.innerWidth < 640 ? 10 : 11 } }
+        }
+      }
+    }
+  });
+
+  // Coupon Performance Chart
+  const couponCtx = document.getElementById('couponChart').getContext('2d');
+  window.couponChart = new Chart(couponCtx, {
+    type: 'bar',
+    data: {
+      labels: <%- JSON.stringify(couponPerformance.map(c => c.code)) %>,
+      datasets: [{
+        label: 'Usage Count',
+        data: <%- JSON.stringify(couponPerformance.map(c => c.usageCount)) %>,
+        backgroundColor: ['rgba(54, 162, 235, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)'],
+        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  }); 
+}
+
+function setupEventListeners() {
+  // Report period change to show/hide custom date range
+  document.getElementById('reportPeriod').addEventListener('change', function() {
+    const customRange = document.getElementById('customDateRange');
+    if (this.value === 'custom') {
+      customRange.classList.remove('hidden');
+    } else {
+      customRange.classList.add('hidden');
+    }
+  });
+
+  // Sync form values for PDF download
+  document.getElementById('downloadPDFForm').addEventListener('submit', function() {
+    document.getElementById('pdfPeriod').value = document.getElementById('reportPeriod').value;
+    document.getElementById('pdfStartDate').value = document.getElementById('startDate').value;
+    document.getElementById('pdfEndDate').value = document.getElementById('endDate').value;
+  });
+}
+</script>
+
+<%- include('../../views/partials/admin/footer') %>

@@ -164,27 +164,8 @@
   </div>
 </main>
 
-
-<%- include('../../views/partials/admin/footer') %>
 <script>
-// Mobile menu toggle
-const menuToggle = document.getElementById('menuToggle');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-
-if (menuToggle && sidebar && overlay) {
-  menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
-  });
-
-  overlay.addEventListener('click', () => {
-    sidebar.classList.add('-translate-x-full');
-    overlay.classList.add('hidden');
-  });
-}
-
-// Handle return request for product 1
+  // Handle return request for product 1
 const returnBtn1 = document.getElementById('return-btn-1');
 const statusDiv1 = document.getElementById('status-1');
 const statusText1 = document.getElementById('status-text-1');
@@ -238,5 +219,26 @@ async function reject(sku) {
   } catch (error) {
     console.error('Fetch error:', error);
   }
+}
+</script>
+<%- include('../../views/partials/admin/footer') %>
+<script>
+
+
+// Mobile menu toggle
+const menuToggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+
+if (menuToggle && sidebar && overlay) {
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('-translate-x-full');
+    overlay.classList.toggle('hidden');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.add('-translate-x-full');
+    overlay.classList.add('hidden');
+  });
 }
 </script>
