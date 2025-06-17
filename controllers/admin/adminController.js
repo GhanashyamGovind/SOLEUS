@@ -106,21 +106,46 @@ const downloadPDF = async (req, res, next) => {
     const data = await getSalesData(filter);
 
     // Create PDF
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=sales-report.pdf');
 
     doc.pipe(res);
 
-    doc.fontSize(20).text('Sales Report', 50, 50);
-    doc.fontSize(12).text(`Report Generated: ${moment().format('DD/MM/YYYY')}`, 50, 80);
-    doc.text(`Overall Sales Count: ${data.summary.salesCount}`, 50, 100);
-    doc.text(`Overall Order Amount: ₹${data.summary.orderAmount.toLocaleString()}`, 50, 120);
-    doc.text(`Overall Discount: ₹${data.summary.discount.toLocaleString()}`, 50, 140);
-    doc.text(`Total Sale: ₹${data.totalSale.toLocaleString()}`, 50, 160);
-    doc.text(`Total Orders: ${data.totalOrders}`, 50, 180);
-    doc.text(`Total Customers: ${data.totalCustomers}`, 50, 200);
-    doc.text(`Total Income: ₹${data.totalIncome.toLocaleString()}`, 50, 220);
+    // Heading: Shop Name and Report Title
+    doc
+      .fontSize(26)
+      .fillColor('#333333')
+      .text('SOLEUS', { align: 'center' });
+
+    doc
+      .moveDown(0.5)
+      .fontSize(20)
+      .fillColor('#000000')
+      .text('Sales Report', { align: 'center' });
+
+    doc
+      .moveDown(1)
+      .fontSize(12)
+      .fillColor('black')
+      .text(`Report Generated: ${moment().format('DD/MM/YYYY')}`, { align: 'right' });
+
+    doc.moveDown(1);
+
+    // Sales Summary Section
+    doc.fontSize(14).fillColor('#000080').text('Sales Summary:', { underline: true });
+
+    doc
+      .moveDown(0.5)
+      .fontSize(12)
+      .fillColor('black')
+      .text(`Overall Sales Count: ${data.summary.salesCount}`)
+      .text(`Overall Order Amount: ${data.summary.orderAmount.toLocaleString()}`)
+      .text(`Overall Discount: ${data.summary.discount.toLocaleString()}`)
+      .text(`Total Sale: ${data.totalSale.toLocaleString()}`)
+      .text(`Total Orders: ${data.totalOrders}`)
+      .text(`Total Customers: ${data.totalCustomers}`)
+      .text(`Total Income: ${data.totalIncome.toLocaleString()}`);
 
     doc.end();
   } catch (error) {
@@ -128,6 +153,7 @@ const downloadPDF = async (req, res, next) => {
     res.redirect('/admin');
   }
 };
+
 
 const getSalesData = async (filter) => {
   const { period, startDate, endDate } = filter;
