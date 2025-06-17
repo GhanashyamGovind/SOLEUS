@@ -134,7 +134,7 @@ router.get('/order/invoice/downloadPDF/:orderId', userAuth, invoiceController.do
 router.get('/getWallet', userAuth, walletController.loadWallet);
 
 //coupon
-router.get('/getCoupon', userAuth, couponController.loadCoupon)
+router.get('/getCoupon', userAuth, couponController.loadCoupon);
 
 
 

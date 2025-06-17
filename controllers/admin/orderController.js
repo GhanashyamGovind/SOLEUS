@@ -8,7 +8,13 @@ const Wallet = require('../../models/walletSchema');
 const getAdminOrder = async (req, res, next) => {
     try {
 
-        const orders = await Order.find().populate('user','name').sort({ createdOn: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = 10;
+        const skip = (page-1) * limit;
+        const totalOrders = await Order.countDocuments();
+        const totalPage = Math.ceil(totalOrders / limit);
+
+        const orders = await Order.find().populate('user','name').sort({ createdOn: -1 }).skip(skip).limit(limit);
         const options = { day: 'numeric', month: 'short', year: 'numeric' }
         const formattedOrders = orders.map(order => ({
             orderId: order.orderId,
@@ -21,7 +27,11 @@ const getAdminOrder = async (req, res, next) => {
             viewLink: `/admin/orders/products/${order.orderId}` // viewbutton
         }))
 
-        return res.render('admin/admin-order', {orders: formattedOrders});
+        return res.render('admin/admin-order', {
+            orders: formattedOrders,
+            currentPage: page,
+            totalPages: totalPage
+        });
     } catch (error) {
         next(error)
     }

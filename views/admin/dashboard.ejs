@@ -1,8 +1,5 @@
 <%- include('../../views/partials/admin/header', {title: 'Dashboard'}) %>
 
-<!-- Include Chart.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
 <!-- Main Content -->
 <div class="main-content flex-1 p-3 sm:p-6 overflow-auto">
   <!-- Dashboard Content -->
@@ -10,317 +7,469 @@
     
     <!-- Overview Cards -->
     <div class="mb-8">
-      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">OVERVIEW</h2>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-blue-50 to-blue-100 hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-center mb-2">
-            <i class="fas fa-rupee-sign text-blue-500 text-lg sm:text-xl"></i>
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Dashboard Overview</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-blue-600">Total Sales</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">₹<%= (totalSale || 0).toLocaleString() %></h3>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+              <i class="fas fa-rupee-sign text-blue-600 text-lg"></i>
+            </div>
           </div>
-          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL SALE</h3>
-          <p class="text-lg sm:text-2xl font-bold text-gray-900">₹<%= totalSale.toLocaleString() %></p>
         </div>
-        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-green-50 to-green-100 hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-center mb-2">
-            <i class="fas fa-shopping-cart text-green-500 text-lg sm:text-xl"></i>
+        
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-green-600">Total Orders</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1"><%= totalOrders || 0 %></h3>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+              <i class="fas fa-shopping-cart text-green-600 text-lg"></i>
+            </div>
           </div>
-          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL ORDERS</h3>
-          <p class="text-lg sm:text-2xl font-bold text-gray-900"><%= totalOrders %></p>
         </div>
-        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-center mb-2">
-            <i class="fas fa-users text-purple-500 text-lg sm:text-xl"></i>
+        
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-purple-600">Total Customers</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1"><%= totalCustomers || 0 %></h3>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+              <i class="fas fa-users text-purple-600 text-lg"></i>
+            </div>
           </div>
-          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL CUSTOMERS</h3>
-          <p class="text-lg sm:text-2xl font-bold text-gray-900"><%= totalCustomers %></p>
         </div>
-        <div class="border border-gray-200 p-3 sm:p-4 rounded-lg text-center bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-md transition-shadow">
-          <div class="flex items-center justify-center mb-2">
-            <i class="fas fa-wallet text-orange-500 text-lg sm:text-xl"></i>
+        
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-orange-600">Total Income</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">₹<%= (totalIncome || 0).toLocaleString() %></h3>
+            </div>
+            <div class="bg-orange-100 p-3 rounded-full">
+              <i class="fas fa-wallet text-orange-600 text-lg"></i>
+            </div>
           </div>
-          <h3 class="text-xs sm:text-sm font-semibold text-gray-600 mb-1">TOTAL INCOME</h3>
-          <p class="text-lg sm:text-2xl font-bold text-gray-900">₹<%= totalIncome.toLocaleString() %></p>
         </div>
       </div>
     </div>
 
     <!-- Sales Report Controls -->
-    <div class="mb-8 bg-gray-50 p-4 sm:p-6 rounded-lg">
-      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">SALES REPORT CONTROLS</h2>
-      <button class="block sm:hidden bg-blue-600 text-white p-2 rounded-md mb-4" onclick="document.getElementById('reportControls').classList.toggle('hidden')">
-        Toggle Filters
-      </button>
+    <div class="mb-8 bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800">Sales Analytics</h2>
+        <button class="sm:hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors" 
+                onclick="document.getElementById('reportControls').classList.toggle('hidden')">
+          Toggle Filters
+        </button>
+      </div>
+      
       <div id="reportControls" class="hidden sm:block">
-        <!-- Filter Form -->
-        <form id="salesReportForm" action="/admin/sales-report" method="POST" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+        <form id="salesReportForm" action="/admin/sales-report" method="POST" class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2" for="reportPeriod">Report Period</label>
-            <select id="reportPeriod" name="period" class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-              <option value="custom">Custom Range</option>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Report Period</label>
+            <select id="reportPeriod" name="period" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              <option value="daily" <%= selectedPeriod === 'daily' ? 'selected' : '' %>>Daily</option>
+              <option value="weekly" <%= selectedPeriod === 'weekly' ? 'selected' : '' %>>Weekly</option>
+              <option value="monthly" <%= selectedPeriod === 'monthly' ? 'selected' : '' %>>Monthly</option>
+              <option value="yearly" <%= selectedPeriod === 'yearly' ? 'selected' : '' %>>Yearly</option>
+              <option value="custom" <%= selectedPeriod === 'custom' ? 'selected' : '' %>>Custom Range</option>
             </select>
           </div>
-          <div id="customDateRange" class="hidden">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-            <div class="flex gap-2">
-              <input type="date" id="startDate" name="startDate" class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-              <input type="date" id="endDate" name="endDate" class="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          
+          <div id="customDateRange" class="<%= selectedPeriod === 'custom' ? '' : 'hidden' %>">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <div class="grid grid-cols-2 gap-3">
+              <input type="date" id="startDate" name="startDate" class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<%= filter?.startDate || '' %>">
+              <input type="date" id="endDate" name="endDate" class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<%= filter?.endDate || '' %>">
             </div>
           </div>
+          
           <div class="flex items-end">
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors">
-              <i class="fas fa-chart-line mr-2"></i>Generate Report
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-chart-line mr-2"></i> Generate Report
+            </button>
+          </div>
+          
+          <div class="flex items-end space-x-2">
+            <button type="button" onclick="prepareDownload('pdf')" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-file-pdf mr-2"></i> PDF
+            </button>
+            <button type="button" onclick="prepareDownload('excel')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-file-excel mr-2"></i> Excel
             </button>
           </div>
         </form>
-        <!-- PDF Download Form -->
-        <form id="downloadPDFForm" action="/admin/download-pdf" method="POST" class="flex flex-wrap gap-2">
+        <!-- Hidden Forms for Download -->
+        <form id="downloadPDFForm" action="/admin/download-pdf" method="POST" class="hidden">
           <input type="hidden" name="period" id="pdfPeriod">
           <input type="hidden" name="startDate" id="pdfStartDate">
           <input type="hidden" name="endDate" id="pdfEndDate">
-          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors text-sm">
-            <i class="fas fa-file-pdf mr-2"></i>Download PDF
-          </button>
         </form>
+        <form id="downloadExcelForm" action="/admin/download-excel" method="POST" class="hidden">
+          <input type="hidden" name="period" id="excelPeriod">
+          <input type="hidden" name="startDate" id="excelStartDate">
+          <input type="hidden" name="endDate" id="excelEndDate">
+        </form>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Category Sales Pie Chart -->
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <i class="fas fa-chart-pie text-blue-500 mr-2"></i> Category Sales Distribution
+        </h2>
+        <div class="relative h-64 md:h-80">
+          <% if (categorySalesData && categorySalesData.length > 0) { %>
+            <canvas id="categorySalesChart"></canvas>
+          <% } else { %>
+            <p class="text-center text-gray-500 h-full flex items-center justify-center">No category sales data available.</p>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Income Over Time Line Graph -->
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <i class="fas fa-chart-line text-green-500 mr-2"></i> Income Trend
+        </h2>
+        <div class="relative h-64 md:h-80">
+          <% if (incomeData && incomeData.length > 0) { %>
+            <canvas id="incomeChart"></canvas>
+          <% } else { %>
+            <p class="text-center text-gray-500 h-full flex items-center justify-center">No income data available.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Report Table -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Sales Transactions</h2>
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm md:text-base">
+            <thead class="bg-gray-50">
+              <tr class="border-b border-gray-200">
+                <th class="p-3 font-semibold text-gray-700 text-left">Order ID</th>
+                <th class="p-3 font-semibold text-gray-700 text-left">Date</th>
+                <th class="p-3 font-semibold text-gray-700 text-left">Customer</th>
+                <th class="p-3 font-semibold text-gray-700 text-right">Amount</th>
+                <th class="p-3 font-semibold text-gray-700 text-right">Discount</th>
+                <th class="p-3 font-semibold text-gray-700 text-left">Coupon</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              <% if (salesReport && salesReport.length > 0) { %>
+                <% salesReport.forEach(order => { %>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="p-3 font-medium text-blue-600"><%= order.orderId || 'N/A' %></td>
+                    <td class="p-3 text-gray-600"><%= order.orderDate %></td>
+                    <td class="p-3"><%= order.userName || 'Unknown' %></td>
+                    <td class="p-3 text-right font-medium text-green-600">₹<%= (order.finalAmount || 0).toLocaleString() %></td>
+                    <td class="p-3 text-right font-medium text-orange-600">₹<%= (order.discount || 0).toLocaleString() %></td>
+                    <td class="p-3"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded"><%= order.couponCode || 'None' %></span></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500">No sales data available for the selected period.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <% if (pagination && pagination.totalPages > 1) { %>
+          <div class="px-4 py-3 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 bg-gray-50">
+            <div class="mb-2 sm:mb-0">
+              <p class="text-sm text-gray-600">
+                Showing <span class="font-medium"><%= (pagination.currentPage - 1) * pagination.limit + 1 %></span> to 
+                <span class="font-medium"><%= Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords) %></span> of 
+                <span class="font-medium"><%= pagination.totalRecords %></span> results
+              </p>
+            </div>
+            <div class="flex items-center space-x-1">
+              <a href="/admin?page=<%= pagination.currentPage > 1 ? pagination.currentPage - 1 : 1 %>&period=<%= filter.period %>&startDate=<%= filter.startDate || '' %>&endDate=<%= filter.endDate || '' %>&limit=<%= pagination.limit %>"
+                 class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 <%= pagination.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' %>">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+              
+              <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                <% if (i === pagination.currentPage) { %>
+                  <span class="px-3 py-1 rounded-md bg-blue-600 text-white font-medium"><%= i %></span>
+                <% } else { %>
+                  <a href="/admin?page=<%= i %>&period=<%= filter.period %>&startDate=<%= filter.startDate || '' %>&endDate=<%= filter.endDate || '' %>&limit=<%= pagination.limit %>"
+                     class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <%= i %>
+                  </a>
+                <% } %>
+              <% } %>
+              
+              <a href="/admin?page=<%= pagination.currentPage < pagination.totalPages ? pagination.currentPage + 1 : pagination.totalPages %>&period=<%= filter.period %>&startDate=<%= filter.startDate || '' %>&endDate=<%= filter.endDate || '' %>&limit=<%= pagination.limit %>"
+                 class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 <%= pagination.currentPage === pagination.totalPages ? 'opacity-50 cursor-not-allowed' : '' %>">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            </div>
+          </div>
+        <% } %>
       </div>
     </div>
 
     <!-- Sales Summary Cards -->
     <div class="mb-8">
-      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">SALES SUMMARY</h2>
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Performance Summary</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-semibold text-blue-700">OVERALL SALES COUNT</h3>
-              <p class="text-2xl font-bold text-blue-900"><%= summary.salesCount %></p>
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+          <div class="flex items-center">
+            <div class="bg-blue-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
             </div>
-            <i class="fas fa-chart-bar text-blue-500 text-2xl"></i>
+            <div>
+              <p class="text-sm font-medium text-blue-600 mb-1">Total Orders</p>
+              <h3 class="text-2xl font-bold text-gray-800"><%= summary.salesCount || 0 %></h3>
+            </div>
           </div>
         </div>
-        <div class="bg-green-50 border border-green-200 p-4 rounded-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-semibold text-green-700">OVERALL ORDER AMOUNT</h3>
-              <p class="text-2xl font-bold text-green-900">₹<%= summary.orderAmount.toLocaleString() %></p>
+        
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+          <div class="flex items-center">
+            <div class="bg-green-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
             </div>
-            <i class="fas fa-money-bill-wave text-green-500 text-2xl"></i>
+            <div>
+              <p class="text-sm font-medium text-green-600 mb-1">Total Revenue</p>
+              <h3 class="text-2xl font-bold text-gray-800">₹<%= (summary.orderAmount || 0).toLocaleString() %></h3>
+            </div>
           </div>
         </div>
-        <div class="bg-orange-50 border border-orange-200 p-4 rounded-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-sm font-semibold text-orange-700">OVERALL DISCOUNT</h3>
-              <p class="text-2xl font-bold text-orange-900">₹<%= summary.discount.toLocaleString() %></p>
+        
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+          <div class="flex items-center">
+            <div class="bg-orange-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-percentage text-orange-600 text-xl"></i>
             </div>
-            <i class="fas fa-percentage text-orange-500 text-2xl"></i>
+            <div>
+              <p class="text-sm font-medium text-orange-600 mb-1">Total Discount</p>
+              <h3 class="text-2xl font-bold text-gray-800">₹<%= (summary.discount || 0).toLocaleString() %></h3>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Charts Section -->
+    <!-- Top 5 Best-Selling Products -->
     <div class="mb-8">
-      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">SALES ANALYTICS</h2>
-      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <!-- Line Chart -->
-        <div class="xl:col-span-2 bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-          <h3 class="text-lg font-semibold mb-4">Sales Trend</h3>
-          <div class="relative h-64 sm:h-80">
-            <canvas id="salesLineChart"></canvas>
-          </div>
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Top 5 Best-Selling Products</h2>
+      <% if (topProducts && topProducts.length > 0) { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <% topProducts.forEach((product, index) => { %>
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+              <div class="relative mb-3">
+                <img src="/uploads/re-image/<%= product.image %>" alt="<%= product.name %>" class="w-full h-32 object-cover rounded-lg">
+                <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                  #<%= index + 1 %>
+                </span>
+              </div>
+              <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate"><%= product.name %></h3>
+              <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800"><%= product.totalSold %></span> units</p>
+            </div>
+          <% }) %>
         </div>
-        <!-- Pie Chart -->
-        <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-          <h3 class="text-lg font-semibold mb-4">Sales Distribution</h3>
-          <div class="relative h-64 sm:h-80">
-            <canvas id="salesPieChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Discount & Coupons Section -->
-    <div class="mb-8">
-      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">DISCOUNT & COUPONS ANALYSIS</h2>
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Discount Table -->
-        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-          <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-800">Discount Breakdown</h3>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left">
-              <thead class="bg-gray-100">
-                <tr>
-                  <th class="p-4 font-semibold text-gray-700 text-sm">TYPE</th>
-                  <th class="p-4 font-semibold text-gray-700 text-sm text-right">AMOUNT</th>
-                  <th class="p-4 font-semibold text-gray-700 text-sm text-right">COUNT</th>
-                </tr>
-              </thead>
-              <tbody class="text-sm">
-                <% discountBreakdown.forEach(item => { %>
-                  <tr class="border-b border-gray-200 hover:bg-gray-50">
-                    <td class="p-4"><%= item.type %></td>
-                    <td class="p-4 text-right font-medium">₹<%= item.amount.toLocaleString() %></td>
-                    <td class="p-4 text-right"><%= item.count %></td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <!-- Coupon Performance Chart -->
-        <div class="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
-          <h3 class="text-lg font-semibold mb-4">Coupon Performance</h3>
-          <div class="relative h-64">
-            <canvas id="couponChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Top Selling Products -->
-    <div class="mb-8">
-      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800">TOP SELLING PRODUCTS</h2>
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left">
-            <thead class="bg-gray-100">
-              <tr class="border-b border-gray-200">
-                <th class="p-4 font-semibold text-gray-700">PRODUCT</th>
-                <th class="p-4 font-semibold text-gray-700 text-right">SALES</th>
-                <th class="p-4 font-semibold text-gray-700 text-right">REVENUE</th>
-                <th class="p-4 font-semibold text-gray-700 text-right">DISCOUNT</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% topProducts.forEach(product => { %>
-                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                  <td class="p-4 font-medium"><%= product.name %></td>
-                  <td class="p-4 text-right font-medium"><%= product.salesCount %></td>
-                  <td class="p-4 text-right text-green-600 font-medium">₹<%= product.totalRevenue.toLocaleString() %></td>
-                  <td class="p-4 text-right text-orange-600 font-medium">₹<%= product.discountsApplied.toLocaleString() %></td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <% } else { %>
+        <p class="text-center text-gray-500">No best-selling products available.</p>
+      <% } %>
     </div>
   </div>
 </div>
 
 <style>
   th {
-    @apply sticky top-0 bg-gray-100 z-10;
+    @apply sticky top-0 bg-gray-50 z-10;
+  }
+  
+  #categorySalesChart {
+    max-height: 320px;
+    max-width: 320px;
+    margin: 0 auto;
   }
 </style>
 
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
 <script>
-// Initialize charts with initial data
 document.addEventListener('DOMContentLoaded', function() {
-  initializeCharts();
   setupEventListeners();
+  renderCharts();
 });
 
-function initializeCharts() {
-  // Sales Line Chart
-  const salesCtx = document.getElementById('salesLineChart').getContext('2d');
-  window.salesLineChart = new Chart(salesCtx, {
-    type: 'line',
-    data: {
-      labels: <%- JSON.stringify(salesTrend.labels) %>,
-      datasets: [{
-        label: 'Sales (₹)',
-        data: <%- JSON.stringify(salesTrend.data) %>,
-        borderColor: '#FFC107',
-        backgroundColor: 'rgba(255, 193, 7, 0.1)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { callback: function(value) { return '₹' + (value/1000) + 'K'; } }
-        }
-      }
-    }
+function setupEventListeners() {
+  const reportPeriod = document.getElementById('reportPeriod');
+  const customRange = document.getElementById('customDateRange');
+  
+  reportPeriod.addEventListener('change', function() {
+    customRange.classList.toggle('hidden', this.value !== 'custom');
   });
 
-  // Sales Pie Chart
-  const pieCtx = document.getElementById('salesPieChart').getContext('2d');
-  window.salesPieChart = new Chart(pieCtx, {
-    type: 'doughnut',
-    data: {
-      labels: <%- JSON.stringify(salesDistribution.labels) %>,
-      datasets: [{
-        data: <%- JSON.stringify(salesDistribution.data) %>,
-        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-        borderWidth: 2,
-        borderColor: '#fff'
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { boxWidth: 12, font: { size: window.innerWidth < 640 ? 10 : 11 } }
-        }
-      }
-    }
-  });
-
-  // Coupon Performance Chart
-  const couponCtx = document.getElementById('couponChart').getContext('2d');
-  window.couponChart = new Chart(couponCtx, {
-    type: 'bar',
-    data: {
-      labels: <%- JSON.stringify(couponPerformance.map(c => c.code)) %>,
-      datasets: [{
-        label: 'Usage Count',
-        data: <%- JSON.stringify(couponPerformance.map(c => c.usageCount)) %>,
-        backgroundColor: ['rgba(54, 162, 235, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)'],
-        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
-    }
-  }); 
+  if (reportPeriod.value === 'custom') {
+    customRange.classList.remove('hidden');
+  }
 }
 
-function setupEventListeners() {
-  // Report period change to show/hide custom date range
-  document.getElementById('reportPeriod').addEventListener('change', function() {
-    const customRange = document.getElementById('customDateRange');
-    if (this.value === 'custom') {
-      customRange.classList.remove('hidden');
-    } else {
-      customRange.classList.add('hidden');
-    }
-  });
+function prepareDownload(type) {
+  const period = document.getElementById('reportPeriod').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  
+  if (type === 'pdf') {
+    document.getElementById('pdfPeriod').value = period;
+    document.getElementById('pdfStartDate').value = startDate;
+    document.getElementById('pdfEndDate').value = endDate;
+    document.getElementById('downloadPDFForm').submit();
+  } else {
+    document.getElementById('excelPeriod').value = period;
+    document.getElementById('excelStartDate').value = startDate;
+    document.getElementById('excelEndDate').value = endDate;
+    document.getElementById('downloadExcelForm').submit();
+  }
+}
 
-  // Sync form values for PDF download
-  document.getElementById('downloadPDFForm').addEventListener('submit', function() {
-    document.getElementById('pdfPeriod').value = document.getElementById('reportPeriod').value;
-    document.getElementById('pdfStartDate').value = document.getElementById('startDate').value;
-    document.getElementById('pdfEndDate').value = document.getElementById('endDate').value;
-  });
+function renderCharts() {
+  // Enhanced Pie Chart for Category-Wise Sales
+  const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
+  const categorySalesData = <%- JSON.stringify(categorySalesData) %>;
+  
+  if (categorySalesCtx) {
+    new Chart(categorySalesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: categorySalesData.map(item => item.category),
+        datasets: [{
+          data: categorySalesData.map(item => item.amount),
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(244, 63, 94, 0.8)',
+            'rgba(20, 184, 166, 0.8)',
+          ],
+          borderColor: 'white',
+          borderWidth: 2,
+          cutout: '70%',
+          radius: '90%'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              boxWidth: 12,
+              padding: 20,
+              font: {
+                size: 12
+              },
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.raw || 0;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${label}: ₹${value.toLocaleString()} (${percentage}%)`;
+              }
+            }
+          }
+        },
+        layout: {
+          padding: {
+            top: 20,
+            bottom: 20,
+            left: 20,
+            right: 20
+          }
+        }
+      }
+    });
+  }
+
+  // Enhanced Line Graph for Income Over Time
+  const incomeCtx = document.getElementById('incomeChart')?.getContext('2d');
+  const incomeData = <%- JSON.stringify(incomeData) %>;
+  
+  if (incomeCtx) {
+    new Chart(incomeCtx, {
+      type: 'line',
+      data: {
+        labels: incomeData.map(item => item.date),
+        datasets: [{
+          label: 'Daily Income (₹)',
+          data: incomeData.map(item => item.income),
+          borderColor: 'rgba(16, 185, 129, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'white',
+          pointBorderColor: 'rgba(16, 185, 129, 1)',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `₹${context.raw.toLocaleString()}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              drawBorder: false,
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              callback: function(value) {
+                return '₹' + value.toLocaleString();
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false,
+              drawBorder: false
+            }
+          }
+        }
+      }
+    });
+  }
 }
 </script>
 
