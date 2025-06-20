@@ -34,7 +34,7 @@ router.post("/resend-otp", userController.resendOtp);
 router.get('/logout', userController.logOut)
 
 //google autgh
-router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email']}));
+router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email'], prompt: 'select_account'}));
 
 router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect:'/signUp'}), (req, res) => {
     console.log('google login successful ==> ', req.user);

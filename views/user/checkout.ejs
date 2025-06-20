@@ -286,7 +286,7 @@
                 // Update price details in the UI
                 document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
                 document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
-                document.getElementById('discountValue').textContent = `₹${data.priceDetails.discount}`;
+                document.getElementById('discountValue').textContent = `-₹${data.priceDetails.discount}`;
                 document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
 
                 // Show remove coupon button, hide apply button, set coupon code
@@ -336,7 +336,7 @@
                 // Update price details in the UI
                 document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
                 document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
-                document.getElementById('discountValue').textContent = `₹${data.priceDetails.discount}`;
+                document.getElementById('discountValue').textContent = `-₹${data.priceDetails.discount}`;
                 document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
 
                 // Hide remove coupon button, show apply button, clear coupon input

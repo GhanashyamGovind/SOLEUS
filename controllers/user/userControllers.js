@@ -8,6 +8,7 @@ const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
 const {Resend} = require('resend');
 const Wallet = require('../../models/walletSchema');
+const { default: mongoose } = require('mongoose');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 
@@ -212,11 +213,13 @@ const verifyOtp = async (req, res, next) => {
             const user = req.session.userData; 
             const passwordHash = await securePassword(user.password);
 
+            let referralCode = await createReferralCode(user.name, new mongoose.Types.ObjectId())
             const saveUserData = new User({
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
                 password: passwordHash,
+                referralCode: referralCode
             });
 
             const refCod = user.referralCode;
@@ -224,8 +227,8 @@ const verifyOtp = async (req, res, next) => {
             //save user first 
             const createdUser = await saveUserData.save(); // saved user data in DB
 
-            createdUser.referralCode = await createReferralCode (createdUser.name, createdUser._id);
-            console.log("referal code ====> ",createdUser.referralCode)
+            // createdUser.referralCode = await createReferralCode (createdUser.name, createdUser._id);
+            // console.log("referal code ====> ",createdUser.referralCode)
 
             // creat a wallet for the new user
             const newWallet = new Wallet({
@@ -240,7 +243,6 @@ const verifyOtp = async (req, res, next) => {
             //reffer part
             const refer = await Referral.findOne({isActive: true});
             let referreUser = await User.findOne({referralCode: refCod.trim().toUpperCase()});
-            console.log("referrer user", referreUser.name);
 
             if(refCod && refer && referreUser){
               await Wallet.updateOne(

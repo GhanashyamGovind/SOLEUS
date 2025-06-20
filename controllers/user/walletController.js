@@ -13,8 +13,12 @@ const loadWallet = async (req, res, next) => {
 
         const user = await User.findOne({_id: userId});
         const referalOn = await Referral.findOne({isActive: true});
-        const wallet = await Wallet.findOne({userId});
-        // console.log("wallet", wallet)
+        let wallet = await Wallet.findOne({userId});
+        if(!wallet){
+           wallet = await Wallet.create({userId: user._id});
+           user.walletId = wallet._id;
+           await user.save();
+        }
         
         const balance = wallet.balance;
         const transactions = wallet.transactions.sort((a, b) => b.createdAt - a.createdAt);
