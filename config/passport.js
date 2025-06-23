@@ -39,9 +39,15 @@ passport.use(new GoogleStrategy({
 async (accessToken, refreshToken, profile, done) => {
     try {
 
-        let user = await User.findOne({googleId: profile.id, isBlocked: false});
+        const email = profile.emails[0].value;
+
+        let user = await User.findOne({googleId: profile.id, email: email});
         if(user){
-            return done(null, user);
+            if (user.isBlocked) {
+                return done(null, false, { message: 'Yor this account has been blocked. Please contact the support' })
+            } else {
+                return done(null, user);
+            }
         }else {
             const referralCode = await generateUniqueReferralCode();
 

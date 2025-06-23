@@ -793,7 +793,7 @@ const createRazorpayOrder = async (req, res, next) => {
     }
 };
 
-
+//chck point
 const verifyRazorpayPayment = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -810,10 +810,19 @@ const verifyRazorpayPayment = async (req, res) => {
             paymentMethod
         } = req.body;
 
-        const isBuyNowBoolean = isBuyNow === 'true';
+        const isBuyNowBoolean = isBuyNow === 'true' || isBuyNow === true;
+        console.log('verifyRazorpayPayment - isBuyNow:', isBuyNow, 'isBuyNowBoolean:', isBuyNowBoolean, 'session.buyNow:', req.session.buyNow);
 
         if (!req.session.razorpayOrderDetails || req.session.razorpayOrderDetails.razorpayOrderId !== razorpay_order_id) {
-            return res.status(400).json({ success: false, message: 'Invalid order details' });
+            console.warn('Invalid order details - session:', req.session.razorpayOrderDetails);
+            // Fallback to session.buyNow to determine isBuyNow
+            const fallbackIsBuyNow = !!req.session.buyNow;
+            const failureRedirectUrl = `/order/failure?razorpayOrderId=${razorpay_order_id}&isBuyNow=${fallbackIsBuyNow}`;
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid order details',
+                redirectUrl: failureRedirectUrl
+            });
         }
 
         // Verify payment signature
@@ -823,7 +832,13 @@ const verifyRazorpayPayment = async (req, res) => {
             .digest('hex');
 
         if (generatedSignature !== razorpay_signature) {
-            return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+            const isBuyNowFlag = req.session.razorpayOrderDetails?.isBuyNow ? 'true' : 'false';
+            const failureRedirectUrl = `/order/failure?razorpayOrderId=${razorpay_order_id}&isBuyNow=${isBuyNowFlag}`;
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid payment signature',
+                redirectUrl: failureRedirectUrl
+            });
         }
 
         const { items, totalPrice, deliveryCharges, discount, finalAmount, couponCode } = req.session.razorpayOrderDetails;
@@ -975,17 +990,59 @@ const failurePage = async (req, res, next) => {
             return res.redirect('/login');
         }
 
-        const { razorpayOrderId } = req.query;
+        const { razorpayOrderId, isBuyNow } = req.query;
+        // Use session.buyNow as fallback if isBuyNow is undefined
+        const isBuyNowBoolean = (isBuyNow === 'true' || isBuyNow === true || !!req.session.buyNow);
+        console.log('failurePage - query.isBuyNow:', isBuyNow, 'isBuyNowBoolean:', isBuyNowBoolean, 'session.buyNow:', req.session.buyNow);
+
+        // Validate session data for Buy Now
+        if (isBuyNowBoolean && !req.session.buyNow) {
+            console.warn('Buy Now session data missing for retry');
+            return res.redirect('/cart?error=Buy Now session expired');
+        }
 
         return res.render('user/failureOrder', {
             title: 'Order Failed',
-            razorpayOrderId
+            razorpayOrderId,
+            isBuyNow: isBuyNowBoolean
         });
     } catch (error) {
         console.error('Error in failurePage:', error);
         next(error);
     }
 };
+
+const retryBuyNowCheckout = async (req, res, next) => {
+    try {
+        if (!req.session.buyNow) {
+            return res.redirect('/cart?error=Buy Now session expired');
+        }
+        res.redirect('/check-out?buyNow=true');
+    } catch (error) {
+        console.error('Error in retryBuyNowCheckout:', error);
+        next(error);
+    }
+};
+
+const retryCartCheckout = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        const cart = await Cart.findOne({ userId }).populate('items.productId');
+
+        if (!cart || !cart.items.length) {
+            return res.redirect('/cart?error=Your cart is empty.');
+        }
+
+        req.session.razorpayOrderDetails = req.session.razorpayOrderDetails || { isBuyNow: false };
+
+        return res.redirect('/check-out');
+    } catch (error) {
+        console.error('Error in retryCartCheckout:', error);
+        next(error);
+    }
+};
+
+
 
 
 
@@ -998,4 +1055,6 @@ module.exports = {
     verifyRazorpayPayment,
     successPage,
     failurePage,
+    retryBuyNowCheckout,
+    retryCartCheckout
 }

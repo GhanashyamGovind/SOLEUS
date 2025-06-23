@@ -146,8 +146,8 @@ const downloadPDF = async (req, res, next) => {
             .fontSize(12)
             .fillColor('black')
             .text(`Overall Sales Count: ${data.summary.salesCount}`)
-            .text(`Overall Order Amount: ₹${data.summary.orderAmount.toLocaleString()}`)
-            .text(`Overall Discount: ₹${data.summary.discount.toLocaleString()}`);
+            .text(`Overall Order Amount: ${data.summary.orderAmount.toLocaleString()}`)
+            .text(`Overall Discount: ${data.summary.discount.toLocaleString()}`);
 
         doc
             .moveDown(1)
@@ -181,8 +181,8 @@ const downloadPDF = async (req, res, next) => {
                 .text(order.orderId.slice(0, 8), 50, y, { width: colWidths[0] })
                 .text(order.orderDate, 50 + colWidths[0], y, { width: colWidths[1] })
                 .text(order.userName || 'Unknown', 50 + colWidths.slice(0, 2).reduce((a, b) => a + b, 0), y, { width: colWidths[2] })
-                .text(`₹${(order.finalAmount || 0).toLocaleString()}`, 50 + colWidths.slice(0, 3).reduce((a, b) => a + b, 0), y, { width: colWidths[3] })
-                .text(`₹${(order.discount || 0).toLocaleString()}`, 50 + colWidths.slice(0, 4).reduce((a, b) => a + b, 0), y, { width: colWidths[4] })
+                .text(`${(order.finalAmount || 0).toLocaleString()}`, 50 + colWidths.slice(0, 3).reduce((a, b) => a + b, 0), y, { width: colWidths[3] })
+                .text(`${(order.discount || 0).toLocaleString()}`, 50 + colWidths.slice(0, 4).reduce((a, b) => a + b, 0), y, { width: colWidths[4] })
                 .text(order.couponCode || 'None', 50 + colWidths.slice(0, 5).reduce((a, b) => a + b, 0), y, { width: colWidths[5] });
 
             y += 20;

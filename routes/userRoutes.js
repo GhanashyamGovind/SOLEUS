@@ -36,7 +36,7 @@ router.get('/logout', userController.logOut)
 //google autgh
 router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email'], prompt: 'select_account'}));
 
-router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect:'/signUp'}), (req, res) => {
+router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect:'/login?authError=blocked'}), (req, res) => {
     console.log('google login successful ==> ', req.user);
     req.session.user=req.user
     res.redirect('/')
@@ -119,6 +119,10 @@ router.post('/removeCoupon', userAuth, checkoutController.removeCoupon);
 router.get('/order/success', userAuth, checkoutController.successPage);
 //faliure
 router.get('/order/failure', userAuth, checkoutController.failurePage);
+//retry payment
+router.get('/checkout-buy-now', userAuth, checkoutController.retryBuyNowCheckout);
+router.get('/retry-cart-checkout', userAuth, checkoutController.retryCartCheckout);
+
 
 
 

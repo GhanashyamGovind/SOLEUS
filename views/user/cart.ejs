@@ -255,9 +255,9 @@ async function updateQuantity(productId, size, sku, newQuantity) {
                 Swal.fire({
                     toast: true,
                     position: 'top-end',
-                    icon: 'info',
-                    title: 'Login Required',
-                    text: 'Please login to proceed to checkout',
+                    icon: 'warning',
+                    title: 'Cart is empty',
+                    text: 'Add items to your cart before checking out',
                     showConfirmButton: false,
                     timer: 1500,
                     timerProgressBar: true

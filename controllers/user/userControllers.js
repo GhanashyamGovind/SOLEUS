@@ -145,7 +145,6 @@ const loadSignUp = async (req, res, next) => {
         }
 
         req.session.user = findUser._id; // => ivide aanu user session store aakunnath athum id aanu store aakunnath
-        // console.log(req.session.user)
         res.redirect('/')
         
     } catch (error) {

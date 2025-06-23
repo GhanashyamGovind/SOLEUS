@@ -452,7 +452,7 @@
                                 text: verifyData.message || 'Payment verification failed',
                                 showConfirmButton: true
                             });
-                            window.location.href = `/order/failure?razorpayOrderId=${order.id}`;
+                            window.location.href = verifyData.redirectUr;
                         }
                     },
                     prefill: {

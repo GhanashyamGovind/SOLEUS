@@ -37,6 +37,7 @@
 </main>
 <%- include('../../views/partials/user/footer') %>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 
     const alertDiv = document.getElementById('alert-message');
@@ -47,4 +48,19 @@
         }, 6000);
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    authError = urlParams.get('authError')
+    if (authError === 'blocked') {
+        Swal.fire({
+            toast: true,
+            position: 'top',
+            icon: 'error',
+            title: 'Your Google account is blocked!',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+        });
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname)
 </script>

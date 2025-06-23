@@ -13,31 +13,6 @@
             color: #000;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .nav-link {
-            color: #000;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        .nav-link:hover {
-            color: #374151;
-            transform: translateY(-2px);
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 50%;
-            background-color: #000;
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
         .track-btn {
             background: linear-gradient(135deg, #000 0%, #374151 100%);
             color: #FFF;
@@ -245,7 +220,7 @@
         <% } else { %>
             <div class="order-card bg-white shadow-md rounded-lg p-6 text-center">
                 <p class="text-gray-600 text-lg">You have no orders yet. Start shopping now!</p>
-                <a href="/products" class="mt-4 inline-block back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Browse Products</a>
+                <a href="/allproducts" class="mt-4 inline-block back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Browse Products</a>
             </div>
         <% } %>
     </div>

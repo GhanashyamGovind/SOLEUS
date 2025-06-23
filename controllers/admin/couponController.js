@@ -227,7 +227,7 @@ const onAndOff = async (req, res, next) => {
     try {
         const  { isActive } = req.body;
         let settings = await Referral.findOne();
-        if(!settings) if (!settings) settings = new Referral();
+        if (!settings) settings = new Referral();
         settings.isActive = isActive;
         const savedReferral = await settings.save();
         if (!savedReferral) {
