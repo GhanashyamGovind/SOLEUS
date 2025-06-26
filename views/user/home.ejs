@@ -94,53 +94,17 @@
                 <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400 rounded-full opacity-10"></div>
                 <h3 class="text-2xl font-bold text-center mb-8 relative z-10">Shop by Brand</h3>
                 <div class="grid grid-cols-3 gap-8 relative z-10">
-                    <!-- Brand logos with yellow/black accents -->
-                    <a href="#" class="brand-logo flex flex-col items-center group">
-                        <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                            <img src="https://logo.clearbit.com/puma.com" alt="Puma" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
-                        </div>
-                        <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Puma</p>
-                    </a>
-                    
-                    <!-- Nike -->
-                    <a href="#" class="brand-logo flex flex-col items-center group">
-                        <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                            <img src="https://logo.clearbit.com/nike.com" alt="Nike" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
-                        </div>
-                        <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Nike</p>
-                    </a>
-                    
-                    <!-- Adidas -->
-                    <a href="#" class="brand-logo flex flex-col items-center group">
-                        <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                            <img src="https://logo.clearbit.com/adidas.com" alt="Adidas" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
-                        </div>
-                        <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Adidas</p>
-                    </a>
-                    
-                    <!-- New Balance -->
-                    <a href="#" class="brand-logo flex flex-col items-center group">
-                        <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                            <img src="https://logo.clearbit.com/newbalance.com" alt="New Balance" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
-                        </div>
-                        <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">New Balance</p>
-                    </a>
-                    
-                    <!-- Reebok -->
-                    <a href="#" class="brand-logo flex flex-col items-center group">
-                        <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                            <img src="https://logo.clearbit.com/reebok.com" alt="Reebok" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
-                        </div>
-                        <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Reebok</p>
-                    </a>
-                    
-                    <!-- Bata -->
-                    <a href="#" class="brand-logo flex flex-col items-center group">
-                        <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                            <img src="https://logo.clearbit.com/bata.com" alt="Bata" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
-                        </div>
-                        <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition">Bata</p>
-                    </a>
+                    <!-- Brand logos with yellow/black accents -->                    
+                    <% if (brand && brand.length > 0) { %>
+                        <% brand.forEach(b => { %>
+                        <a href="/brand/brnadProducts/<%= b._id %>" class="brand-logo flex flex-col items-center group">
+                            <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
+                                <img src="/uploads/re-image/<%= b.brandImage %>" alt="<%= b.brandName %>" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
+                            </div>
+                            <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition"><%= b.brandName %></p>
+                        </a>
+                        <% }) %>         
+                    <% } %>                    
                 </div>
             </div>
         </div>
@@ -298,8 +262,6 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    // Check if SweetAlert2 is loaded
-    console.log('SweetAlert2 loaded:', typeof Swal); // Debug log
 
     async function addToWishlist(productId) {
       try {
@@ -311,15 +273,12 @@
           },
           body: JSON.stringify({ productId })
         }); 
-        console.log('Response status:', response.status);
         const text = await response.text();
-        console.log('Raw response:', text); // Debug raw response
 
         let data;
         try {
           data = JSON.parse(text);
         } catch (error) {
-          console.error('Failed to parse JSON response:', error);
           Swal.fire({
             icon: 'error',
             title: 'Error',

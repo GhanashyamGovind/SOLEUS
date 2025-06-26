@@ -37,16 +37,16 @@
 </style>
 
 <!-- Main Content -->
-<main class="container mx-auto p-4 sm:p-6">
+<main class="container mx-auto p-4 sm:p-6 w-full max-w-full box-border overflow-x-hidden min-h-[calc(100vh-120px)]">
     <!-- Header -->
-    <header class="bg-white text-black p-4">
-        <div class="container mx-auto">
+    <header class="bg-white text-black p-4 w-full max-w-full">
+        <div class="container mx-auto w-full max-w-full">
             <h1 class="text-xl sm:text-2xl font-bold tracking-wide">Admin Order Management</h1>
         </div>
     </header>
 
     <!-- Right-aligned Section for Button and Search -->
-<div class="flex justify-start gap-4 mb-6">
+<div class="flex justify-start gap-4 mb-6 flex-col sm:flex-row">
     <!-- Search Section -->
     <div class="bg-white shadow-md rounded-lg p-4 w-full max-w-md">
         <h2 class="text-lg font-semibold mb-2 text-gray-800">Search Orders</h2>
@@ -59,7 +59,7 @@
             <input type="date" id="search-date" 
                    class="border border-gray-300 rounded-lg p-1 text-xs text-black 
                           focus:outline-none focus:ring-2 focus:ring-gray-400 
-                          transition-shadow duration-200 hover:shadow-md w-28">
+                          transition-shadow duration-200 hover:shadow-md w-28 sm:w-32">
 
             <button onclick="searchOrders()" 
                     class="bg-gray-700 text-white px-3 py-1 rounded-lg 
@@ -70,44 +70,43 @@
     </div>
 </div>
 
-
     <!-- Orders Table -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden border">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden border w-full max-w-full">
         <div class="p-4 sm:p-6">
             <h2 class="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Orders</h2>
 
-            <div class="overflow-x-auto hide-scrollbar">
+            <div class="overflow-x-auto hide-scrollbar w-full">
                 <% if (orders && orders.length > 0) { %>
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 min-w-[800px]">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">User Name</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Ordered Date</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Total Items</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">View</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Order ID</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[120px] truncate">User Name</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Ordered Date</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Total Amount</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate hidden sm:table-cell">Total Items</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate hidden sm:table-cell">Payment Method</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Status</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[120px] truncate">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">View</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <% orders.forEach(order => { %>
                             <tr class="table-row transition-colors duration-200">
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.orderId %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.userName %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.orderedDate %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.totalAmount %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.totalItems %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.paymentMethod %></td>
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate"><%= order.orderId %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[120px] break-words"><%= order.userName %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate"><%= order.orderedDate %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate"><%= order.totalAmount %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate hidden sm:table-cell"><%= order.totalItems %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate hidden sm:table-cell"><%= order.paymentMethod %></td>
+                                <td class="px-4 py-4 whitespace-nowrap max-w-[100px] truncate">
                                     <span id="status-<%= order.orderId %>" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white <%= order.orderStatus === 'Pending' ? 'bg-yellow-500' : order.orderStatus === 'Processing' ? 'bg-blue-500' : order.orderStatus === 'Shipped' ? 'bg-indigo-500' : order.orderStatus === 'Delivered' ? 'bg-green-500' : order.orderStatus === 'Cancelled' ? 'bg-red-500' : 'bg-red-500' %>">
                                         <%= order.orderStatus %>
                                     </span>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
-                                    <select id="status-select-<%= order.orderId %>" onchange="handleStatusChange('<%= order.orderId %>')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" <%= order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : '' %>>
+                                <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base max-w-[120px]">
+                                    <select id="status-select-<%= order.orderId %>" onchange="handleStatusChange('<%= order.orderId %>')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 w-full" <%= order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : '' %>>
                                         <option value="Pending" <%= order.orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
                                         <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
                                         <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
@@ -115,28 +114,39 @@
                                         <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                                     </select>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base">
-                                    <button onclick="window.location.assign('<%= order.viewLink %>')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
-                                </td>
+<td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base max-w-[100px] relative">
+    <div class="relative inline-block">
+        <% if (order.returnAlert) { %>
+            <span class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full z-50 border-2 border-white animate-pulse"></span>
+        <% } %>
+        <button onclick="window.location.assign('<%= order.viewLink %>')" 
+                class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm w-full">
+            View Details
+        </button>
+    </div>
+</td>
                             </tr>
+                            <!-- <% if (order.returnAlert) { %>
+                                     <span class="text-black">🛑</span>
+                            <% } %> -->
                             <% }) %>
                         </tbody>
                     </table>
                 <% } else { %>
-                    <div id="no-orders" class="text-center text-gray-500 py-6">
+                    <div id="no-orders" class="text-center text-gray-500 py-6 w-full">
                         <p class="text-lg">No orders found</p>
                     </div>
                 <% } %>
 
-                <div class="flex justify-center items-center mt-6 gap-2">
+                <div class="flex justify-center items-center mt-6 gap-2 flex-wrap">
                     <% if (totalPages > 1) { %>
                         <% for (let i = 1; i <= totalPages; i++) { %>
                             <a href="/admin/orders?page=<%= i %>" class="px-3 py-1 rounded-md 
-                                <%= currentPage === i ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800' %> hover:bg-gray-400 transition">
+                                <%= currentPage === i ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800' %> hover:bg-gray-400 transition text-sm sm:text-base">
                                 <%= i %>
                             </a>
                         <% } %>
-                        <p class="text-sm text-gray-600 mt-2 text-center">
+                        <p class="text-sm text-gray-600 mt-2 text-center w-full sm:w-auto">
                             Page <%= currentPage %> of <%= totalPages %>
                         </p>
                     <% } %>
@@ -154,60 +164,64 @@
     const allOrders = <%- JSON.stringify(orders || []) %>;
 
     // Function to render orders in the table
-    function renderOrders(orders) {
-        const tableBody = document.querySelector('table tbody');
-        const noOrdersDiv = document.getElementById('no-orders');
+// Function to render orders in the table
+function renderOrders(orders) {
+    const tableBody = document.querySelector('table tbody');
+    const noOrdersDiv = document.getElementById('no-orders');
 
-        if (!orders || orders.length === 0) {
-            if (tableBody) tableBody.parentElement.style.display = 'none';
-            if (noOrdersDiv) noOrdersDiv.style.display = 'block';
-            return;
-        }
-
-        if (tableBody) tableBody.parentElement.style.display = 'table';
-        if (noOrdersDiv) noOrdersDiv.style.display = 'none';
-
-        if (tableBody) {
-            tableBody.innerHTML = ''; // Clear existing rows
-            orders.forEach(order => {
-                const statusColor = {
-                    'Pending': 'bg-yellow-500',
-                    'Processing': 'bg-blue-500',
-                    'Shipped': 'bg-indigo-500',
-                    'Delivered': 'bg-green-500',
-                    'Cancelled': 'bg-red-500'
-                }[order.orderStatus] || 'bg-gray-500';
-
-                const viewLink = order.viewLink || '#'; // Fallback to '#' if viewLink is undefined
-                const row = `
-                    <tr class="table-row transition-colors duration-200">
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderId}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.userName}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderedDate}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.totalAmount}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.totalItems}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.paymentMethod}</td>
-                        <td class="px-4 py-4 whitespace-nowrap">
-                            <span id="status-${order.orderId}" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}">${order.orderStatus}</span>
-                        </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
-                            <select id="status-select-${order.orderId}" onchange="handleStatusChange('${order.orderId}')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" ${order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : ''}>
-                                <option value="Pending" ${order.orderStatus === 'Pending' ? 'selected' : ''}>Pending</option>
-                                <option value="Processing" ${order.orderStatus === 'Processing' ? 'selected' : ''}>Processing</option>
-                                <option value="Shipped" ${order.orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="Delivered" ${order.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="Cancelled" ${order.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                            </select>
-                        </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base">
-                            <button onclick="window.location.assign('${viewLink}')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
-                        </td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-        }
+    if (!orders || orders.length === 0) {
+        if (tableBody) tableBody.parentElement.style.display = 'none';
+        if (noOrdersDiv) noOrdersDiv.style.display = 'block';
+        return;
     }
+
+    if (tableBody) tableBody.parentElement.style.display = 'table';
+    if (noOrdersDiv) noOrdersDiv.style.display = 'none';
+
+    if (tableBody) {
+        tableBody.innerHTML = ''; // Clear existing rows
+        orders.forEach(order => {
+            const statusColor = {
+                'Pending': 'bg-yellow-500',
+                'Processing': 'bg-blue-500',
+                'Shipped': 'bg-indigo-500',
+                'Delivered': 'bg-green-500',
+                'Cancelled': 'bg-red-500'
+            }[order.orderStatus] || 'bg-gray-500';
+
+            const viewLink = order.viewLink || '#'; // Fallback to '#' if viewLink is undefined
+            const row = `
+                <tr class="table-row transition-colors duration-200">
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderId}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.userName}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderedDate}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.totalAmount}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.totalItems}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.paymentMethod}</td>
+                    <td class="px-4 py-4 whitespace-nowrap">
+                        <span id="status-${order.orderId}" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}">${order.orderStatus}</span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
+                        <select id="status-select-${order.orderId}" onchange="handleStatusChange('${order.orderId}')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" ${order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : ''}>
+                            <option value="Pending" ${order.orderStatus === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="Processing" ${order.orderStatus === 'Processing' ? 'selected' : ''}>Processing</option>
+                            <option value="Shipped" ${order.orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                            <option value="Delivered" ${order.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            <option value="Cancelled" ${order.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                        </select>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base max-w-[100px] relative">
+                        <div class="relative inline-block">
+                            ${order.returnAlert ? '<span class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full z-50 border-2 border-white animate-pulse"></span>' : ''}
+                            <button onclick="window.location.assign('${viewLink}')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm w-full">View Details</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
+    }
+}
 
     // Initial render of orders
     renderOrders(allOrders);
@@ -236,7 +250,6 @@ function searchOrders() {
 
     renderOrders(filteredOrders);
 }
-
 
     // Function to handle status change
     async function handleStatusChange(orderId) {

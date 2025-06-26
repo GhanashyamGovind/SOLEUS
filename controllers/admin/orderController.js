@@ -18,14 +18,15 @@ const getAdminOrder = async (req, res, next) => {
         const options = { day: 'numeric', month: 'short', year: 'numeric' }
         const formattedOrders = orders.map(order => ({
             orderId: order.orderId,
-            userName: order.user.name,
+            userName: order.user?.name || "User deleted",
             orderedDate: order.createdOn.toLocaleDateString('en-IN', options),
             paymentMethod: order.paymentMethod,
             totalAmount: order.finalAmount,
             orderStatus: order.status,
             totalItems: order.orderedItems.reduce((acc, item) => acc + item.quantity, 0 ),
-            viewLink: `/admin/orders/products/${order.orderId}` // viewbutton
-        }))
+            viewLink: `/admin/orders/products/${order.orderId}`, // viewbutton
+            returnAlert: order.orderedItems.some((val) => val.returnStatus === 'Requested')
+        }));
 
         return res.render('admin/admin-order', {
             orders: formattedOrders,

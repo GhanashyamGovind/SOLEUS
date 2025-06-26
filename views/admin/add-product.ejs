@@ -460,7 +460,7 @@ function validateForm() {
                 isValid = false;
             }
 
-            if (parseFloat(regularPrice) <= parseFloat(salePrice || 0)) {
+            if (parseFloat(regularPrice) < parseFloat(salePrice || 0)) {
                 displayErrorMessage(`regularPrice-${size}-error`, 'Regular price must be greater than sale price.');
                 isValid = false;
             }

@@ -7,7 +7,11 @@ const userAuth = (req, res, next) => {
             if(data && !data.isBlocked){
                 next();
             }else{
-                res.redirect('/login');
+                delete req.session.user
+                if(data.isBlocked) {
+                    return res.redirect('/login?authError=blocked');
+                }
+                return res.redirect('/login');
             }
         })
         .catch(error => {

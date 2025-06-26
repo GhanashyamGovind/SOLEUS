@@ -27,8 +27,6 @@ router.post('/download-excel', adminController.downloadExcel);
 
 //Customer management
 router.get('/users',adminAuth, customerController.customerInfo);
-// router.get('/blockCustomer', adminAuth, customerController.customerBlocked);
-// router.get('/unblockCustomer', adminAuth, customerController.customerunBlocked);
 router.get('/deleteCustomer', adminAuth, customerController.customerDeleted);
 router.get('/blockandUnblock', adminAuth, customerController.blockAndUnblock)
 

@@ -80,11 +80,13 @@ const loadHomepage = async (req, res, next) => {
         productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
         productData = productData.slice(0, 4);
 
+        const brand = await Brand.find({isBlocked: false}).sort({createdAt: -1}).limit(6);
+
         if(user){
             const userData = await User.findOne({_id: user._id});
-            return res.render('user/home', {user: userData, products: productData});
+            return res.render('user/home', {user: userData, products: productData, brand: brand});
         } else {
-            return res.render('user/home', {products: productData})
+            return res.render('user/home', {products: productData, brand: brand})
         }
        
     } catch (error){
@@ -226,8 +228,6 @@ const verifyOtp = async (req, res, next) => {
             //save user first 
             const createdUser = await saveUserData.save(); // saved user data in DB
 
-            // createdUser.referralCode = await createReferralCode (createdUser.name, createdUser._id);
-            // console.log("referal code ====> ",createdUser.referralCode)
 
             // creat a wallet for the new user
             const newWallet = new Wallet({
@@ -328,14 +328,6 @@ const logOut = async (req, res, next) => {
             delete req.session.user;
             return res.redirect('/login')
       
-        // req.session.destroy((err) => {
-        //     if(err){
-        //         console.log("Session destruction error ===> ", err);
-        //         return res.redirect('/pageNotFound');
-        //     }
-        //     console.log("session is deleted")
-        //     return res.redirect('/login');
-        // })
     } catch (error) {
 
         next(error)
@@ -622,6 +614,21 @@ const clearSearch = async (req, res) => {
   }
 };
 
+const brandProudct = async (req, res, next) => {
+  try {
+    const {id} = req.params;
+    const products = await Product.find({brand: id, isBlocked: false}).populate('brand', 'brandName').sort({productName: -1});
+    const brand = await Brand.findById(id);
+    if(!brand){
+     return res.redirect('/')
+    }
+
+    return res.render('user/brandPage', {products, brand})
+  } catch (error) {
+    next(error)
+  }
+}
+
 
 const aboutUs = async (req, res, next) => {
   try {
@@ -702,4 +709,5 @@ module.exports = {
     aboutUs,
     contact,
     emailMessage,
+    brandProudct,
 }

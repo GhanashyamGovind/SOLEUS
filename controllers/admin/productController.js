@@ -5,7 +5,7 @@ const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
 const User = require('../../models/userSchema');
 
-const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const sharp = require('sharp'); // this is for crop and resize the images 
 
@@ -150,7 +150,7 @@ const addProducts = async (req, res) => {
           formData: req.body
         });
       }
-      if (regularPrice <= salePrice) {
+      if (regularPrice < salePrice) {
         return res.render('admin/add-product', {
           error: `Regular price must be greater than sale price for size ${size}`,
           brands: await Brand.find({ isBlocked: false }),
@@ -492,7 +492,7 @@ const editProduct = async (req, res) => {
     if (deleteImages.length > 0) {
       images = images.filter(img => !deleteImages.includes(img));
       for (const img of deleteImages) {
-        const imgPath = path.join('public', 'Uploads', 'product-images', img);
+        const imgPath = path.join('public', 'uploads', 'product-images', img); //check
         try {
           await fs.unlink(imgPath);
           console.log(`Deleted image: ${imgPath}`);
@@ -506,7 +506,7 @@ const editProduct = async (req, res) => {
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
         const originalImagePath = req.files[i].path;
-        const resizedImagePath = path.join('public', 'Uploads', 'product-images', req.files[i].filename);
+        const resizedImagePath = path.join('public', 'uploads', 'product-images', req.files[i].filename);
         await sharp(originalImagePath)
           .resize({ width: 440, height: 440, fit: 'cover' })
           .toFile(resizedImagePath);
@@ -536,9 +536,6 @@ const editProduct = async (req, res) => {
 
     await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
     const response = { message: 'Product updated successfully' };
-    // if (zeroStockWarning) {
-    //   response.warning = 'Some variants have zero stock, which may make the product unavailable to users.';
-    // }
     return res.status(200).json({ response });
   } catch (error) {
     console.error('Error in edit product:', error);
