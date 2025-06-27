@@ -4,16 +4,29 @@ const Address = require('../../models/addressSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
 const Wallet = require('../../models/walletSchema');
+const Cart = require('../../models/cartSchema');
 const mongoose = require('mongoose')
 const { render } = require('ejs');
 
 const loadOrder = async (req, res, next) => {
     try {
+
         const userId = req.session.user;
         if (!userId) {
             const error = new Error('User not authenticated');
             error.statusCode = 401;
             throw error;
+        }
+
+        const {cart} = req.query;
+        console.log("cart::: =>", cart)
+        if(cart && cart == 'fromProductFailure'){
+            const newCart = await Cart.findOneAndUpdate(
+                {userId},
+                { $set: { items: [], totalPrice: 0 } },
+                {new: true}
+            )
+            console.log("cart is cleared => ", newCart)
         }
 
         // Get user

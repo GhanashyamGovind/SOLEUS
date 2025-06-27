@@ -14,7 +14,7 @@ const getAdminOrder = async (req, res, next) => {
         const totalOrders = await Order.countDocuments();
         const totalPage = Math.ceil(totalOrders / limit);
 
-        const orders = await Order.find().populate('user','name').sort({ createdOn: -1 }).skip(skip).limit(limit);
+        const orders = await Order.find({status: {$ne: 'Payment-Failed'}}).populate('user','name').sort({ createdOn: -1 }).skip(skip).limit(limit);
         const options = { day: 'numeric', month: 'short', year: 'numeric' }
         const formattedOrders = orders.map(order => ({
             orderId: order.orderId,

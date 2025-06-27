@@ -73,7 +73,6 @@
         }
         
         .status-badge {
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
             color: white;
             font-size: 0.75rem;
             font-weight: 700;
@@ -81,6 +80,16 @@
             border-radius: 20px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        .status-badge[data-status="Cancelled"],
+        .status-badge[data-status="Payment-Failed"] {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+        }
+        .status-badge[data-status="Delivered"] {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        }
+        .status-badge:not([data-status="Cancelled"]):not([data-status="Payment-Failed"]):not([data-status="Delivered"]) {
+            background: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
         }
         .back-btn {
             background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
@@ -184,8 +193,8 @@
                         <p class="text-gray-600">Delivery Address: <%= order.address %></p>
                         <p class="text-gray-600">Total Items: <%= order.totalItems %></p>
                         <p class="text-gray-600">Total Amount: <span class="price-highlight">₹<%= order.totalAmount.toFixed(2) %></span></p>
-                        <p class="text-gray-600">Status: 
-                            <span class="status-badge" style="background: <%= order.status === 'Cancelled' ? 'linear-gradient(135deg, #EF4444 0%, #F87171 100%)' : '' %>">
+                        <p class="text-gray-600 ">Status: 
+                            <span class="status-badge text-white" data-status="<%= order.status %>">
                                 <%= order.status %>
                             </span>
                         </p>
@@ -207,6 +216,11 @@
                          <a href="/ordeTracking/<%= order.orderId %>" class="track-btn py-2 px-4 rounded-lg text-center"
                            <% if (!order.trackingAvailable) { %>disabled<% } %>>
                             View
+                        </a>
+                        <% } else if (order.status === 'Payment-Failed') { %>
+                        <a href="/check-out?orderId=<%= order.orderId %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
+                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                            Retry-Payment
                         </a>
                         <% } else { %>
                         <a href="/ordeTracking/<%= order.orderId %>" class="track-btn py-2 px-4 rounded-lg text-center"

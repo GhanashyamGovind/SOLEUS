@@ -363,152 +363,187 @@
         }
     }
 
-    async function proceedToPayment(isBuyNow) {
-        try {
-            const addressRadios = document.querySelectorAll('input[name="address"]:checked');
-            const addressId = addressRadios.length > 0 ? addressRadios[0].value : null;
-            const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+async function proceedToPayment(isBuyNow) {
+    try {
+        const addressRadios = document.querySelectorAll('input[name="address"]:checked');
+        const addressId = addressRadios.length > 0 ? addressRadios[0].value : null;
+        const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
 
-            if (!addressId) {
+        if (!addressId) {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'No Address Selected',
+                text: 'Please select a delivery address.',
+                showConfirmButton: true
+            });
+            return;
+        }
+
+        if (!paymentMethod) {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'No Payment Method',
+                text: 'Please select a payment method.',
+                showConfirmButton: true
+            });
+            return;
+        }
+
+        if (paymentMethod === 'Razorpay') {
+            const response = await fetch('/create-razorpay-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isBuyNow, addressId })
+            });
+
+            const data = await response.json();
+            if (!data.success) {
                 await Swal.fire({
-                    icon: 'warning',
-                    title: 'No Address Selected',
-                    text: 'Please select a delivery address.',
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to create payment order',
                     showConfirmButton: true
                 });
                 return;
             }
 
-            if (!paymentMethod) {
-                await Swal.fire({
-                    icon: 'warning',
-                    title: 'No Payment Method',
-                    text: 'Please select a payment method.',
-                    showConfirmButton: true
-                });
-                return;
-            }
-
-            if (paymentMethod === 'Razorpay') {
-                // Fetch Razorpay order from backend
-                const response = await fetch('/create-razorpay-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ isBuyNow, addressId })
-                });
-
-                const data = await response.json();
-                if (!data.success) {
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to create payment order',
-                        showConfirmButton: true
+            const order = data.order;
+            const options = {
+                key: data.key_id,
+                amount: order.amount,
+                currency: order.currency,
+                name: 'Soleus Shoes',
+                description: 'Order Payment',
+                order_id: order.id,
+                handler: async function (response) {
+                    const verifyResponse = await fetch('/verify-razorpay-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            isBuyNow,
+                            addressId,
+                            paymentMethod
+                        })
                     });
-                    return;
-                }
 
-                const order = data.order;
-                const options = {
-                    key: data.key_id,
-                    amount: order.amount,
-                    currency: order.currency,
-                    name: 'Soleus Shoes',
-                    description: 'Order Payment',
-                    order_id: order.id,
-                    handler: async function (response) {
-                        // Verify payment on backend
-                        const verifyResponse = await fetch('/verify-razorpay-payment', {
+                    const verifyData = await verifyResponse.json();
+                    if (verifyData.success) {
+                        await Swal.fire({
+                            toast: true,
+                            icon: 'success',
+                            title: 'Payment successful',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    } else {
+                        await Swal.fire({
+                            icon: 'error',
+                            title: 'Payment Failed',
+                            text: verifyData.message || 'Payment verification failed',
+                            showConfirmButton: true
+                        });
+                    }
+                    window.location.href = verifyData.redirectUrl;
+                },
+                prefill: {
+                    name: '<%= user.name || "" %>',
+                    email: '<%= user.email || "" %>',
+                    contact: '<%= user.phone || "" %>'
+                },
+                theme: {
+                    color: '#3399cc'
+                },
+                modal: {
+                    ondismiss: async function () {
+                        await fetch('/handle-payment-failure', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_signature: response.razorpay_signature,
+                                razorpayOrderId: order.id,
                                 isBuyNow,
                                 addressId,
                                 paymentMethod
                             })
+                        }).then(res => res.json()).then(data => {
+                            window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
+                        }).catch(err => {
+                            console.error('Error handling modal closure:', err);
+                            window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
                         });
-
-                        const verifyData = await verifyResponse.json();
-                        if (verifyData.success) {
-                            await Swal.fire({
-                                toast: true,
-                                icon: 'success',
-                                title: 'Payment successful',
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-                            window.location.href = verifyData.redirectUrl;
-                        } else {
-                            await Swal.fire({
-                                icon: 'error',
-                                title: 'Payment Failed',
-                                text: verifyData.message || 'Payment verification failed',
-                                showConfirmButton: true
-                            });
-                            window.location.href = verifyData.redirectUr;
-                        }
-                    },
-                    prefill: {
-                        name: '<%= user.name || "" %>',
-                        email: '<%= user.email || "" %>',
-                        contact: '<%= user.phone || "" %>'
-                    },
-                    theme: {
-                        color: '#3399cc'
                     }
-                };
+                }
+            };
 
-                const rzp = new Razorpay(options);
-                rzp.on('payment.failed', function (response) {
-                    window.location.href = `/order/failure?razorpayOrderId=${order.id}`;
-                });
-                rzp.open();
-            } else {
-                // Existing logic for COD and Wallet
-                const response = await fetch('/proceedToPayment', {
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', async function (response) {
+                await fetch('/handle-payment-failure', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ isBuyNow, addressId, paymentMethod })
+                    body: JSON.stringify({
+                        razorpayOrderId: order.id,
+                        isBuyNow,
+                        addressId,
+                        paymentMethod,
+                        errorCode: response.error.code,
+                        errorDescription: response.error.description
+                    })
+                }).then(res => res.json()).then(data => {
+                    window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
+                }).catch(err => {
+                    console.error('Error handling payment failure:', err);
+                    window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
                 });
-
-                const data = await response.json();
-                if (data.success && data.redirectUrl) {
-                    await Swal.fire({
-                        toast: true,
-                        icon: 'success',
-                        title: 'Order placed successfully',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
-                    window.location.href = data.redirectUrl;
-                } else {
-                    await Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to proceed to payment',
-                        showConfirmButton: true
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error in proceedToPayment:', error);
-            await Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Something went wrong!',
-                showConfirmButton: true
             });
+            rzp.open();
+        } else {
+            const response = await fetch('/proceedToPayment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ isBuyNow, addressId, paymentMethod })
+            });
+
+            const data = await response.json();
+            if (data.success && data.redirectUrl) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Order placed successfully',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                window.location.href = data.redirectUrl;
+            } else {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.message || 'Failed to proceed to payment',
+                    showConfirmButton: true
+                });
+            }
         }
+    } catch (error) {
+        console.error('Error in proceedToPayment:', error);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong!',
+            showConfirmButton: true
+        });
     }
+}
 </script>
 </body>
 <%- include('../../views/partials/user/footer') %>

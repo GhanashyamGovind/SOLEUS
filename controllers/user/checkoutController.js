@@ -831,15 +831,16 @@ const verifyRazorpayPayment = async (req, res) => {
             .update(razorpay_order_id + '|' + razorpay_payment_id)
             .digest('hex');
 
-        if (generatedSignature !== razorpay_signature) {
-            const isBuyNowFlag = req.session.razorpayOrderDetails?.isBuyNow ? 'true' : 'false';
-            const failureRedirectUrl = `/order/failure?razorpayOrderId=${razorpay_order_id}&isBuyNow=${isBuyNowFlag}`;
-            return res.status(400).json({ 
-                success: false,
-                message: 'Invalid payment signature',
-                redirectUrl: failureRedirectUrl
-            });
-        }
+        // if (generatedSignature !== razorpay_signature) {
+        //     const isBuyNowFlag = req.session.razorpayOrderDetails?.isBuyNow ? 'true' : 'false';
+        //     const failureRedirectUrl = `/order/failure?razorpayOrderId=${razorpay_order_id}&isBuyNow=${isBuyNowFlag}`;
+        //     return res.status(400).json({ 
+        //         success: false,
+        //         message: 'Invalid payment signature',
+        //         redirectUrl: failureRedirectUrl
+        //     });
+        // }
+        const isValidPayment = generatedSignature === razorpay_signature;
 
         const { items, totalPrice, deliveryCharges, discount, finalAmount, couponCode } = req.session.razorpayOrderDetails;
 
@@ -853,31 +854,27 @@ const verifyRazorpayPayment = async (req, res) => {
             user: userId,
             orderedItems: items,
             totalPrice,
-            discount,
-            finalAmount,
+            discount: isValidPayment ? discount : 0,
+            finalAmount: isValidPayment ? finalAmount : totalPrice + deliveryCharges,
             address: clonedAddress,
             invoiceDate: new Date(),
             paymentMethod: 'Razorpay',
-            paymentStatus: 'Completed',
-            status: 'Pending',
+            paymentStatus: isValidPayment ? 'Completed' : 'Failed',
+            status: isValidPayment ? 'Pending' : 'Payment-Failed',
             createdOn: new Date(),
-            couponApplied: !!discount,
-            couponCode,
+            couponApplied: isValidPayment && !!discount,
+            couponCode: isValidPayment ? couponCode: null,
             razorpayPaymentId: razorpay_payment_id,
             razorpayOrderId: razorpay_order_id
         });
 
+
+        // await order.save();
         await order.save();
         await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
-        await rewardEligibleCoupon(userId, order.finalAmount) // => coupon kittumo enn nokkan
 
-        //mark coupn is used
-        if(couponCode) {
-            await Coupon.findOneAndUpdate(
-                { code: couponCode },
-                { $addToSet: { usedBy: userId } }
-            )
-        }
+
+        if(isValidPayment) {
 
         // Update stock
         for (const item of order.orderedItems) {
@@ -890,6 +887,16 @@ const verifyRazorpayPayment = async (req, res) => {
                 throw new Error(`Failed to update stock for product ${item.product}`);
             }
         }
+
+        //mark coupn is used
+        if(couponCode) {
+            await Coupon.findOneAndUpdate(
+                { code: couponCode },
+                { $addToSet: { usedBy: userId } }
+            )
+        }
+
+        await rewardEligibleCoupon(userId, order.finalAmount) // => coupon kittumo enn nokkan
 
         // Clear cart if not Buy Now
         if (!isBuyNowBoolean) {
@@ -909,11 +916,88 @@ const verifyRazorpayPayment = async (req, res) => {
             message: 'Payment verified and order placed successfully',
             redirectUrl
         });
+
+        } else {
+            
+            const isBuyNowFlag = req.session.razorpayOrderDetails?.isBuyNow ? 'true' : 'false';
+            const failureRedirectUrl = `/order/failure?razorpayOrderId=${razorpay_order_id}&isBuyNow=${isBuyNowFlag}`;
+            return res.status(400).json({ 
+                success: false,
+                message: 'Invalid payment signature',
+                redirectUrl: failureRedirectUrl
+            });
+
+        }
+
     } catch (error) {
         console.error('Error verifying Razorpay payment:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to verify payment'
+        });
+    }
+};
+
+const handlePaymentFailure = async (req, res, next) => {
+    try {
+        const userId = req.session.user;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized user' });
+        }
+
+        const { razorpayOrderId, isBuyNow, addressId, paymentMethod } = req.body;
+        const isBuyNowBoolean = isBuyNow === 'true' || isBuyNow === true;
+
+        if (!req.session.razorpayOrderDetails || req.session.razorpayOrderDetails.razorpayOrderId !== razorpayOrderId) {
+            return res.status(400).json({ success: false, message: 'Invalid order details' });
+        }
+
+        const { items, totalPrice, deliveryCharges } = req.session.razorpayOrderDetails;
+
+        const userAddressDoc = await Address.findOne({ userId });
+        const selectedAddress = userAddressDoc.address.id(addressId);
+        if (!selectedAddress) {
+            return res.status(400).json({ success: false, message: 'Invalid address' });
+        }
+        const clonedAddress = structuredClone(selectedAddress.toObject());
+
+        // Create order with failed status, no coupon applied
+        const order = new Order({
+            orderId: generateOrderId('SOLEUS'),
+            user: userId,
+            orderedItems: items,
+            totalPrice,
+            discount: 0,
+            finalAmount: totalPrice + deliveryCharges,
+            address: clonedAddress,
+            invoiceDate: new Date(),
+            paymentMethod: paymentMethod,
+            paymentStatus: 'Failed',
+            status: 'Payment-Failed',
+            createdOn: new Date(),
+            couponApplied: false,
+            couponCode: null,
+            razorpayOrderId: razorpayOrderId
+        });
+
+        await order.save();
+        await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
+
+        // Clear all relevant session data
+        req.session.razorpayOrderDetails = null;
+        req.session.couponDiscount = null;
+        req.session.appliedCoupon = null;
+
+        return res.status(200).json({
+            success: true,
+            message: 'Failed order saved successfully',
+            redirectUrl: `/order/failure?razorpayOrderId=${razorpayOrderId}&isBuyNow=${isBuyNowBoolean}`
+        });
+    } catch (error) {
+        console.error('Error in handlePaymentFailure:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Failed to handle payment failure'
         });
     }
 };
@@ -1053,6 +1137,7 @@ module.exports = {
     proceedToPayment,
     createRazorpayOrder,
     verifyRazorpayPayment,
+    handlePaymentFailure,
     successPage,
     failurePage,
     retryBuyNowCheckout,

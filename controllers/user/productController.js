@@ -7,14 +7,15 @@ const productDeatils = async (req, res, next) => {
     try {
 
         const productId = req.query.id;
-        const product = await Product.findById(productId).populate(['category', 'brand']);
+        const product = await Product.findById(productId, {isBlocked: false}).populate(['category', 'brand']);
         const findCategory = product.category;
         const findBrand = product.brand;
         const variants = product.variants
 
         const relatedProducts = await Product.find({
             category: findCategory._id,
-            _id: {$ne: productId} // current product avoid cheyyan
+            _id: {$ne: productId}, // current product avoid cheyyan
+            isBlocked: false,
         }).populate('brand');
 
         res.render('user/product-details',{
