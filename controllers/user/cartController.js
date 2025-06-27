@@ -12,6 +12,7 @@ const getCart = async (req, res, next) => {
             return res.render('user/cart', { cart: { items: [], totalPrice: 0 } });
         }
 
+        //delete the session of buynow
         if(req.session.buyNow) {
             req.session.buyNow = null
         }

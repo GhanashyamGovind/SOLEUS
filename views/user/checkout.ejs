@@ -252,122 +252,127 @@
         applyCoupon(isBuyNow);
     }
 
-    async function applyCoupon(isBuyNow) {
-        try {
-            const couponCode = document.getElementById('couponCode').value.trim();
-            if (!couponCode) {
-                await Swal.fire({
-                    icon: 'warning',
-                    title: 'Empty Coupon',
-                    text: 'Please enter a coupon code.',
-                    showConfirmButton: true
-                });
-                return;
-            }
+async function applyCoupon(isBuyNow) {
+    try {
+        const couponCode = document.getElementById('couponCode').value.trim();
+        const orderId = '<%= orderId || "" %>'; // Get orderId from EJS context
+        if (!couponCode) {
+            await Swal.fire({
+                icon: 'warning',
+                title: 'Empty Coupon',
+                text: 'Please enter a coupon code.',
+                showConfirmButton: true
+            });
+            return;
+        }
 
-            const response = await fetch('/applyCoupon', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ couponCode, isBuyNow })
+        const response = await fetch('/applyCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode, isBuyNow, orderId })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            await Swal.fire({
+                toast: true,
+                icon: 'success',
+                title: 'Coupon applied!',
+                showConfirmButton: false,
+                timer: 1500
             });
 
-            const data = await response.json();
-            if (data.success) {
-                await Swal.fire({
-                    toast: true,
-                    icon: 'success',
-                    title: 'Coupon applied!',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
+            // Update price details in the UI
+            document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
+            document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
+            document.getElementById('discountValue').textContent = `-₹${data.priceDetails.discount}`;
+            document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
 
-                // Update price details in the UI
-                document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
-                document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
-                document.getElementById('discountValue').textContent = `-₹${data.priceDetails.discount}`;
-                document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
-
-                // Show remove coupon button, hide apply button, set coupon code
-                document.getElementById('removeCouponBtn').classList.remove('hidden');
-                document.getElementById('applyCouponBtn').classList.add('hidden');
-                document.getElementById('couponCode').value = couponCode;
-                document.getElementById('couponCode').placeholder = 'Coupon applied';
-            } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid Coupon',
-                    text: data.message || 'Coupon code is invalid.',
-                    showConfirmButton: true
-                });
-            }
-        } catch (error) {
-            console.error('Error applying coupon:', error);
+            // Show remove coupon button, hide apply button, set coupon code
+            document.getElementById('removeCouponBtn').classList.remove('hidden');
+            document.getElementById('applyCouponBtn').classList.add('hidden');
+            document.getElementById('couponCode').value = couponCode;
+            document.getElementById('couponCode').placeholder = 'Coupon applied';
+        } else {
             await Swal.fire({
                 icon: 'error',
-                title: 'Error',
-                text: 'Failed to apply coupon.',
+                title: 'Invalid Coupon',
+                text: data.message || 'Coupon code is invalid.',
                 showConfirmButton: true
             });
         }
+    } catch (error) {
+        console.error('Error applying coupon:', error);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to apply coupon.',
+            showConfirmButton: true
+        });
     }
+}
 
-    async function removeCoupon(isBuyNow) {
-        try {
-            const response = await fetch('/removeCoupon', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ isBuyNow })
+async function removeCoupon(isBuyNow) {
+    try {
+        const orderId = '<%= orderId || "" %>'; // Get orderId from EJS context
+        const response = await fetch('/removeCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ isBuyNow, orderId })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            await Swal.fire({
+                toast: true,
+                icon: 'success',
+                title: 'Coupon removed!',
+                showConfirmButton: false,
+                timer: 1500
             });
 
-            const data = await response.json();
-            if (data.success) {
-                await Swal.fire({
-                    toast: true,
-                    icon: 'success',
-                    title: 'Coupon removed!',
-                    showConfirmButton: false,
-                    timer: 1500
-                });
+            // Update price details in the UI
+            document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
+            document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
+            document.getElementById('discountValue').textContent = `-₹${data.priceDetails.discount}`;
+            document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
 
-                // Update price details in the UI
-                document.getElementById('subtotalValue').textContent = `₹${data.priceDetails.subtotal}`;
-                document.getElementById('deliveryChargesValue').textContent = data.priceDetails.deliveryCharges === 0 ? 'Free' : `₹${data.priceDetails.deliveryCharges}`;
-                document.getElementById('discountValue').textContent = `-₹${data.priceDetails.discount}`;
-                document.getElementById('totalValue').textContent = `₹${data.priceDetails.totalAmount}`;
-
-                // Hide remove coupon button, show apply button, clear coupon input
-                document.getElementById('removeCouponBtn').classList.add('hidden');
-                document.getElementById('applyCouponBtn').classList.remove('hidden');
-                document.getElementById('couponCode').value = '';
-                document.getElementById('couponCode').placeholder = 'Enter coupon code';
-            } else {
-                await Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Failed to remove coupon.',
-                    showConfirmButton: true
-                });
-            }
-        } catch (error) {
-            console.error('Error removing coupon:', error);
+            // Hide remove coupon button, show apply button, clear coupon input
+            document.getElementById('removeCouponBtn').classList.add('hidden');
+            document.getElementById('applyCouponBtn').classList.remove('hidden');
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponCode').placeholder = 'Enter coupon code';
+        } else {
             await Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to remove coupon.',
+                text: data.message || 'Failed to remove coupon.',
                 showConfirmButton: true
             });
         }
+    } catch (error) {
+        console.error('Error removing coupon:', error);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to remove coupon.',
+            showConfirmButton: true
+        });
     }
+}
 
+    //check
 async function proceedToPayment(isBuyNow) {
     try {
         const addressRadios = document.querySelectorAll('input[name="address"]:checked');
         const addressId = addressRadios.length > 0 ? addressRadios[0].value : null;
         const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
+        const orderId = '<%= orderId || "" %>'; // Get orderId from EJS context
+        const isFailedPayment = !!orderId;
 
         if (!addressId) {
             await Swal.fire({
@@ -395,7 +400,7 @@ async function proceedToPayment(isBuyNow) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ isBuyNow, addressId })
+                body: JSON.stringify({ isBuyNow, addressId, orderId })
             });
 
             const data = await response.json();
@@ -429,7 +434,8 @@ async function proceedToPayment(isBuyNow) {
                             razorpay_signature: response.razorpay_signature,
                             isBuyNow,
                             addressId,
-                            paymentMethod
+                            paymentMethod,
+                            orderId
                         })
                     });
 
@@ -471,13 +477,14 @@ async function proceedToPayment(isBuyNow) {
                                 razorpayOrderId: order.id,
                                 isBuyNow,
                                 addressId,
-                                paymentMethod
+                                paymentMethod,
+                                orderId
                             })
                         }).then(res => res.json()).then(data => {
-                            window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
+                            window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                         }).catch(err => {
                             console.error('Error handling modal closure:', err);
-                            window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
+                            window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                         });
                     }
                 }
@@ -495,14 +502,15 @@ async function proceedToPayment(isBuyNow) {
                         isBuyNow,
                         addressId,
                         paymentMethod,
+                        orderId,
                         errorCode: response.error.code,
                         errorDescription: response.error.description
                     })
                 }).then(res => res.json()).then(data => {
-                    window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
+                    window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                 }).catch(err => {
                     console.error('Error handling payment failure:', err);
-                    window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow}`;
+                    window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                 });
             });
             rzp.open();
@@ -512,7 +520,7 @@ async function proceedToPayment(isBuyNow) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ isBuyNow, addressId, paymentMethod })
+                body: JSON.stringify({ isBuyNow, addressId, paymentMethod, orderId })
             });
 
             const data = await response.json();

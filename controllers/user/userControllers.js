@@ -3,6 +3,7 @@ const Category = require('../../models/categorySchema');
 const Product = require('../../models/productSchema');
 const Brand = require('../../models/brandSchema');
 const Referral = require('../../models/referralSchema');
+const Cart = require('../../models/cartSchema');
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -67,6 +68,15 @@ async function sendVerificationEmail(email, otp){
 const loadHomepage = async (req, res, next) => {
     try{
         const user = req.session.user;
+
+        const {cart} = req.query; console.log("cart", cart)
+        if (cart && cart == 'fromProductFailure') {
+          const newCart = await Cart.findOneAndUpdate(
+            { userId: user },
+            { $set: { items: [], totalPrice: 0 } },
+            { new: true }
+          )
+        }
 
         const categories = await Category.find({isListed: true});
         let productData = await Product.find(
