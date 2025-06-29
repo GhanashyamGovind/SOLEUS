@@ -478,15 +478,16 @@ const filterProduct = async (req, res) => {
   try {
     const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
     // Handle onFire as an array
-    let onFire = req.query['onFire[]'];
-    if (onFire && !Array.isArray(onFire)) {
-      onFire = [onFire]; // Convert single value to array
-    }
-    onFire = onFire || []; // Default to empty array if not provided
+    // let onFire = req.query['onFire[]'];
+    // if (onFire && !Array.isArray(onFire)) {
+    //   onFire = [onFire]; // Convert single value to array
+    // }
+    // onFire = onFire || []; // Default to empty array if not provided
+    //check
 
     // Validate onFire values
-    const validOnFireValues = ['newArrival', 'topSelling'];
-    const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
+    // const validOnFireValues = ['newArrival', 'topSelling'];
+    // const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
 
     // Fetch categories and ensure products are from listed categories
     const categories = await Category.find({ isListed: true });
@@ -505,9 +506,9 @@ const filterProduct = async (req, res) => {
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    if (validatedOnFire.length > 0) {
-      query.onFire = { $in: validatedOnFire };
-    }
+    // if (validatedOnFire.length > 0) {
+    //   query.onFire = { $in: validatedOnFire };
+    // }
     if (search) {
       query.productName = { $regex: search, $options: 'i' };
     }
@@ -559,7 +560,7 @@ const filterProduct = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        selectedOnFire: validatedOnFire,
+        // selectedOnFire: validatedOnFire,
         search,
         sort,
       });
@@ -576,7 +577,7 @@ const filterProduct = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      selectedOnFire: validatedOnFire,
+      // selectedOnFire: validatedOnFire,
       search,
       sort,
     });

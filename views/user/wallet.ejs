@@ -17,6 +17,26 @@
         .balance-card {
             background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
         }
+        .transaction-container {
+            max-height: 600px; /* Adjust height as needed */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #e5e7eb;
+        }
+        .transaction-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .transaction-container::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+        .transaction-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        .transaction-container::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
     </style>
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -149,9 +169,9 @@
 
                     <div class="p-6">
                         <% if (transactions.length > 0) { %>
-                        <div id="transactionList" class="space-y-4">
+                        <div id="transactionList" class="space-y-4 transaction-container">
                             <!-- Transaction Item -->
-                            <% transactions.slice(0, 15).forEach(trans => { %>
+                            <% transactions.slice(0, 10).forEach(trans => { %>
                             <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
                                 <div class="flex items-center">
                                     <% if (trans.type == 'credit') { %>
@@ -183,10 +203,8 @@
                             </div>
                             <% }) %>
                         </div>
-
-                        <!-- Load More Button -->
-                        <% if (transactions.length > 15) { %>
-                        <div class="mt-6 text-center">
+                        <% if (transactions.length >= 20) { %>
+                        <div class="mt-6 text-center" id="loadMoreContainer">
                             <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
                                 Load More Transactions
                             </button>
@@ -230,7 +248,6 @@
                     </div>
                 </div>
             </div>
-
             <% } %>
         </div>
     </main>
@@ -253,11 +270,10 @@
                 });
             });
 
-            // Add click functionality to buttons
+            // Add click animation to buttons
             const buttons = document.querySelectorAll('button');
             buttons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // Add click animation
                     this.style.transform = 'scale(0.98)';
                     setTimeout(() => {
                         this.style.transform = '';
@@ -267,47 +283,78 @@
 
             // Load More Transactions
             let currentPage = 1;
-            const transactionsPerPage = 15;
-            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            const transactionsPerPage = 20;
             const transactionList = document.getElementById('transactionList');
             const allTransactions = <%- JSON.stringify(transactions) %>;
+            let filteredTransactions = allTransactions;
 
-            if (loadMoreBtn) {
-                loadMoreBtn.addEventListener('click', function() {
-                    const startIndex = currentPage * transactionsPerPage;
-                    const nextTransactions = allTransactions.slice(startIndex, startIndex + transactionsPerPage);
+            function renderTransactions(transactions, append = false) {
+                const startIndex = append ? transactionList.children.length : 0;
+                const endIndex = startIndex + transactionsPerPage;
+                const transactionsToRender = transactions.slice(startIndex, endIndex);
 
-                    if (nextTransactions.length > 0) {
-                        nextTransactions.forEach(trans => {
-                            const transItem = document.createElement('div');
-                            transItem.className = 'transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200';
-                            transItem.innerHTML = `
-                                <div class="flex items-center">
-                                    <div class="${trans.type === 'credit' ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-lg">
-                                        <i data-feather="${trans.type === 'credit' ? 'plus' : 'shopping-bag'}" class="w-5 h-5 ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <p class="font-semibold text-gray-900">${trans.type}</p>
-                                        <p class="text-sm text-gray-600">${trans.reason}</p>
-                                        ${trans.orderId ? `<p class="text-sm text-gray-600">order: ${trans.orderId}</p>` : ''}
-                                        <p class="text-xs text-gray-500">${new Date(trans.createdAt).toString().split('GMT')[0].trim()}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-bold ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}">${trans.type === 'credit' ? '+' : '-'}₹${trans.amount}</p>
-                                    <p class="text-xs text-gray-500">Completed</p>
-                                </div>
-                            `;
-                            transactionList.appendChild(transItem);
-                            feather.replace(); // Re-initialize Feather icons for new items
-                        });
+                if (!append) {
+                    transactionList.innerHTML = '';
+                }
 
-                        currentPage++;
-                        if (startIndex + nextTransactions.length >= allTransactions.length) {
-                            loadMoreBtn.parentNode.remove(); // Remove button if no more transactions
-                        }
-                    }
+                transactionsToRender.forEach(trans => {
+                    const transItem = document.createElement('div');
+                    transItem.className = 'transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200';
+                    transItem.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="${trans.type === 'credit' ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-lg">
+                                <i data-feather="${trans.type === 'credit' ? 'plus' : 'shopping-bag'}" class="w-5 h-5 ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-900">${trans.type}</p>
+                                <p class="text-sm text-gray-600">${trans.reason}</p>
+                                ${trans.orderId ? `<p class="text-sm text-gray-600">order: ${trans.orderId}</p>` : ''}
+                                <p class="text-xs text-gray-500">${new Date(trans.createdAt).toString().split('GMT')[0].trim()}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}">${trans.type === 'credit' ? '+' : '-'}₹${trans.amount}</p>
+                            <p class="text-xs text-gray-500">Completed</p>
+                        </div>
+                    `;
+                    transactionList.appendChild(transItem);
                 });
+                feather.replace(); // Re-initialize Feather icons for new items
+
+                // Update Load More button visibility
+                const loadMoreContainer = document.getElementById('loadMoreContainer');
+                if (transactions.length >= 20 && transactionList.children.length < transactions.length) {
+                    if (!loadMoreContainer) {
+                        const newLoadMoreContainer = document.createElement('div');
+                        newLoadMoreContainer.className = 'mt-6 text-center';
+                        newLoadMoreContainer.id = 'loadMoreContainer';
+                        newLoadMoreContainer.innerHTML = `
+                            <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
+                                Load More Transactions
+                            </button>
+                        `;
+                        transactionList.parentNode.appendChild(newLoadMoreContainer);
+                        document.getElementById('loadMoreBtn').addEventListener('click', loadMoreTransactions);
+                    }
+                } else if (loadMoreContainer) {
+                    loadMoreContainer.remove();
+                }
+            }
+
+            function loadMoreTransactions() {
+                currentPage++;
+                renderTransactions(filteredTransactions, true);
+            }
+
+            // Initial render (up to 10 transactions)
+            if (allTransactions.length > 0) {
+                renderTransactions(allTransactions);
+            }
+
+            // Load More Button Handler
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', loadMoreTransactions);
             }
 
             // Filter Transactions
@@ -317,7 +364,7 @@
             function applyFilters() {
                 const typeValue = typeFilter.value;
                 const timeValue = timeFilter.value;
-                let filteredTransactions = allTransactions;
+                filteredTransactions = allTransactions;
 
                 // Filter by type
                 if (typeValue !== 'all') {
@@ -343,49 +390,9 @@
                     });
                 }
 
-                // Update transaction list
-                transactionList.innerHTML = '';
-                filteredTransactions.slice(0, transactionsPerPage).forEach(trans => {
-                    const transItem = document.createElement('div');
-                    transItem.className = 'transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200';
-                    transItem.innerHTML = `
-                        <div class="flex items-center">
-                            <div class="${trans.type === 'credit' ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-lg">
-                                <i data-feather="${trans.type === 'credit' ? 'plus' : 'shopping-bag'}" class="w-5 h-5 ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="font-semibold text-gray-900">${trans.type}</p>
-                                <p class="text-sm text-gray-600">${trans.reason}</p>
-                                ${trans.orderId ? `<p class="text-sm text-gray-600">order: ${trans.orderId}</p>` : ''}
-                                <p class="text-xs text-gray-500">${new Date(trans.createdAt).toString().split('GMT')[0].trim()}</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <p class="font-bold ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}">${trans.type === 'credit' ? '+' : '-'}₹${trans.amount}</p>
-                            <p class="text-xs text-gray-500">Completed</p>
-                        </div>
-                    `;
-                    transactionList.appendChild(transItem);
-                });
-                feather.replace(); // Re-initialize Feather icons
-
-                // Update Load More button visibility
-                if (filteredTransactions.length > transactionsPerPage && !loadMoreBtn) {
-                    const newLoadMoreBtn = document.createElement('div');
-                    newLoadMoreBtn.className = 'mt-6 text-center';
-                    newLoadMoreBtn.innerHTML = `
-                        <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
-                            Load More Transactions
-                        </button>
-                    `;
-                    transactionList.parentNode.appendChild(newLoadMoreBtn);
-                    document.getElementById('loadMoreBtn').addEventListener('click', () => {
-                        currentPage++;
-                        applyFilters();
-                    });
-                } else if (filteredTransactions.length <= transactionsPerPage && loadMoreBtn) {
-                    loadMoreBtn.parentNode.remove();
-                }
+                // Reset current page and render filtered transactions
+                currentPage = 1;
+                renderTransactions(filteredTransactions);
             }
 
             typeFilter.addEventListener('change', applyFilters);
@@ -398,18 +405,18 @@
             await navigator.clipboard.writeText(text);
 
             await Swal.fire({
-            icon: 'success',
-            title: 'Referral code copied!',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 2000,
-            timerProgressBar: true,
-            background: '#fff3cd',
-            iconColor: '#198754',
-            customClass: {
-                popup: 'shadow-lg text-sm font-medium border border-yellow-300'
-            }
+                icon: 'success',
+                title: 'Referral code copied!',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                background: '#fff3cd',
+                iconColor: '#198754',
+                customClass: {
+                    popup: 'shadow-lg text-sm font-medium border border-yellow-300'
+                }
             });
         }
     </script>

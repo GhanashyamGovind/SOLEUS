@@ -373,6 +373,7 @@ async function proceedToPayment(isBuyNow) {
         const paymentMethod = document.querySelector('input[name="payment_method"]:checked')?.value;
         const orderId = '<%= orderId || "" %>'; // Get orderId from EJS context
         const isFailedPayment = !!orderId;
+        const totalAmount = parseFloat(document.getElementById('totalValue').textContent.replace('₹', ''));
 
         if (!addressId) {
             await Swal.fire({
@@ -390,6 +391,32 @@ async function proceedToPayment(isBuyNow) {
                 title: 'No Payment Method',
                 text: 'Please select a payment method.',
                 showConfirmButton: true
+            });
+            return;
+        }
+
+        if (paymentMethod === 'COD' && totalAmount > 3000) {
+            await Swal.fire({
+                iconHtml: '<i class="fas fa-exclamation-triangle text-yellow-500" style="font-size: 2.5rem;"></i>',
+                title: '<span class="text-lg font-semibold text-black">COD Not Available</span>',
+                html: `
+                    <div class="text-center py-2">
+                        <p class="text-black mb-3">COD not available for orders above <span class="font-bold text-yellow-600">₹3,000</span></p>
+                        <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mb-3">
+                            <p class="text-sm text-black">Order Total: <span class="font-bold text-yellow-700">₹${totalAmount.toFixed(2)}</span></p>
+                        </div>
+                        <p class="text-sm text-gray-700">Please use Razorpay or Wallet payment</p>
+                    </div>
+                `,
+                confirmButtonText: 'Choose Payment',
+                confirmButtonColor: '#eab308',
+                customClass: {
+                    popup: 'rounded-lg shadow-xl',
+                    confirmButton: 'px-6 py-2 rounded-md font-medium'
+                },
+                backdrop: 'rgba(0,0,0,0.5)',
+                width: '22rem',
+                padding: '1.5rem'
             });
             return;
         }
@@ -533,6 +560,30 @@ async function proceedToPayment(isBuyNow) {
                     timer: 1500
                 });
                 window.location.href = data.redirectUrl;
+            } else if(data.message.includes('Cash on Delivery')){
+                await Swal.fire({
+                    iconHtml: '<i class="fas fa-exclamation-triangle text-yellow-500" style="font-size: 2.5rem;"></i>',
+                    title: '<span class="text-lg font-semibold text-black">COD Not Available</span>',
+                    html: `
+                        <div class="text-center py-2">
+                            <p class="text-black mb-3">COD not available for orders above <span class="font-bold text-yellow-600">₹3,000</span></p>
+                            <div class="bg-yellow-100 border border-yellow-300 rounded-lg p-3 mb-3">
+                                <p class="text-sm text-black">Order Total: <span class="font-bold text-yellow-700">₹${totalAmount.toFixed(2)}</span></p>
+                            </div>
+                            <p class="text-sm text-gray-700">Please use Razorpay or Wallet payment</p>
+                        </div>
+                    `,
+                    confirmButtonText: 'Choose Payment',
+                    confirmButtonColor: '#eab308',
+                    customClass: {
+                        popup: 'rounded-lg shadow-xl',
+                        confirmButton: 'px-6 py-2 rounded-md font-medium'
+                    },
+                    backdrop: 'rgba(0,0,0,0.5)',
+                    width: '22rem',
+                    padding: '1.5rem'
+                });
+                return;
             } else {
                 await Swal.fire({
                     icon: 'error',

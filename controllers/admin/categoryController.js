@@ -98,7 +98,7 @@ try {
 
     let id = req.params.id;
     const {categoryName, description} = req.body;
-    const existsingCategory = await Category.findOne({name: categoryName});
+    const existsingCategory = await Category.findOne({name: categoryName, _id: { $ne: id }});
 
     if(existsingCategory){
         return res.status(409).json({message: "Category exists, please choose another name"})

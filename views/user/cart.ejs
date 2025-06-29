@@ -268,6 +268,26 @@ function proceedToCheckout() {
     }
     window.location.href = '/check-out';
 }
+
+const urlParams = new URLSearchParams(window.location.search);
+const errorMessage = urlParams.get('error');
+
+if(errorMessage){
+   Swal.fire({
+        toast: true,
+        position: 'center',
+        icon: 'warning',
+        title: decodeURIComponent(errorMessage),
+        showConfirmButton: true,
+        confirmButtonText: 'OK',
+        timer: undefined, // No auto close
+        timerProgressBar: false
+    });
+
+    const cleanUrl = window.location.origin + window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl)
+}
+
 </script>
 
 <style>

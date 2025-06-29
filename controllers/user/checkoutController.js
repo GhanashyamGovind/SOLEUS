@@ -360,7 +360,22 @@ const applyCoupon = async (req, res, next) => {
         if (coupon.discountType === 'fixed') {
             discount = coupon.offerPrice;
         } else if (coupon.discountType === 'percentage') {
-            priceDetails.subtotal >= 2500 ? discount = Math.round((coupon.offerPrice * priceDetails.subtotal) / 100) : discount = Math.round((coupon.offerPrice * (priceDetails.subtotal + 99)) / 100);
+           const baseAmount = priceDetails.subtotal >= 2500 ? discount = priceDetails.subtotal : priceDetails.subtotal + 99;
+
+           // normal discount
+           let rawDiscount = Math.round((coupon.offerPrice * baseAmount ) / 100);
+
+           // scale down the discount for large orders
+           const scaleDiscount = (amount, percent) => {
+            if(amount <= 2500) return rawDiscount; // full discount allowed
+            if(amount <= 5000) return Math.min(rawDiscount, amount * (percent / 100) * 0.8) //max 80%
+            if(amount <= 10000) return Math.min(rawDiscount, amount * (percent / 100) * 0.6) // max 60%
+            if(amount <= 20000) return Math.min(rawDiscount, amount * (percent / 100) * 0.4) // max 40%
+            return Math.min(rawDiscount, amount * (percent / 100) * 0.25) // max 25%
+           }
+
+           //
+           discount = Math.round(scaleDiscount(baseAmount, coupon.offerPrice));
         }
 
         priceDetails.discount = discount;
@@ -561,6 +576,11 @@ const proceedToPayment = async (req, res, next) => {
             deliveryCharges = totalPrice >= 2500 ? 0 : 99;
             finalAmount = Math.max(0, totalPrice + deliveryCharges - discount);
 
+            //no cod above 3000
+            if(paymentMethod === 'COD' && finalAmount > 3000) {
+                return res.status(400).json({ success: false, message: 'Cash on Delivery is not available for orders above ₹3000'});
+            }
+
             // Update order details
             order.address = clonedAddress;
             order.paymentMethod = paymentMethod;
@@ -593,6 +613,11 @@ const proceedToPayment = async (req, res, next) => {
             totalPrice = price * quantity;
             deliveryCharges = totalPrice >= 2500 ? 0 : 99;
             finalAmount = Math.max(0, totalPrice + deliveryCharges - discount);
+
+            // no cod above 3000
+            if (paymentMethod === 'COD' && finalAmount > 3000) {
+                return res.status(400).json({ success: false, message:'Cash on Delivery is not available for orders above ₹3000'})
+            }
 
             order = new Order({
                 orderId: generateOrderId('SOLEUS'),
@@ -675,6 +700,11 @@ const proceedToPayment = async (req, res, next) => {
             totalPrice = validItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
             deliveryCharges = totalPrice >= 2500 ? 0 : 99;
             finalAmount = Math.max(0, totalPrice + deliveryCharges - discount);
+
+            // no cod above 3000
+            if (paymentMethod === 'COD' && finalAmount > 3000) {
+                return res.status(400).json({ success: false, message:'Cash on Delivery is not available for orders above ₹3000'})
+            }
 
             order = new Order({
                 orderId: generateOrderId('SOLEUS'),

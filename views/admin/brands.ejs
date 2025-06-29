@@ -74,11 +74,11 @@
 
                     <% if (brand.isBlocked === false) { %>
                     <button class="bg-red-400 text-red-800 px-3 py-1 rounded text-sm transition duration-200">
-                      <i class="fas fa-ban mr-1"></i> <a href="/admin/blockBrand?id=<%= brand._id %>">Block</a>
+                      <i class="fas fa-ban mr-1"></i> <a href="/admin/brandBlockAndUnblock?id=<%= brand._id %>&page=<%= currentPage %>">Block</a>
                     </button>
                     <% }else{ %>
                     <button class="bg-green-400 text-green-800 px-3 py-1 rounded text-sm transition duration-200">
-                      <i class="fas fa-check-circle mr-1"></i> <a href="/admin/unBlockBrand?id=<%= brand._id %>">Unblock</a>
+                      <i class="fas fa-check-circle mr-1"></i> <a href="/admin/brandBlockAndUnblock?id=<%= brand._id %>&page=<%= currentPage %>">Unblock</a>
                     </button>
                     <% } %>
 
@@ -129,7 +129,7 @@
           cancelButtonText: 'Cancel' 
         }).then((result) => {
           if(result.isConfirmed) {
-            window.location.href = `/admin/deleteBrand?id=${brandId}`
+            window.location.href = `/admin/deleteBrand?id=${brandId}}&page=<%= currentPage %>`
           }
         })
 
