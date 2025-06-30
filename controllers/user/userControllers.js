@@ -4,6 +4,7 @@ const Product = require('../../models/productSchema');
 const Brand = require('../../models/brandSchema');
 const Referral = require('../../models/referralSchema');
 const Cart = require('../../models/cartSchema');
+const Banner = require('../../models/bannerSchema');
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
@@ -92,11 +93,13 @@ const loadHomepage = async (req, res, next) => {
 
         const brand = await Brand.find({isBlocked: false}).sort({createdAt: -1}).limit(6);
 
+        const banners = await Banner.find({isActive: true}).sort({createdAt: -1}).limit(3)
+
         if(user){
             const userData = await User.findOne({_id: user._id});
-            return res.render('user/home', {user: userData, products: productData, brand: brand});
+            return res.render('user/home', {user: userData, products: productData, brand: brand, banners});
         } else {
-            return res.render('user/home', {products: productData, brand: brand})
+            return res.render('user/home', {products: productData, brand: brand, banners})
         }
        
     } catch (error){

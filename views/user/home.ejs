@@ -3,10 +3,44 @@
 
 <!-- Hero Section -->
 <section class="relative bg-gray-900 text-white h-screen min-h-[600px] max-h-[900px] overflow-hidden">
+    <% if (banners && banners.length > 0) { %>
+
+    <div class="relative h-full w-full overflow-hidden">
+        <% banners.forEach((banner, index) => { %>
+            <div class="banner-slide absolute inset-0 transition-all duration-1000 ease-in-out
+                <%= index === 0 ? 'opacity-100 z-20' : 'opacity-0 z-10' %>" data-index="<%= index %>">
+                <img src="<%= banner.image %>" alt="Banner" class="w-full h-full object-cover object-center" />
+                <div class="absolute inset-0 bg-black/40 flex flex-col justify-center items-start px-4 sm:px-8 md:px-16 lg:px-24">
+                    <span class="bg-yellow-400 text-black text-xs sm:text-sm px-3 sm:px-4 py-1 sm:py-2 rounded-full mb-3 sm:mb-4 font-bold">
+                        ONLY FOR MEN
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4 max-w-xl leading-tight"><%= banner.title %></h1>
+                    <p class="text-base sm:text-lg md:text-xl lg:text-2xl mb-4 sm:mb-6 max-w-xl"><%= banner.description %></p>
+                    <% if (banner.link && banner.buttonText) { %>
+                        <a href="<%= banner.link %>" class="bg-yellow-400 hover:bg-white text-black font-bold px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-full shadow-lg transition-all duration-300 text-sm sm:text-base md:text-lg">
+                            <%= banner.buttonText %>
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        <% }); %>
+
+        <!-- Manual Navigation Arrows -->
+        <button id="prevBanner" class="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-30 bg-black/50 text-white p-2 sm:p-3 rounded-full hover:bg-black transition-all">
+            ❮
+        </button>
+        <button id="nextBanner" class="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-30 bg-black/50 text-white p-2 sm:p-3 rounded-full hover:bg-black transition-all">
+            ❯
+        </button>
+
+    </div>
+
+    <% } else { %>
+     
     <!-- Black/Yellow diagonal patch -->
     <div class="absolute top-0 left-0 w-full h-full z-0">
-        <div class="absolute top-0 right-0 w-[400px] h-[800px] bg-yellow-400 transform rotate-12 origin-top-right"></div>
-        <div class="absolute bottom-0 left-0 w-[300px] h-[600px] bg-black transform -rotate-6 origin-bottom-left"></div>
+        <div class="absolute top-0 right-0 w-[200px] sm:w-[300px] md:w-[400px] h-[400px] sm:h-[600px] md:h-[800px] bg-yellow-400 transform rotate-12 origin-top-right"></div>
+        <div class="absolute bottom-0 left-0 w-[150px] sm:w-[200px] md:w-[300px] h-[300px] sm:h-[400px] md:h-[600px] bg-black transform -rotate-6 origin-bottom-left"></div>
     </div>
     
     <div class="absolute inset-0 bg-gradient-to-r from-black/80 to-black/30 z-10"></div>
@@ -16,92 +50,94 @@
     
     <div class="relative z-20 container mx-auto h-full flex items-center px-4">
         <div class="max-w-2xl animate-pop-in">
-            <span class="inline-block bg-yellow-400 text-black text-xl md:text-2xl font-bold px-8 py-4 rounded-tr-[60px] rounded-bl-[60px] mb-6 transform -rotate-3 shadow-lg">
+            <span class="inline-block bg-yellow-400 text-black text-base sm:text-lg md:text-xl lg:text-2xl font-bold px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 rounded-tr-[40px] sm:rounded-tr-[60px] rounded-bl-[40px] sm:rounded-bl-[60px] mb-4 sm:mb-6 transform -rotate-3 shadow-lg">
                 ONLY FOR MEN
             </span>
-            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">Elevate Your <span class="text-yellow-400">Step</span></h1>
-            <p class="text-xl md:text-2xl mb-10 max-w-lg">Crafted for comfort, designed for style - discover footwear that moves with you</p>
-            <button class="bg-yellow-400 hover:bg-black text-black hover:text-yellow-400 font-bold py-5 px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-yellow-400/30 border-2 border-transparent hover:border-yellow-400 text-lg">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 leading-tight">Elevate Your <span class="text-yellow-400">Step</span></h1>
+            <p class="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-10 max-w-lg">Crafted for comfort, designed for style - discover footwear that moves with you</p>
+            <button class="bg-yellow-400 hover:bg-black text-black hover:text-yellow-400 font-bold py-3 sm:py-4 md:py-5 px-8 sm:px-10 md:px-12 rounded-full transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-yellow-400/30 border-2 border-transparent hover:border-yellow-400 text-sm sm:text-base md:text-lg lg:text-xl">
                 EXPLORE COLLECTION
             </button>
         </div>
     </div>
     
     <!-- Scrolling indicator -->
-    <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div class="absolute bottom-6 sm:bottom-10 left-1/2 transform -translate-x-1/2 z-20 animate-bounce">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 sm:h-10 w-8 sm:w-10 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
         </svg>
     </div>
+     
+    <% } %>
 </section>
 
 <!-- Brands Section -->
-<section class="py-20 px-4 bg-gray-50 relative overflow-hidden">
+<section class="py-12 sm:py-20 px-4 bg-gray-50 relative overflow-hidden">
     <!-- Background patches -->
-    <div class="absolute -top-20 -right-20 w-64 h-64 bg-yellow-400 rounded-full opacity-10"></div>
-    <div class="absolute -bottom-10 -left-10 w-80 h-80 bg-black rounded-full opacity-5"></div>
+    <div class="absolute -top-10 sm:-top-20 -right-10 sm:-right-20 w-48 sm:w-64 h-48 sm:h-64 bg-yellow-400 rounded-full opacity-10"></div>
+    <div class="absolute -bottom-6 sm:-bottom-10 -left-6 sm:-left-10 w-60 sm:w-80 h-60 sm:h-80 bg-black rounded-full opacity-5"></div>
     
     <div class="container mx-auto relative z-10">
-        <h2 class="text-4xl font-bold text-center mb-16">Featured Collections</h2>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-10 sm:mb-16">Featured Collections</h2>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10">
             <!-- Hot Drops -->
             <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                <div class="h-80 overflow-hidden">
+                <div class="h-60 sm:h-80 overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1365&q=80" 
                          alt="Hot Drops" 
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                 </div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 p-6 w-full">
-                    <h3 class="text-2xl font-bold text-white mb-2">Hot Drops</h3>
+                <div class="absolute bottom-0 left-0 p-4 sm:p-6 w-full">
+                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-2">Hot Drops</h3>
                     <button class="text-yellow-400 font-semibold hover:underline flex items-center group">
                         Shop Now 
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                     </button>
                 </div>
-                <div class="absolute top-4 right-4 bg-yellow-400 text-black font-bold px-3 py-1 rounded-full text-sm">
+                <div class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-yellow-400 text-black font-bold px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
                     NEW ARRIVALS
                 </div>
             </div>
             
             <!-- Best Seller -->
             <div class="group relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-                <div class="h-80 overflow-hidden">
+                <div class="h-60 sm:h-80 overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1412&q=80" 
                          alt="Best Seller" 
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                 </div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent"></div>
-                <div class="absolute bottom-0 left-0 p-6 w-full">
-                    <h3 class="text-2xl font-bold text-white mb-2">Best Seller</h3>
+                <div class="absolute bottom-0 left-0 p-4 sm:p-6 w-full">
+                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-2">Best Seller</h3>
                     <button class="text-yellow-400 font-semibold hover:underline flex items-center group">
                         Shop Now 
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
                     </button>
                 </div>
-                <div class="absolute top-4 left-4 bg-black text-yellow-400 font-bold px-3 py-1 rounded-full text-sm">
+                <div class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-black text-yellow-400 font-bold px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm">
                     BESTSELLER
                 </div>
             </div>
             
             <!-- Brands -->
-            <div class="bg-white rounded-2xl shadow-xl p-8 relative overflow-hidden">
-                <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400 rounded-full opacity-10"></div>
-                <h3 class="text-2xl font-bold text-center mb-8 relative z-10">Shop by Brand</h3>
-                <div class="grid grid-cols-3 gap-8 relative z-10">
+            <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute -top-6 sm:-top-10 -right-6 sm:-right-10 w-24 sm:w-32 h-24 sm:h-32 bg-yellow-400 rounded-full opacity-10"></div>
+                <h3 class="text-xl sm:text-2xl font-bold text-center mb-6 sm:mb-8 relative z-10">Shop by Brand</h3>
+                <div class="grid grid-cols-3 gap-4 sm:gap-8 relative z-10">
                     <!-- Brand logos with yellow/black accents -->                    
                     <% if (brand && brand.length > 0) { %>
                         <% brand.forEach(b => { %>
                         <a href="/brand/brnadProducts/<%= b._id %>" class="brand-logo flex flex-col items-center group">
-                            <div class="w-full h-20 bg-gray-100 p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
-                                <img src="/uploads/re-image/<%= b.brandImage %>" alt="<%= b.brandName %>" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
+                            <div class="w-full h-16 sm:h-20 bg-gray-100 p-2 sm:p-3 flex items-center justify-center rounded-lg border border-gray-200 group-hover:border-yellow-400 transition-all">
+                                <img src="/Uploads/re-image/<%= b.brandImage %>" alt="<%= b.brandName %>" class="h-full object-contain opacity-90 group-hover:opacity-100 transition-all duration-300">
                             </div>
-                            <p class="text-sm mt-3 font-medium group-hover:text-yellow-600 transition"><%= b.brandName %></p>
+                            <p class="text-xs sm:text-sm mt-2 sm:mt-3 font-medium group-hover:text-yellow-600 transition"><%= b.brandName %></p>
                         </a>
                         <% }) %>         
                     <% } %>                    
@@ -112,53 +148,53 @@
 </section>
 
 <!-- Product Overview -->
-<section class="py-20 px-4 bg-white relative overflow-hidden">
+<section class="py-12 sm:py-20 px-4 bg-white relative overflow-hidden">
     <!-- Background elements -->
     <div class="absolute top-0 left-0 w-full h-full z-0 opacity-5">
-        <div class="absolute top-20 left-10 w-40 h-40 bg-yellow-400 rounded-full blur-xl"></div>
-        <div class="absolute bottom-10 right-10 w-60 h-60 bg-black rounded-full blur-xl"></div>
+        <div class="absolute top-10 sm:top-20 left-6 sm:left-10 w-32 sm:w-40 h-32 sm:h-40 bg-yellow-400 rounded-full blur-xl"></div>
+        <div class="absolute bottom-6 sm:bottom-10 right-6 sm:right-10 w-48 sm:w-60 h-48 sm:h-60 bg-black rounded-full blur-xl"></div>
     </div>
     
     <div class="container mx-auto relative z-10">
-        <div class="flex justify-between items-center mb-16">
-            <h2 class="text-4xl font-bold">Featured Products</h2>
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-10 sm:mb-16">
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-0">Featured Products</h2>
             <a href="/allproducts" class="text-yellow-600 font-semibold hover:underline flex items-center group">
                 View All Products
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 sm:h-5 w-4 sm:w-5 ml-2 group-hover:translate-x-2 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
             </a>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
             <!-- Product cards with scroll animations -->
             <% for( let i = 0; i < products.length; i++ ) { %>
             <div class="product-card group relative bg-white rounded-xl overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 transform translate-y-20 opacity-0">
-                <div class="relative h-80 overflow-hidden">
+                <div class="relative h-60 sm:h-80 overflow-hidden">
                     <img src="/Uploads/re-image/<%= products[i].productImage[0] %>" 
                          alt="<%= products[i].productName %>" 
                          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
                     <!-- Favorite button -->
-                    <button onclick="addToWishlist('<%= products[i]._id %>')" class="absolute top-4 right-4 bg-white/90 hover:bg-red-500 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-md z-20"
+                    <button onclick="addToWishlist('<%= products[i]._id %>')" class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-white/90 hover:bg-red-500 w-10 sm:w-12 h-10 sm:h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-md z-20"
                             aria-label="Add to favorites">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 sm:h-6 w-5 sm:w-6 text-gray-800 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </button>
                 </div>
-                <div class="p-5">
-                    <h3 class="text-xl font-bold mb-1"><%= products[i].productName %></h3>
-                    <p class="text-sm text-gray-500 mb-3"><%= products[i].brand.brandName %></p>
+                <div class="p-4 sm:p-5">
+                    <h3 class="text-lg sm:text-xl font-bold mb-1"><%= products[i].productName %></h3>
+                    <p class="text-xs sm:text-sm text-gray-500 mb-2 sm:mb-3"><%= products[i].brand.brandName %></p>
                     <div class="flex justify-between items-center">
                         <div>
-                            <p class="text-xl font-bold text-gray-900">₹ <%= products[i].salePrice %></p>
-                            <p class="text-sm text-gray-500 line-through">₹ <%= products[i].regularPrice %></p>
+                            <p class="text-lg sm:text-xl font-bold text-gray-900">₹ <%= products[i].salePrice %></p>
+                            <p class="text-xs sm:text-sm text-gray-500 line-through">₹ <%= products[i].regularPrice %></p>
                         </div>
                     </div>
                 </div>
                 <!-- Hover overlay -->
                 <div class="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <button class="bg-yellow-400 hover:bg-black text-black hover:text-yellow-400 font-bold py-3 px-6 rounded-full transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 pointer-events-auto">
+                    <button class="bg-yellow-400 hover:bg-black text-black hover:text-yellow-400 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-full transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 pointer-events-auto">
                         <a href="/productDetails?id=<%= products[i]._id %>">Quick View</a>
                     </button>
                 </div>
@@ -169,19 +205,19 @@
 </section>
 
 <!-- Newsletter Section -->
-<section class="py-20 px-4 bg-black text-white relative overflow-hidden">
+<section class="py-12 sm:py-20 px-4 bg-black text-white relative overflow-hidden">
     <!-- Yellow patch background -->
     <div class="absolute top-0 left-0 w-full h-full z-0">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-400 rounded-full opacity-10 blur-3xl"></div>
+        <div class="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-yellow-400 rounded-full opacity-10 blur-3xl"></div>
     </div>
     
     <div class="container mx-auto max-w-5xl text-center relative z-10">
-        <h2 class="text-4xl font-bold mb-6">Join Our Community</h2>
-        <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Subscribe for exclusive offers, new arrivals and style inspiration</p>
-        <div class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Join Our Community</h2>
+        <p class="text-base sm:text-lg md:text-xl text-gray-300 mb-6 sm:mb-10 max-w-2xl mx-auto">Subscribe for exclusive offers, new arrivals and style inspiration</p>
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-xl mx-auto">
             <input type="email" placeholder="Your email address" 
-                   class="flex-grow px-6 py-4 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-lg text-black">
-            <button class="bg-yellow-400 hover:bg-white text-black font-bold py-4 px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-yellow-400/30">
+                   class="flex-grow px-4 sm:px-6 py-3 sm:py-4 rounded-full border-0 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-lg text-black text-sm sm:text-base">
+            <button class="bg-yellow-400 hover:bg-white text-black font-bold py-3 sm:py-4 px-6 sm:px-10 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-yellow-400/30 text-sm sm:text-base">
                 Subscribe
             </button>
         </div>
@@ -258,11 +294,53 @@
         productCards.forEach(card => {
             observer.observe(card);
         });
+
+        // Banner sliding functionality
+        const slides = document.querySelectorAll('.banner-slide');
+        let currentIndex = 0;
+        let interval = setInterval(showNextSlide, 6000);
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('opacity-100', 'z-20');
+                slide.classList.add('opacity-0', 'z-10');
+                if(i === index) {
+                    slide.classList.add('opacity-100', 'z-20');
+                }
+            });
+        }
+
+        function showNextSlide() {
+            currentIndex = (currentIndex + 1) % slides.length;
+            showSlide(currentIndex);
+        }
+
+        function showPrevSlide() {
+            currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+            showSlide(currentIndex);
+        }
+
+        function resetInterval() {
+            clearInterval(interval);
+            interval = setInterval(showNextSlide, 6000);
+        }
+
+        document.getElementById('nextBanner').addEventListener('click', () => {
+            showNextSlide();
+            resetInterval();
+        });
+
+        document.getElementById('prevBanner').addEventListener('click', () => {
+            showPrevSlide();
+            resetInterval();
+        });
+
+        // Start the interval
+        resetInterval();
     });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-
     async function addToWishlist(productId) {
       try {
         const response = await fetch('/addToWishlist',{

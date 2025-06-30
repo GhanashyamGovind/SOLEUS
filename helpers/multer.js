@@ -9,6 +9,18 @@ const storage = multer.diskStorage({
     filename:(req, file, cb) => {
         cb(null, Date.now()+"-"+file.originalname);
     }
+});
+
+// admin banner
+const bannerStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, "../public/uploads/banner"))
+    },
+    filename: (req, file, cb) => {
+        const cleanFileName = file.originalname.replace(/\s+/g, "_");
+        const finalName = `${Date.now()}-${cleanFileName}`;
+        cb(null, finalName)
+    }
 })
 
 //user
@@ -27,4 +39,4 @@ const userStorage = multer.diskStorage({
     }
 });
 
-module.exports = {storage, userStorage};
+module.exports = {storage, userStorage, bannerStorage};

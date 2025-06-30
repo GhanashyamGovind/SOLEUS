@@ -1,0 +1,664 @@
+<!--  -->
+<%- include('../../views/partials/admin/header', {title: 'Banner'}) %>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+
+<div class="p-4 flex-1 overflow-x-auto text-black">
+    <!-- Header -->
+    <h1 class="text-2xl font-bold mb-4 text-center">BANNER MANAGEMENT</h1>
+
+    <!-- Create Banner Button -->
+    <div class="mb-4 flex justify-end">
+        <button onclick="openCreateModal()"
+            class="bg-yellow-500 text-black px-2 py-1 text-sm rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+            Create New Banner
+        </button>
+    </div>
+
+    <!-- Banner List -->
+    <table class="w-full bg-white shadow rounded-lg">
+        <thead class="bg-gray-200 text-left">
+            <tr>
+                <th class="p-3 text-xs font-medium text-gray-500 uppercase">Image</th>
+                <th class="p-3 text-xs font-medium text-gray-500 uppercase">Title</th>
+                <th class="p-3 text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Description</th>
+                <th class="p-3 text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Link</th>
+                <th class="p-3 text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Button Text</th>
+                <!-- <th class="p-3 text-xs font-medium text-gray-500 uppercase">Order</th> -->
+                <th class="p-m text-gray-500 uppercase">Status</th>
+                <th class="p-3 text-xs font-medium text-gray-500 uppercase">Action</th>
+            </tr>
+        </thead>
+        <tbody id="bannerTable">
+            <% if (banners && banners.length > 0) { %>
+                <% banners.forEach(banner => { %>
+                    <tr class="border-b">
+                        <td class="p-3">
+                            <img src="<%= banner.image %>" alt="<%= banner.title %>" class="w-10 h-10 object-cover rounded-full">
+                        </td>
+                        <td class="p-3 text-sm text-gray-900"><%= banner.title %></td>
+                        <td class="p-3 text-sm text-gray-900 hidden sm:table-cell"><%= banner.description %></td>
+                        <td class="p-3 text-sm hidden md:table-cell">
+                            <a href="<%= banner.link %>" class="text-yellow-500 hover:text-yellow-600"><%= banner.link || 'N/A' %></a>
+                        </td>
+                        <td class="p-3 text-sm text-gray-900 hidden lg:table-cell"><%= banner.buttonText %></td>
+                        <!-- <td class="p-3 text-sm text-gray-900"><%= banner.order %></td> -->
+                        <td class="p-3">
+                            <button onclick="toggleBannerStatus('<%= banner._id %>')"
+                                class="bg-<%= banner.isActive ? 'green' : 'red' %>-500 text-white px-2 py-1 text-sm rounded hover:bg-<%= banner.isActive ? 'green' : 'red' %>-600">
+                                <%= banner.isActive ? 'Active' : 'Inactive' %>
+                            </button>
+                        </td>
+                        <td class="p-3 space-x-1">
+                            <button onclick="openEditModal('<%= banner._id %>')"
+                                class="bg-yellow-500 text-black px-2 py-1 text-sm rounded hover:bg-yellow-600">
+                                Edit
+                            </button>
+                            <button onclick="deleteBanner('<%= banner._id %>')"
+                                class="bg-red-500 text-white px-2 py-1 text-sm rounded hover:bg-red-600">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="8" class="p-3 text-center text-sm text-gray-500">No banners available</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
+    <!-- Centered Pagination -->
+    <% if (banners && banners.length > 0) { %>
+        <div class="w-full flex justify-center mt-6">
+            <div class="inline-flex items-center gap-1">
+                <% if (currentPage > 1) { %>
+                    <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                <% } %>
+
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <% if (i === currentPage) { %>
+                        <a href="?page=<%= i %>" class="px-3 py-1 border bg-yellow-500 text-black rounded font-medium"><%= i %></a>
+                    <% } else { %>
+                        <a href="?page=<%= i %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors"><%= i %></a>
+                    <% } %>
+                <% } %>
+
+                <% if (currentPage < totalPages) { %>
+                    <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 border rounded hover:bg-gray-100 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    <% } %>
+</div>
+
+<!-- Create Banner Modal -->
+<div id="createModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <h2 class="text-xl font-semibold text-black mb-4">Create New Banner</h2>
+        <div id="createAlertContainer" class="hidden mb-4 p-2 bg-red-100 text-red-700 text-sm rounded"></div>
+        <form id="createBannerForm" class="space-y-4" enctype="multipart/form-data">
+            <div>
+                <label for="createImage" class="block text-sm font-medium text-black">Upload Image</label>
+                <input type="file" id="createImage" name="image" accept="image/*"
+                    class="mt-1 block w-full text-sm text-black file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-100 file:text-black hover:file:bg-yellow-200">
+            </div>
+            <div class="overflow-hidden max-h-[250px]">
+                <img id="createImagePreview" class="max-w-full object-contain mx-auto" />
+            </div>
+            <div id="cropperControls" class="flex justify-end space-x-2 hidden">
+                <button type="button" id="cancelCrop" class="px-2 py-1 bg-gray-300 text-black rounded hover:bg-gray-400 text-sm">
+                    Cancel Crop
+                </button>
+                <button type="button" id="saveCrop" class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-sm">
+                    Save Crop
+                </button>
+            </div>
+            <div>
+                <label for="createTitle" class="block text-sm font-medium text-black">Title</label>
+                <input type="text" id="createTitle" name="title"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black">
+                <p id="createTitleError" class="text-red-500 text-xs mt-1 hidden">Title must be at least 1 character long</p>
+            </div>
+            <div>
+                <label for="createDescription" class="block text-sm font-medium text-black">Description</label>
+                <textarea id="createDescription" name="description" rows="4"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black"></textarea>
+                <p id="createDescriptionError" class="text-red-500 text-xs mt-1 hidden">Description must be at least 1 character long</p>
+            </div>
+            <div>
+                <label for="createLink" class="block text-sm font-medium text-black">Link (Optional)</label>
+                <input type="url" id="createLink" name="link"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black">
+            </div>
+            <div>
+                <label for="createButtonText" class="block text-sm font-medium text-black">Button Text</label>
+                <input type="text" id="createButtonText" name="buttonText" placeholder="Shop Now"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black">
+                <p id="createButtonTextError" class="text-red-500 text-xs mt-1 hidden">Button text must contain only letters (a-z, A-Z)</p>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeCreateModal()"
+                    class="px-2 py-1 bg-gray-300 text-black rounded hover:bg-gray-400 text-sm">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                    Create
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Banner Modal -->
+<div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md max-h-[80vh] overflow-y-auto">
+        <h2 class="text-xl font-semibold text-black mb-4">Edit Banner</h2>
+        <div id="editAlertContainer" class="hidden mb-4 p-2 bg-red-100 text-red-700 text-sm rounded"></div>
+        <form id="editBannerForm" class="space-y-4" enctype="multipart/form-data">
+            <input type="hidden" id="editId" name="id">
+            <div>
+                <label for="editImage" class="block text-sm font-medium text-black">Upload New Image (Optional)</label>
+                <input type="file" id="editImage" name="image" accept="image/*"
+                    class="mt-1 block w-full text-sm text-black file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-100 file:text-black hover:file:bg-yellow-200">
+            </div>
+            <div id="editImagePreviewContainer" class="overflow-hidden max-h-[250px]">
+                <img id="editImagePreview" class="max-w-full object-contain mx-auto" />
+            </div>
+             <div id="editCropperControls" class="flex justify-end space-x-2 hidden">
+                <button type="button" id="cancelEditCrop" class="px-2 py-1 bg-gray-300 text-black rounded hover:bg-gray-400 text-sm">
+                    Cancel Crop
+                </button>
+                <button type="button" id="saveEditCrop" class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 text-sm">
+                    Save Crop
+                </button>
+            </div>
+            <div>
+                <label for="editTitle" class="block text-sm font-medium text-black">Title</label>
+                <input type="text" id="editTitle" name="title"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black">
+                <p id="editTitleError" class="text-red-500 text-xs mt-1 hidden">Title must be at least 1 character long</p>
+            </div>
+            <div>
+                <label for="editDescription" class="block text-sm font-medium text-black">Description</label>
+                <textarea id="editDescription" name="description" rows="4"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black"></textarea>
+                <p id="editDescriptionError" class="text-red-500 text-xs mt-1 hidden">Description must be at least 1 character long</p>
+            </div>
+            <div>
+                <label for="editLink" class="block text-sm font-medium text-black">Link (Optional)</label>
+                <input type="url" id="editLink" name="link"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black">
+            </div>
+            <div>
+                <label for="editButtonText" class="block text-sm font-medium text-black">Button Text</label>
+                <input type="text" id="editButtonText" name="buttonText" placeholder="Shop Now"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 text-sm p-2 text-black">
+                <p id="editButtonTextError" class="text-red-500 text-xs mt-1 hidden">Button text must contain only letters (a-z, A-Z)</p>
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeEditModal()"
+                    class="px-2 py-1 bg-gray-300 text-black rounded hover:bg-gray-400 text-sm">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="px-2 py-1 bg-yellow-500 text-black rounded hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 text-sm">
+                    Save
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+    let cropper;
+    let croppedImage = null;
+    let editCroppedImage = null;
+
+    // Open Create Modal
+    function openCreateModal() {
+        document.getElementById('createModal').classList.remove('hidden');
+        document.getElementById('createBannerForm').reset();
+        document.getElementById('createImagePreview').src = '';
+        document.getElementById('cropperControls').classList.add('hidden');
+        document.getElementById('createAlertContainer').classList.add('hidden');
+        croppedImage = null;
+        if (cropper) cropper.destroy();
+    }
+
+    // Close Create Modal
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+        document.getElementById('createImagePreview').src = '';
+        document.getElementById('cropperControls').classList.add('hidden');
+        document.getElementById('createAlertContainer').classList.add('hidden');
+        croppedImage = null;
+        if (cropper) cropper.destroy();
+    }
+
+    // Open Edit Modal
+    function openEditModal(id) {
+        const banner = <%- JSON.stringify(banners) %>.find(b => b._id === id);
+        if (banner) {
+            document.getElementById('editId').value = banner._id;
+            document.getElementById('editTitle').value = banner.title;
+            document.getElementById('editDescription').value = banner.description;
+            document.getElementById('editLink').value = banner.link || '';
+            document.getElementById('editButtonText').value = banner.buttonText;
+            document.getElementById('editImagePreview').src = banner.image || ''; // Set the current image            document.getElementById('editAlertContainer').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+    }
+
+    document.getElementById('editImage').addEventListener("change", function (event) {
+        const image = document.getElementById('editImagePreview');
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            const newImage = document.createElement('img');
+            newImage.id = 'editImagePreview';
+            newImage.className = 'max-w-full object-contain mx-auto';
+            newImage.src = e.target.result;
+            const imageContainer = image.parentElement;
+            imageContainer.replaceChild(newImage, image);
+            editCroppedImage = null;
+            document.getElementById('editCropperControls').classList.remove('hidden');
+
+            newImage.onload = function () {
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(newImage, {
+                    aspectRatio: 16 / 6,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                });
+            };
+        };
+
+        if (file) reader.readAsDataURL(file);
+    });
+
+    document.getElementById('saveEditCrop').addEventListener('click', function () {
+        const canvas = cropper.getCroppedCanvas({
+            width: 1600,
+            height: 600
+        });
+
+        canvas.toBlob(function (blob) {
+            editCroppedImage = blob;
+            const newImage = document.createElement('img');
+            newImage.id = 'editImagePreview';
+            newImage.className = 'max-w-full object-contain mx-auto';
+            newImage.src = canvas.toDataURL('image/jpeg');
+            const container = document.getElementById('editImagePreview').parentElement;
+            container.replaceChild(newImage, document.getElementById('editImagePreview'));
+            document.getElementById('editCropperControls').classList.add('hidden');
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+        }, 'image/jpeg');
+    });
+
+    document.getElementById('cancelEditCrop').addEventListener('click', function () {
+        const image = document.getElementById('editImagePreview');
+        const newImage = document.createElement('img');
+        newImage.id = 'editImagePreview';
+        newImage.className = 'max-w-full object-contain mx-auto';
+        image.parentElement.replaceChild(newImage, image);
+        document.getElementById('editCropperControls').classList.add('hidden');
+        editCroppedImage = null;
+        if (cropper) cropper.destroy();
+        document.getElementById('editImage').value = '';
+    });
+
+
+    // Close Edit Modal
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.getElementById('editAlertContainer').classList.add('hidden');
+    }
+
+    // Image Upload and Cropper Initialization
+    document.getElementById('createImage').addEventListener("change", function (event) {
+        const image = document.getElementById('createImagePreview');
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            // Create a new image element to ensure a clean state
+            const newImage = document.createElement('img');
+            newImage.id = 'createImagePreview';
+            newImage.className = 'max-w-full object-contain mx-auto';
+            newImage.src = e.target.result;
+            const imageContainer = image.parentElement;
+            imageContainer.replaceChild(newImage, image);
+            croppedImage = null; // Reset cropped image
+            document.getElementById('cropperControls').classList.remove('hidden');
+
+            newImage.onload = function () {
+                if (cropper) cropper.destroy();
+
+                cropper = new Cropper(newImage, {
+                    aspectRatio: 16 / 6,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                });
+            }
+        }
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Save Crop Button
+    document.getElementById('saveCrop').addEventListener('click', function () {
+        const canvas = cropper.getCroppedCanvas({
+            width: 1600,
+            height: 600
+        });
+
+        canvas.toBlob(function (blob) {
+            croppedImage = blob;
+            // Create a new image element to display the cropped image
+            const newImage = document.createElement('img');
+            newImage.id = 'createImagePreview';
+            newImage.className = 'max-w-full object-contain mx-auto';
+            newImage.src = canvas.toDataURL('image/jpeg');
+            newImage.style.pointerEvents = 'none'; // Prevent interaction
+            const imageContainer = document.getElementById('createImagePreview').parentElement;
+            imageContainer.replaceChild(newImage, document.getElementById('createImagePreview'));
+            document.getElementById('cropperControls').classList.add('hidden');
+            // Destroy Cropper.js instance to prevent further cropping
+            if (cropper) {
+                cropper.destroy();
+                cropper = null; // Reset cropper variable
+            }
+        }, 'image/jpeg');
+    });
+
+    // Cancel Crop Button
+    document.getElementById('cancelCrop').addEventListener('click', function () {
+        const image = document.getElementById('createImagePreview');
+        const newImage = document.createElement('img');
+        newImage.id = 'createImagePreview';
+        newImage.className = 'max-w-full object-contain mx-auto';
+        image.parentElement.replaceChild(newImage, image);
+        document.getElementById('cropperControls').classList.add('hidden');
+        croppedImage = null;
+        if (cropper) cropper.destroy();
+        document.getElementById('createImage').value = '';
+    });
+
+    // Show Alert in Modal
+    function showAlert(containerId, message) {
+        const alertContainer = document.getElementById(containerId);
+        alertContainer.textContent = message;
+        alertContainer.classList.remove('hidden');
+        setTimeout(() => {
+            alertContainer.classList.add('hidden');
+            alertContainer.textContent = '';
+        }, 3000);
+    }
+
+    // Create Form Validation
+    async function validateCreateForm() {
+        const title = document.getElementById('createTitle').value.trim();
+        const description = document.getElementById('createDescription').value.trim();
+        const buttonText = document.getElementById('createButtonText').value.trim();
+
+        document.getElementById('createTitleError').classList.add('hidden');
+        document.getElementById('createDescriptionError').classList.add('hidden');
+        document.getElementById('createButtonTextError').classList.add('hidden');
+
+        if (title.length < 1) {
+            document.getElementById('createTitleError').classList.remove('hidden');
+            showAlert('createAlertContainer', 'Title must be at least 1 character long');
+            return false;
+        }
+
+        if (description.length < 1) {
+            document.getElementById('createDescriptionError').classList.remove('hidden');
+            showAlert('createAlertContainer', 'Description must be at least 1 character long');
+            return false;
+        }
+
+        if (buttonText.length < 1) {
+            document.getElementById('createButtonTextError').classList.remove('hidden');
+            showAlert('createAlertContainer', 'Button text must be at least 1 character long');
+            return false;
+        }
+
+        if (!/^[a-zA-Z]+$/.test(buttonText)) {
+            document.getElementById('createButtonTextError').classList.remove('hidden');
+            showAlert('createAlertContainer', 'Button text must contain only letters (a-z, A-Z)');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Edit Form Validation
+    async function validateEditForm() {
+        const title = document.getElementById('editTitle').value.trim();
+        const description = document.getElementById('editDescription').value.trim();
+        const buttonText = document.getElementById('editButtonText').value.trim();
+
+        document.getElementById('editTitleError').classList.add('hidden');
+        document.getElementById('editDescriptionError').classList.add('hidden');
+        document.getElementById('editButtonTextError').classList.add('hidden');
+
+        if (title.length < 1) {
+            document.getElementById('editTitleError').classList.remove('hidden');
+            showAlert('editAlertContainer', 'Title must be at least 1 character long');
+            return false;
+        }
+
+        if (description.length < 1) {
+            document.getElementById('editDescriptionError').classList.remove('hidden');
+            showAlert('editAlertContainer', 'Description must be at least 1 character long');
+            return false;
+        }
+
+        if (buttonText.length < 1) {
+            document.getElementById('editButtonTextError').classList.remove('hidden');
+            showAlert('editAlertContainer', 'Button text must be at least 1 character long');
+            return false;
+        }
+
+        if (!/^[a-zA-Z]+$/.test(buttonText)) {
+            document.getElementById('editButtonTextError').classList.remove('hidden');
+            showAlert('editAlertContainer', 'Button text must contain only letters (a-z, A-Z)');
+            return false;
+        }
+
+        return true;
+    }
+
+    // Submit Create Form with cropped image
+    document.getElementById('createBannerForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (!(await validateCreateForm())) return;
+
+        if (!croppedImage) {
+            await Swal.fire({
+                toast: true,
+                icon: 'warning',
+                title: 'No Image',
+                text: 'Please upload and crop an image before submitting',
+                showConfirmButton: false,
+                timer: 3000,
+                background: '#000',
+                color: 'yellow',
+                iconColor: '#ff0000'
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('image', croppedImage, 'banner.jpeg');
+        formData.append('title', document.getElementById('createTitle').value);
+        formData.append('description', document.getElementById('createDescription').value);
+        formData.append('link', document.getElementById('createLink').value || '');
+        formData.append('buttonText', document.getElementById('createButtonText').value || 'Shop Now');
+        try {
+            const response = await fetch('/admin/createBanner', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok && result.success) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Banner Created',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    background: '#000',
+                    color: 'yellow',
+                    iconColor: '#00ff00'
+                }).then(() => location.reload());
+            } else {
+                await Swal.fire("Failed", result.message || "Creating banner failed", "error");
+            }
+        } catch (error) {
+            await Swal.fire("Error", "An error occurred while creating the banner", "error");
+            console.error("Error creating banner:", error);
+        }
+    });
+
+    // Handle Edit Form Submission
+    document.getElementById('editBannerForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (!(await validateEditForm())) return;
+
+        const id = document.getElementById('editId').value;
+        const fileInput = document.getElementById('editImage');
+        const file = fileInput.files[0];
+
+        const formData = new FormData();
+        if(editCroppedImage) {
+            formData.append('image', editCroppedImage, 'editBanner.jpeg');
+        } else if (file) {
+            formData.append('image', file)
+        }
+        formData.append('title', document.getElementById('editTitle').value);
+        formData.append('description', document.getElementById('editDescription').value);
+        formData.append('link', document.getElementById('editLink').value || '');
+        formData.append('buttonText', document.getElementById('editButtonText').value || 'Shop Now');
+        try {
+            const response = await fetch(`/admin/editBanner?id=${id}`, {
+                method: 'PATCH',
+                body: formData
+            });
+            const result = await response.json();
+            if (response.ok && result.success) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Banner Updated',
+                    text: 'The banner has been updated',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    background: '#000',
+                    color: 'yellow',
+                    iconColor: '#00ff00'
+                }).then(() => location.reload());
+            } else {
+                await Swal.fire("Failed", result.message || "Updating banner failed", "error");
+            }
+        } catch (error) {
+            await Swal.fire("Error", "An error occurred while updating the banner", "error");
+            console.error("Error updating banner:", error);
+        }
+    });
+
+    // Toggle Banner Status
+    async function toggleBannerStatus(id) {
+        try {
+            const response = await fetch(`/admin/toggleBannerStatus?id=${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const result = await response.json();
+            if (response.ok && result.success) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Status Updated',
+                    text: 'The banner status has been updated',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    background: '#000',
+                    color: 'yellow',
+                    iconColor: '#00ff00'
+                }).then(() => location.reload());
+            } else {
+                await Swal.fire("Failed", result.message || "Toggling status failed", "error");
+            }
+        } catch (error) {
+            await Swal.fire("Error", "An error occurred while toggling the status", "error");
+            console.error("Error toggling banner status:", error);
+        }
+    }
+
+    // Delete Banner
+    async function deleteBanner(id) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            background: '#000',
+            color: 'yellow',
+            iconColor: '#ff0000'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/admin/deleteBanner?id=${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    await Swal.fire({
+                        toast: true,
+                        icon: 'success',
+                        title: 'Banner Deleted',
+                        text: 'The banner has been deleted',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        background: '#000',
+                        color: 'yellow',
+                        iconColor: '#00ff00'
+                    }).then(() => location.reload());
+                } else {
+                    await Swal.fire("Failed", result.message || "Deleting banner failed", "error");
+                }
+            } catch (error) {
+                await Swal.fire("Error", "An error occurred while deleting the banner", "error");
+                console.error("Error deleting banner:", error);
+            }
+        }
+    }
+</script>
+
+<%- include('../../views/partials/admin/footer') %>

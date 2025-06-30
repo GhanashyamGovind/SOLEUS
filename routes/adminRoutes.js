@@ -7,11 +7,13 @@ const brandController = require('../controllers/admin/brandController');
 const productController = require('../controllers/admin/productController');
 const orderController = require('../controllers/admin/orderController');
 const couponController = require('../controllers/admin/couponController');
+const bannerController = require('../controllers/admin/bannerController');
 const {userAuth, adminAuth} = require('../middlewares/auth');
 const multer = require('multer');
-const {storage} = require('../helpers/multer');
+const {storage, bannerStorage} = require('../helpers/multer');
 const Brand = require('../models/brandSchema');
-const uploads = multer({storage:storage})
+const uploads = multer({storage:storage});
+const bannerUploads = multer({storage: bannerStorage});
 
 
 router.get('/pageerror', adminController.pageerror);
@@ -77,6 +79,14 @@ router.delete('/coupons/delete/:code', adminAuth, couponController.deleteCoupon)
 //referral
 router.get('/referral', adminAuth, couponController.getReferral);
 router.post('/referral', adminAuth, couponController.editReferral);
-router.patch('/referral', adminAuth, couponController.onAndOff)
+router.patch('/referral', adminAuth, couponController.onAndOff);
+
+//banner
+router.get('/banner', adminAuth, bannerController.getBanner);
+router.post('/createBanner', adminAuth, bannerUploads.single("image"), bannerController.creatBanner);
+router.patch('/editBanner', adminAuth, bannerUploads.single("image"), bannerController.editBanner);
+router.patch('/toggleBannerStatus', adminAuth, bannerController.listAndUnlist);
+router.delete('/deleteBanner', adminAuth, bannerController.deleteBanner)
+
 
 module.exports = router;
