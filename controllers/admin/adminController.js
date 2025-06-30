@@ -77,27 +77,26 @@ const loadDashboard = async (req, res, next) => {
 const saleReport = async (req, res, next) => { 
     try {
         if (!req.session.admin) {
-            return res.redirect('/admin/login');
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const { period, startDate, endDate } = req.body;
-        const filter = { period, startDate, endDate, page: 1, limit: 5 };
+        const { period, startDate, endDate, page = 1, limit = 5 } = req.body;
+        const filter = { period, startDate, endDate, page: parseInt(page), limit: parseInt(limit) };
         req.session.filter = { period, startDate, endDate };
         console.log('Sale Report Filter Saved:', filter);
 
         const data = await getSalesData(filter);
 
-        req.session.message = 'Report generated successfully!';
-        res.render('admin/dashboard', {
+        res.json({
+            success: true,
+            message: 'Report generated successfully!',
             ...data,
-            message: req.session.message,
             selectedPeriod: period,
             filter
         });
     } catch (error) {
         console.error('Sale Report Error:', error);
-        req.session.message = `Failed to generate report: ${error.message}`;
-        res.redirect('/admin');
+        res.status(500).json({ success: false, message: `Failed to generate report: ${error.message}` });
     }
 };
 
@@ -195,8 +194,7 @@ const downloadPDF = async (req, res, next) => {
         doc.end();
     } catch (error) {
         console.error('PDF Download Error:', error);
-        req.session.message = `Failed to download PDF: ${error.message}`;
-        res.redirect('/admin');
+        res.status(500).json({ success: false, message: `Failed to download PDF: ${error.message}` });
     }
 };
 
@@ -204,7 +202,7 @@ const downloadPDF = async (req, res, next) => {
 const downloadExcel = async (req, res, next) => {
     try {
         if (!req.session.admin) {
-            return res.redirect('/admin/login');
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
         const { period, startDate, endDate } = req.body;
@@ -252,8 +250,7 @@ const downloadExcel = async (req, res, next) => {
         res.end();
     } catch (error) {
         console.error('Excel Download Error:', error);
-        req.session.message = `Failed to download Excel: ${error.message}`;
-        res.redirect('/admin');
+        res.status(500).json({ success: false, message: `Failed to download Excel: ${error.message}` });
     }
 };
 
@@ -314,14 +311,14 @@ const getSalesData = async (filter) => {
     console.log('Formatted Sales Report Length:', formattedSalesReport.length);
     console.log('Formatted Sales Report:', formattedSalesReport);
 
-    // Fetch all orders for charts (no pagination)
+    // Fetch all orders for charts and aggregates (no pagination)
     const allOrdersForCharts = await Order.find(match)
         .populate({
             path: 'orderedItems.product',
-            populate: {
-                path: 'category',
-                select: 'name'
-            }
+            populate: [
+                { path: 'category', select: 'name' },
+                { path: 'brand', select: 'brandName brandImage' }
+            ]
         })
         .sort({ createdOn: 1 })
         .lean()
@@ -330,47 +327,51 @@ const getSalesData = async (filter) => {
             return [];
         });
 
-    // Category-wise sales for pie chart
+    // Category-wise sales for pie chart (Top 10)
     const categorySales = {};
     allOrdersForCharts.forEach(order => {
         order.orderedItems.forEach(item => {
             const categoryName = item.product?.category?.name || 'Unknown';
-            const amount = (order.finalAmount / order.orderedItems.length) || 0;
-            categorySales[categoryName] = (categorySales[categoryName] || 0) + amount;
+            const quantity = item.quantity || 0;
+            categorySales[categoryName] = (categorySales[categoryName] || 0) + quantity;
         });
     });
 
-    const categorySalesData = Object.keys(categorySales).map(category => ({
-        category,
-        amount: categorySales[category]
-    }));
-    console.log('Category Sales Data:', categorySalesData);
+    const topCategories = Object.keys(categorySales)
+        .map(category => ({
+            category,
+            totalSold: categorySales[category]
+        }))
+        .sort((a, b) => b.totalSold - a.totalSold)
+        .slice(0, 10);
+    console.log('Top Categories:', topCategories);
 
-    // Daily income for line graph
-    const dailyIncome = {};
+    // Brand-wise sales (Top 10)
+    const brandSales = {};
     allOrdersForCharts.forEach(order => {
-        const date = moment(order.createdOn).format('DD/MM/YYYY');
-        const income = (order.finalAmount || 0) - (order.discount || 0);
-        dailyIncome[date] = (dailyIncome[date] || 0) + income;
+        order.orderedItems.forEach(item => {
+            const brandName = item.product?.brand?.brandName || 'Unknown';
+            const brandImage = item.product?.brand?.brandImage || '/images/placeholder.jpg';
+            const quantity = item.quantity || 0;
+            if (!brandSales[brandName]) {
+                brandSales[brandName] = {
+                    name: brandName,
+                    image: brandImage,
+                    totalSold: 0
+                };
+            }
+            brandSales[brandName].totalSold += quantity;
+        });
     });
 
-    const incomeData = Object.keys(dailyIncome).map(date => ({
-        date,
-        income: dailyIncome[date]
-    }));
-    console.log('Income Data:', incomeData);
+    const topBrands = Object.values(brandSales)
+        .sort((a, b) => b.totalSold - a.totalSold)
+        .slice(0, 10);
+    console.log('Top Brands:', topBrands);
 
-    // Top 5 best-selling products (across all orders, not filtered by period)
-    const allOrders = await Order.find()
-        .populate('orderedItems.product', 'productName productImage')
-        .lean()
-        .catch(err => {
-            console.error('allOrders Error:', err);
-            return [];
-        });
-
+    // Top 10 best-selling products (filtered by period)
     const productSales = {};
-    allOrders.forEach(order => {
+    allOrdersForCharts.forEach(order => {
         order.orderedItems.forEach(item => {
             const productId = item.product?._id?.toString();
             const quantity = item.quantity || 0;
@@ -395,8 +396,22 @@ const getSalesData = async (filter) => {
             totalSold: data.totalSold
         }))
         .sort((a, b) => b.totalSold - a.totalSold)
-        .slice(0, 5);
+        .slice(0, 10);
     console.log('Top Products:', topProducts);
+
+    // Daily income for line graph
+    const dailyIncome = {};
+    allOrdersForCharts.forEach(order => {
+        const date = moment(order.createdOn).format('DD/MM/YYYY');
+        const income = (order.finalAmount || 0) - (order.discount || 0);
+        dailyIncome[date] = (dailyIncome[date] || 0) + income;
+    });
+
+    const incomeData = Object.keys(dailyIncome).map(date => ({
+        date,
+        income: dailyIncome[date]
+    }));
+    console.log('Income Data:', incomeData);
 
     const totalOrders = await Order.countDocuments().catch(err => {
         console.error('totalOrders Error:', err);
@@ -431,9 +446,11 @@ const getSalesData = async (filter) => {
             limit,
             totalRecords: totalSalesRecords
         },
-        categorySalesData,
+        categorySalesData: topCategories,
         incomeData,
-        topProducts
+        topProducts,
+        topBrands,
+        topCategories
     };
 };
 

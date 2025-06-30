@@ -26,7 +26,7 @@
                 </h1>     
                 <p class="text-gray-500 mt-1">Manage your account settings</p>
             </div>
-            <button onclick="window.location.href = '/logout'" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-md w-full sm:w-auto text-center">
+            <button id="logoutButton" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-md w-full sm:w-auto text-center">
                 LOGOUT
             </button>
         </div>
@@ -122,5 +122,35 @@
     </div> <!-- End of content container -->
 
     <!-- Footer will now stick to the bottom -->
+<script defer>
+    document.getElementById('logoutButton').addEventListener("click", function() {
+        Swal.fire({
+            toast: true,
+            title: 'Logout?',
+            text: 'Do you really want to logout?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            position: 'top-end',
+            customClass: {
+                popup: 'p-4 text-sm rounded-lg shadow-lg',
+            },
+            backdrop: false,
+            showClass: {
+                popup: 'swal2-noanimation',
+                backdrop: 'swal2-noanimation'
+            },
+            hideClass: {
+                popup: '',
+                backdrop: ''
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/logout';
+            }
+        });
+    })
+</script>
     <%- include('../../views/partials/user/footer') %>
 </div> <!-- End of flex container -->
