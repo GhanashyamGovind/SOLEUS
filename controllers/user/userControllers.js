@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 const {Resend} = require('resend');
 const Wallet = require('../../models/walletSchema');
 const { default: mongoose } = require('mongoose');
+// const { default: products } = require('razorpay/dist/types/products');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 
@@ -480,17 +481,7 @@ const loadAllProductPage = async (req, res) => {
 const filterProduct = async (req, res) => {
   try {
     const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
-    // Handle onFire as an array
-    // let onFire = req.query['onFire[]'];
-    // if (onFire && !Array.isArray(onFire)) {
-    //   onFire = [onFire]; // Convert single value to array
-    // }
-    // onFire = onFire || []; // Default to empty array if not provided
-    //check
 
-    // Validate onFire values
-    // const validOnFireValues = ['newArrival', 'topSelling'];
-    // const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
 
     // Fetch categories and ensure products are from listed categories
     const categories = await Category.find({ isListed: true });
@@ -509,9 +500,7 @@ const filterProduct = async (req, res) => {
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    // if (validatedOnFire.length > 0) {
-    //   query.onFire = { $in: validatedOnFire };
-    // }
+
     if (search) {
       query.productName = { $regex: search, $options: 'i' };
     }
@@ -706,6 +695,42 @@ const emailMessage = async (req, res, next) => {
   }
 }
 
+const newDrops = async (req, res, next) => {
+  try {
+    const startofMonth = new Date();
+    startofMonth.setDate(1);
+    startofMonth.setHours(0, 0, 0, 0);
+
+    const endOfMonth = new Date(startofMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+    const product = await Product.find({
+      createdAt: {
+        $gte: startofMonth, $lt: endOfMonth
+      },
+      isBlocked: false
+    }).populate('brand').sort({createdAt: -1})
+
+    return res.render('user/newDrops', {products: product})
+  } catch (error) {
+    next(error)
+  }
+}
+
+const offerProducts = async (req, res, next) => {
+  try {
+    const product = await Product.find({
+      isBlocked: false,
+      appliedOffer: { $gt: 0 },
+      offerType: { $ne: 'none'}
+    }).populate('brand').sort({createdAt: -1})
+
+    return res.render('user/offerProducts', {products: product})
+  } catch (error) {
+    next(MediaError)
+  }
+}
+
 module.exports = {
     loadHomepage,
     loadLogin,
@@ -724,4 +749,6 @@ module.exports = {
     contact,
     emailMessage,
     brandProudct,
+    newDrops,
+    offerProducts,
 }

@@ -51,7 +51,9 @@ router.get('/',userController.loadHomepage);
 router.get('/allproducts', userController.loadAllProductPage);
 router.get('/productFilter', userController.filterProduct);
 router.get('/clearSearch', userController.clearSearch);
-router.get('/brand/brnadProducts/:id', userController.brandProudct)
+router.get('/brand/brnadProducts/:id', userController.brandProudct);
+router.get('/newDrops', userController.newDrops);
+router.get('/offerProducts', userController.offerProducts)
 
 //other pages
 router.get('/about', userController.aboutUs);
