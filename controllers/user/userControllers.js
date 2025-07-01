@@ -164,9 +164,6 @@ const loadSignUp = async (req, res, next) => {
         res.redirect('/')
         
     } catch (error) {
-
-        // console.error('login error', error);
-        // res.render('user/login', {message: "Login Failed !. Please try again later"})
         next(error)
         
     }
@@ -195,7 +192,10 @@ const signUp = async (req, res, next) => {
             return res.json("email error");
         }
 
-        req.session.userOtp = otp;
+        req.session.userOtp = {
+          code: otp,
+          expiresAt: Date.now() + 60 * 1000
+        }
         req.session.userData = {name,phone,email,password, referralCode};
 
         res.render("user/verify-otp");
@@ -223,8 +223,16 @@ const verifyOtp = async (req, res, next) => {
   try {
 
         const {otp} = req.body;
+        const storedOtp = req.session.userOtp;
 
-       if(otp === req.session.userOtp){ // session ill ulla otp aay compare cheyyunu
+        if(!storedOtp || Date.now() > storedOtp.expiresAt){
+          return res.status(400).json({success: false, message: 'OTP expired, please request a new one'})
+        }
+
+        if(otp !== storedOtp.code) {
+          return res.status(400).json({ success: false, message: "Invalid OTP, Please try again"})
+        }
+
             const user = req.session.userData; 
             const passwordHash = await securePassword(user.password);
 
@@ -283,10 +291,7 @@ const verifyOtp = async (req, res, next) => {
               await savedWallet.save();
             }
             
-            res.json({success: true, redirectUrl: "/login"})
-        }else {
-            res.status(400).json({success: false, message: "Invalid OTP, Please try again"})
-        }
+            return res.json({success: true, redirectUrl: "/login"})
 
   } catch (error) {
       next(error)
@@ -301,7 +306,10 @@ const resendOtp = async (req, res, next) => {
             return res.status(400).json({success: false, message: 'Email not found in session'});
         }
         const otp = generateOtp();
-        req.session.userOtp = otp;
+        req.session.userOtp = {
+          code: otp,
+          expiresAt: Date.now() + 60 * 1000
+        }
 
         const emailSent = await sendVerificationEmail(email, otp);
         if(emailSent){
@@ -339,8 +347,9 @@ const loadProfile = async (req, res, next) =>{
 const logOut = async (req, res, next) => {
     try {
 
-            delete req.session.user;
-            return res.redirect('/login')
+        delete req.session.user;
+        res.clearCookie(req.sessionID);
+        return res.redirect('/login')
       
     } catch (error) {
 
@@ -364,15 +373,15 @@ const loadAllProductPage = async (req, res) => {
   try {
     const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
     // Handle onFire as an array
-    let onFire = req.query['onFire[]'];
-    if (onFire && !Array.isArray(onFire)) {
-      onFire = [onFire]; // Convert single value to array
-    }
-    onFire = onFire || []; // Default to empty array if not provided
+    // let onFire = req.query['onFire[]'];
+    // if (onFire && !Array.isArray(onFire)) {
+    //   onFire = [onFire]; // Convert single value to array
+    // }
+    // onFire = onFire || []; // Default to empty array if not provided
 
-    // Validate onFire values
-    const validOnFireValues = ['newArrival', 'topSelling'];
-    const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
+    // // Validate onFire values
+    // const validOnFireValues = ['newArrival', 'topSelling'];
+    // const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
 
     // Fetch categories
     const categories = await Category.find({ isListed: true });
@@ -391,9 +400,9 @@ const loadAllProductPage = async (req, res) => {
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    if (validatedOnFire.length > 0) {
-      query.onFire = { $in: validatedOnFire };
-    }
+    // if (validatedOnFire.length > 0) {
+    //   query.onFire = { $in: validatedOnFire };
+    // }
     if (search) {
       query.productName = { $regex: search, $options: 'i' };
     }
@@ -445,7 +454,7 @@ const loadAllProductPage = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        selectedOnFire: validatedOnFire,
+        // selectedOnFire: validatedOnFire,
         search,
         sort,
       });
@@ -462,7 +471,7 @@ const loadAllProductPage = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      selectedOnFire: validatedOnFire,
+      // selectedOnFire: validatedOnFire,
       search,
       sort,
     });
@@ -552,7 +561,6 @@ const filterProduct = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        // selectedOnFire: validatedOnFire,
         search,
         sort,
       });
@@ -569,7 +577,6 @@ const filterProduct = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      // selectedOnFire: validatedOnFire,
       search,
       sort,
     });
