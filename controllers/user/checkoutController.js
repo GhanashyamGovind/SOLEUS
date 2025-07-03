@@ -63,6 +63,12 @@ const loadCheckOut = async (req, res, next) => {
         const { buyNow, orderId } = req.query;
         const isBuyNow = buyNow === 'true' && req.session.buyNow;
         const isFailedPayment = !!orderId;
+
+// Check if a recent successful order exists to prevent re-rendering checkout after success
+        if (buyNow === 'true' && !req.session.buyNow ) {
+            return res.redirect('/cart');
+        }
+
         const addressDoc = await Address.findOne({ userId });
         const address = addressDoc && addressDoc.address.length > 0 ? addressDoc.address : null;
 
@@ -79,7 +85,7 @@ const loadCheckOut = async (req, res, next) => {
             // retry payment for failed order
             const order = await Order.findOne({ orderId, user: userId }).populate('orderedItems.product');
             if (!order || order.paymentStatus !== 'Failed' || order.status !== 'Payment-Failed') {
-                return res.redirect('/cart?error=Invalid or non-failed order');
+                return res.redirect('/cart');
             }
 
             // stock availability indo check cheyyam
@@ -786,6 +792,8 @@ const proceedToPayment = async (req, res, next) => {
             }
         }
 
+        req.session.recentOrderSuccess = true;
+
         const redirectUrl = `/order/success?orderId=${order._id}`;
         console.log(`Order processed: ${order._id}, Payment Method: ${paymentMethod}, Redirecting to: ${redirectUrl}`);
 
@@ -1118,6 +1126,9 @@ const verifyRazorpayPayment = async (req, res) => {
                 await User.findByIdAndUpdate(userId, { $push: { orderHistory: order._id } });
             }
 
+            // Set recent order success flag
+            req.session.recentOrderSuccess = true;
+
             // Clear session data
             req.session.buyNow = null;
             req.session.retryOrder = null;
@@ -1217,10 +1228,15 @@ const handlePaymentFailure = async (req, res, next) => {
         req.session.couponDiscount = null;
         req.session.appliedCoupon = null;
 
+        req.session.failedOrder = true;
+        // Pass isBuyNow only if it's a Buy Now order, include orderId
+        const redirectUrl = isBuyNowBoolean
+            ? `/order/failure?razorpayOrderId=${razorpayOrderId}&isBuyNow=true&orderId=${order.orderId}`
+            : `/order/failure?razorpayOrderId=${razorpayOrderId}&orderId=${order.orderId}`;
         return res.status(200).json({
             success: true,
             message: 'Failed order saved successfully',
-            redirectUrl: `/order/failure?razorpayOrderId=${razorpayOrderId}&isBuyNow=${isBuyNowBoolean || isFailedPayment}`
+            redirectUrl 
         });
     } catch (error) {
         console.error('Error in handlePaymentFailure:', error);
@@ -1242,6 +1258,15 @@ const successPage = async (req, res, next) => {
         const {orderId} = req.query;
         if(!orderId) {
             return res.status(400).json({success: false, message: "Order ID is missing"});
+        }
+
+
+        // Check if the success page was already shown for this order
+        if (req.session.recentOrderSuccess && req.session.lastOrderId === orderId) {
+            // Clear the flag to prevent repeated redirects
+            delete req.session.recentOrderSuccess;
+            delete req.session.lastOrderId;
+            return res.redirect('/allproducts?message=Order already completed');
         }
 
         const order = await Order.findById(orderId).populate('orderedItems.product').lean();
@@ -1272,6 +1297,11 @@ const successPage = async (req, res, next) => {
             total: order.finalAmount
         }
 
+        // res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
+        // Store the orderId to track this success page view
+        req.session.lastOrderId = orderId;
+
         return res.render('user/successOrder', {
             success: true,
             title: 'Success',
@@ -1295,13 +1325,17 @@ const failurePage = async (req, res, next) => {
             return res.redirect('/login');
         }
 
+        if(!req.session.failedOrder) {
+            return res.redirect('/')
+        }
+
         const { razorpayOrderId, isBuyNow } = req.query;
         const isBuyNowBoolean = isBuyNow === 'true' || isBuyNow === true || !!req.session.buyNow || !!req.session.retryOrder;
 
         return res.render('user/failureOrder', {
             title: 'Order Failed',
             razorpayOrderId,
-            isBuyNow: isBuyNowBoolean
+            isBuyNow: isBuyNowBoolean,
         });
     } catch (error) {
         console.error('Error in failurePage:', error);

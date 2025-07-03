@@ -17,6 +17,11 @@ const getCart = async (req, res, next) => {
             req.session.buyNow = null
         }
 
+        if (req.session.recentOrderSuccess) {
+            delete req.session.recentOrderSuccess;
+            delete req.session.lastOrderId;
+        }
+
         const cart = await Cart.findOne({ userId }).populate('items.productId');
         const cartData = cart || { items: [], totalPrice: 0 };
 

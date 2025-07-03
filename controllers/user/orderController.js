@@ -18,8 +18,8 @@ const loadOrder = async (req, res, next) => {
             throw error;
         }
 
-        if(req.session.SuccessAndFailure) {
-            delete req.session.SuccessAndFailure;
+        if(req.session.failedOrder) {
+            delete req.session.failedOrder;
         }
 
         const {cart} = req.query;
@@ -109,8 +109,9 @@ const getTrackPage = async (req, res, next) => {
             throw error;
         }
 
-        if(req.session.SuccessAndFailure) {
-            delete req.session.SuccessAndFailure;
+        if (req.session.recentOrderSuccess) {
+            delete req.session.recentOrderSuccess;
+            delete req.session.lastOrderId;
         }
 
         const {orderId} = req.params;

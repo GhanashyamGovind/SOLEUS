@@ -71,6 +71,10 @@ const loadHomepage = async (req, res, next) => {
     try{
         const user = req.session.user;
 
+        if(req.session.failedOrder){
+          delete req.session.failedOrder;
+        }
+
         const {cart} = req.query; console.log("cart", cart)
         if (cart && cart == 'fromProductFailure') {
           const newCart = await Cart.findOneAndUpdate(
@@ -371,10 +375,17 @@ const pageNotFound = async (req, res, next) => {
 
 const loadAllProductPage = async (req, res) => {
   try {
+
+    if (req.session.recentOrderSuccess) {
+        delete req.session.recentOrderSuccess;
+        delete req.session.lastOrderId;
+    }
+
     const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
 
     const categories = await Category.find({ isListed: true });
     const categoryIds = categories.map((category) => category._id.toString());
+
 
     // Build query object
     let query = {
