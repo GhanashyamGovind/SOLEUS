@@ -8,6 +8,11 @@ const productDeatils = async (req, res, next) => {
 
         const productId = req.query.id;
         const product = await Product.findById(productId, {isBlocked: false}).populate(['category', 'brand']);
+        if(!product) {
+            const error = new Error("Page Not Foound");
+            error.statusCode = 404;
+            throw error
+        }
         const findCategory = product.category;
         const findBrand = product.brand;
         const variants = product.variants

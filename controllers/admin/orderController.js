@@ -3,6 +3,7 @@ const Address = require('../../models/addressSchema');
 const Order = require('../../models/orderSchema');
 const Product = require('../../models/productSchema');
 const Wallet = require('../../models/walletSchema');
+const Coupon = require('../../models/couponSchema');
 
 
 const getAdminOrder = async (req, res, next) => {
@@ -156,87 +157,150 @@ const cancellOrder = async (req, res, next) => {
 }
 
 const approveReturn = async (req, res, next) => {
-    try{
-
-        const {orderId} = req.params;
-        const {sku} = req.body;
-        if(!sku || !orderId) {
-            return res.status(400).json({success: false, message: "Require fields are missing"});
+    try {
+        const { orderId } = req.params;
+        const { sku } = req.body;
+        if (!sku || !orderId) {
+            return res.status(400).json({ success: false, message: 'Required fields are missing' });
         }
 
-        const orders = await Order.findOne({orderId}).populate('orderedItems.product').exec()
-        const userId = orders.user;
+        // Fetch order and populate product details
+        const order = await Order.findOne({ orderId }).populate('orderedItems.product').exec();
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+        const userId = order.user;
 
-        //find the item of the sku
-        const item = orders.orderedItems.find(v => v.sku === sku);
-        if(!item) {
-            return res.status(404).json({success: false, message: `${sku} SKU \n Item not found`})
+        // Find the item by SKU
+        const item = order.orderedItems.find((v) => v.sku === sku);
+        if (!item) {
+            return res.status(404).json({ success: false, message: `${sku} SKU \n Item not found` });
         }
 
-        //findg the product
+        // Find the product and variant
         const product = item.product;
-
-        //finding the prodct with sku
-        const variant = product.variants.find(v => v.sku === sku);
-        if(!variant) {
-            return res.status(404).json({success: false, message: `variant of this prodct is missing`})
+        const variant = product.variants.find((v) => v.sku === sku);
+        if (!variant) {
+            return res.status(404).json({ success: false, message: `Variant of this product is missing` });
         }
 
-        //restore stock
+        // Restore stock
         variant.stock += item.quantity;
-
-        //update product stock and status and save
         product.quantity = product.variants.reduce((total, v) => total + v.stock, 0);
         product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
         await product.save();
 
-        //change the status
+        // Update return status
         item.returnStatus = 'Returned';
-        await orders.save();
+        await order.save();
 
-        //refund
-        const totalItemAmount = orders.orderedItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
-        const shippingCharge = orders.finalAmount - totalItemAmount;
-        
+        // Calculate refund
+        const totalItemAmount = order.orderedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        const shippingCharge = order.finalAmount - (totalItemAmount - order.discount); // Adjusted for discount
         const itemTotal = item.price * item.quantity;
-        const proportionalShipping = (itemTotal/totalItemAmount) * shippingCharge;
+        const proportionalShipping = totalItemAmount ? (itemTotal / totalItemAmount) * shippingCharge : 0;
         let refundAmount = itemTotal + proportionalShipping;
 
-        // coupon apply cheythal ulla return logic
-        if (orders.couponApplied && orders.discount > 0) {
-            // propotion discount for return item
-            console.log("the proprotinadiscount is done");
-            const proportionalDiscount = (itemTotal / totalItemAmount) * orders.discount;
-            refundAmount = Math.max(0, refundAmount - proportionalDiscount);
+        // Coupon logic
+        if (order.couponApplied && order.discount > 0 && order.couponCode) {
+            // Fetch coupon details
+            const coupon = await Coupon.findOne({ code: order.couponCode });
+            if (!coupon) {
+                return res.status(404).json({ success: false, message: 'Coupon not found' });
+            }
+            if (coupon.expireOn < new Date()) {
+                return res.status(400).json({ success: false, message: 'Coupon expired' });
+            }
+
+            // Calculate remaining order value after return
+            const remainingItems = order.orderedItems.filter((v) => v.returnStatus !== 'Returned');
+            const remainingOrderValue = remainingItems.reduce(
+                (sum, i) => sum + i.price * i.quantity,
+                0
+            );
+
+            // Adjust minimumPrice check to include delivery charges (per applyCoupon logic)
+            const effectiveRemainingValue =
+                remainingOrderValue >= 2500 ? remainingOrderValue : remainingOrderValue + 99;
+
+            if (effectiveRemainingValue < coupon.minimumPrice) {
+                // Coupon is invalid
+                let excessDiscount = order.discount; // Use stored discount (accounts for scaling in applyCoupon)
+
+                refundAmount = Math.max(0, refundAmount - excessDiscount);
+                console.log(
+                    `Coupon invalid: Effective remaining value (${effectiveRemainingValue}) < minimum (${
+                        coupon.minimumPrice
+                    })`
+                );
+            } else {
+                // Coupon is still valid, prorate discount
+                let proportionalDiscount = (itemTotal / totalItemAmount) * order.discount;
+                if (coupon.discountType === 'percentage') {
+                    // Use stored order.discount (already scaled in applyCoupon)
+                    proportionalDiscount = (itemTotal / totalItemAmount) * order.discount;
+                }
+                refundAmount = Math.max(0, refundAmount - proportionalDiscount);
+                console.log(`Proportional discount applied: ${proportionalDiscount}`);
+            }
         }
 
         refundAmount = parseFloat(refundAmount.toFixed(2));
 
-        if(orders.paymentMethod === 'Razorpay' || orders.paymentMethod === 'Wallet') {
-            const wallet = await Wallet.findOne({userId});
+        // Update wallet
+        if (order.paymentMethod === 'Razorpay' || order.paymentMethod === 'Wallet') {
+            const wallet = await Wallet.findOne({ userId });
             if (!wallet) {
-                return res.status(404).json({ success: false, message: "Wallet not found" });
+                return res.status(404).json({ success: false, message: 'Wallet not found' });
             }
 
-            wallet.balance += refundAmount;
-            wallet.transactions.push({
-                type: 'credit',
-                amount: refundAmount,
-                reason: orders.couponApplied && orders.discount > 0 ? `Refund for returned product SKU: ${sku} (incl. shipping share + coupon share)` : `Refund for returned product SKU: ${sku} (incl. shipping share)`,
-                orderId: orders.orderId,
-                productId: product._id,
-                quantity: item.quantity,
-                createdAt: new Date()
-            });
+            if (refundAmount < 0 && wallet.balance >= Math.abs(refundAmount)) {
+                wallet.balance += refundAmount; // Deduct from wallet
+                wallet.transactions.push({
+                    type: 'debit',
+                    amount: Math.abs(refundAmount),
+                    reason: `Adjustment for invalid coupon on return (SKU: ${sku})`,
+                    orderId: order.orderId,
+                    productId: product._id,
+                    quantity: item.quantity,
+                    createdAt: new Date(),
+                });
+            } else if (refundAmount < 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Insufficient wallet balance to adjust for invalid coupon',
+                });
+            } else {
+                wallet.balance += refundAmount;
+                wallet.transactions.push({
+                    type: 'credit',
+                    amount: refundAmount,
+                    reason:
+                        order.couponApplied && order.discount > 0
+                            ? `Refund for returned product SKU: ${sku} (incl. shipping share, adjusted for coupon)`
+                            : `Refund for returned product SKU: ${sku} (incl. shipping share)`,
+                    orderId: order.orderId,
+                    productId: product._id,
+                    quantity: item.quantity,
+                    createdAt: new Date(),
+                });
+            }
             await wallet.save();
         }
 
-        return res.status(200).json({success: true, message: "Return approved product stock updated"})
+        // Update order status if all items are returned
+        const allReturned = order.orderedItems.every((item) => item.returnStatus === 'Returned');
+        if (allReturned) {
+            order.status = 'Returned';
+            await order.save();
+        }
 
-    } catch (error){
-        next(error)
+        return res.status(200).json({ success: true, message: 'Return approved, product stock updated' });
+    } catch (error) {
+        console.error('Error in approveReturn:', error);
+        next(error);
     }
-}
+};
 
 const rejectReturn = async (req, res,  next) => {
     try{

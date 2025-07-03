@@ -18,15 +18,17 @@ const loadOrder = async (req, res, next) => {
             throw error;
         }
 
+        if(req.session.SuccessAndFailure) {
+            delete req.session.SuccessAndFailure;
+        }
+
         const {cart} = req.query;
-        console.log("cart::: =>", cart)
         if(cart && cart == 'fromProductFailure'){
             const newCart = await Cart.findOneAndUpdate(
                 {userId},
                 { $set: { items: [], totalPrice: 0 } },
                 {new: true}
             )
-            console.log("cart is cleared => ", newCart)
         }
 
         // Get user
@@ -55,11 +57,13 @@ const loadOrder = async (req, res, next) => {
         const formattedOrders = orders.map(order => {
             const savedAddress = order.address || {};
 
-            // Get the first product's image (if available)
-            const firstProduct = order.orderedItems[0]?.product || {};
-            const productImage = firstProduct.productImage?.[0]
-                ? `/Uploads/re-image/${firstProduct.productImage[0]}`
+            //images
+            const productImages = order.orderedItems.map(item => {
+                const product = item.product;
+                return product?.productImage?.[0]
+                ? `/Uploads/re-image/${product.productImage[0]}`
                 : 'https://via.placeholder.com/80x80?text=Product';
+            })
 
             // Calculate total quantity of items in this order
             const totalItems = order.orderedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -70,7 +74,7 @@ const loadOrder = async (req, res, next) => {
                 address: savedAddress
                     ? `${savedAddress.buildingName || ''}, ${savedAddress.landMark || ''}, ${savedAddress.city || ''}, ${savedAddress.state || ''} - ${savedAddress.pincode || ''}`
                     : 'Address not available',
-                productImage,
+                productImages,
                 totalItems,
                 totalAmount: order.finalAmount || 0,
                 status: order.status || 'Processing',
@@ -90,7 +94,6 @@ const loadOrder = async (req, res, next) => {
             totalOrders
         });
     } catch (error) {
-        console.error('Error in loadOrder:', error);
         next(error);
     }
 };
@@ -106,12 +109,14 @@ const getTrackPage = async (req, res, next) => {
             throw error;
         }
 
+        if(req.session.SuccessAndFailure) {
+            delete req.session.SuccessAndFailure;
+        }
+
         const {orderId} = req.params;
 
         const order = await Order.findOne({orderId}).populate('orderedItems.product').lean();
-        // console.log("specific producd ::::::=====> \n", order)
        
-
         const getProducts = order.orderedItems.map((item) => {
             return{
                 name: item.product.productName,
@@ -127,10 +132,6 @@ const getTrackPage = async (req, res, next) => {
         });
         
         const address = order.address;
-
-        // console.log("get products:::======> \n",getProducts)
-        
-
 
         return res.render('user/track', {
             products: getProducts,

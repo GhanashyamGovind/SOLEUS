@@ -168,6 +168,39 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
+
+        .deliver-btn {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            color: #FFF;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .deliver-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .deliver-btn:hover::before {
+            left: 100%;
+        }
+        .deliver-btn:hover {
+            background: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-image {
+            transition: opacity 0.2s ease-in-out;
+        }
     </style>
 
     <!-- Main Content -->
@@ -203,7 +236,14 @@
 
                     <!-- Product Image -->
                     <div class="flex-1 flex items-center gap-4">
-                        <img src="<%= order.productImage %>" alt="Product Image" class="product-image w-20 h-20 object-cover rounded-lg">
+                        <img 
+                            src="<%= order.productImages[0] %>" 
+                            alt="Product Image"
+                            class="product-image w-20 h-20 object-cover rounded-lg border-2 border-white shadow-lg transition-all duration-300"
+                            data-images='<%= JSON.stringify(order.productImages) %>'
+                            onmouseover="startFlipbook(this)"
+                            onmouseleave="stopFlipbook(this)" 
+                        />
                     </div>
 
                     <!-- Actions -->
@@ -212,8 +252,13 @@
                            <% if (order.status !== 'Pending' && order.status !== 'Processing') { %>disabled<% } %>>
                             Cancel Order
                         </button>
-                        <% if (order.status === 'Cancelled') { %>
-                         <a href="/ordeTracking/<%= order.orderId %>" class="track-btn py-2 px-4 rounded-lg text-center"
+                        <% if (order.status === 'Cancelled' || order.status === 'Returned') { %>
+                         <a href="/ordeTracking/<%= order.orderId %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
+                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                            View
+                        </a>
+                        <% } else if (order.status === 'Delivered') { %>
+                        <a href="/ordeTracking/<%= order.orderId %>" class="deliver-btn py-2 px-4 rounded-lg text-center"
                            <% if (!order.trackingAvailable) { %>disabled<% } %>>
                             View
                         </a>
@@ -241,9 +286,6 @@
 </main>
 
 <%- include('../../views/partials/user/footer') %>
-
-<!-- Include SweetAlert2 library -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // Hide cancel button based on order status
@@ -387,4 +429,28 @@
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(card);
     });
+
+    let flipInterval = null;
+
+    function startFlipbook(imgElement) {
+        const images = JSON.parse(imgElement.getAttribute('data-images'));
+        if (!images || images.length <= 1) return;
+
+        let index = 0;
+        flipInterval = setInterval(() => {
+            index = (index + 1) % images.length;
+            imgElement.src = images[index];
+        }, 700);
+    }
+
+    function stopFlipbook(imgElement) {
+        clearInterval(flipInterval);
+        flipInterval = null;
+
+        const images = JSON.parse(imgElement.getAttribute('data-images'));
+        if (images && images.length > 0) {
+            imgElement.src = images[0];
+        }
+    }
+
 </script>

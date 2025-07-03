@@ -83,6 +83,7 @@ router.get('/update-email', userAuth, profileController.getUpdateEmail);
 router.post('/update-email', userAuth, profileController.updateEmail);
 router.put('/updatePassword', userAuth, profileController.updatePassword);
 router.get('/confirm-delete', userAuth, profileController.deletePage);
+router.post('/confirm-delete', userAuth, profileController.creatDeleteSession)
 router.delete('/confirm-delete', userAuth, profileController.confirmDelete);
 
 //profil and profile address details
@@ -92,7 +93,6 @@ router.post('/addAddress', userAuth, profileController.addAddress);
 router.get('/editAddress', userAuth, profileController.loadEdit);
 router.put('/editAddress', userAuth, profileController.editAddress);
 router.delete('/deleteAddress/:id', profileController.deleteAddress)
-
 
 
 //product management
@@ -126,8 +126,6 @@ router.get('/order/failure', userAuth, checkoutController.failurePage);
 //retry payment
 router.get('/checkout-buy-now', userAuth, checkoutController.retryBuyNowCheckout);
 router.get('/retry-cart-checkout', userAuth, checkoutController.retryCartCheckout);
-
-
 
 
 //orders

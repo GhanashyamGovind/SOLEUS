@@ -22,7 +22,6 @@ const loadWallet = async (req, res, next) => {
         
         const balance = wallet.balance;
         const transactions = wallet.transactions.sort((a, b) => b.createdAt - a.createdAt);
-        // console.log(transactions)
         let totalDebit = transactions.filter((val) => val.type === 'debit').reduce((acc, val) => acc + val.amount, 0);
         let totalCredit = transactions.filter((val) => val.type === 'credit').reduce((acc, val) => acc + val.amount, 0);
 

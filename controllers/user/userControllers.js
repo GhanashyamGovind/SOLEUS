@@ -372,18 +372,7 @@ const pageNotFound = async (req, res, next) => {
 const loadAllProductPage = async (req, res) => {
   try {
     const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
-    // Handle onFire as an array
-    // let onFire = req.query['onFire[]'];
-    // if (onFire && !Array.isArray(onFire)) {
-    //   onFire = [onFire]; // Convert single value to array
-    // }
-    // onFire = onFire || []; // Default to empty array if not provided
 
-    // // Validate onFire values
-    // const validOnFireValues = ['newArrival', 'topSelling'];
-    // const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
-
-    // Fetch categories
     const categories = await Category.find({ isListed: true });
     const categoryIds = categories.map((category) => category._id.toString());
 
@@ -400,9 +389,7 @@ const loadAllProductPage = async (req, res) => {
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    // if (validatedOnFire.length > 0) {
-    //   query.onFire = { $in: validatedOnFire };
-    // }
+
     if (search) {
       query.productName = { $regex: search, $options: 'i' };
     }
@@ -454,7 +441,6 @@ const loadAllProductPage = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        // selectedOnFire: validatedOnFire,
         search,
         sort,
       });
@@ -471,7 +457,6 @@ const loadAllProductPage = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      // selectedOnFire: validatedOnFire,
       search,
       sort,
     });
@@ -630,7 +615,9 @@ const brandProudct = async (req, res, next) => {
     const products = await Product.find({brand: id, isBlocked: false}).populate('brand', 'brandName').sort({productName: -1});
     const brand = await Brand.findById(id);
     if(!brand){
-     return res.redirect('/')
+     const error = new Error("Page Not Found");
+     error.statusCode = 404;
+     throw error;
     }
 
     return res.render('user/brandPage', {products, brand})
@@ -663,13 +650,10 @@ const emailMessage = async (req, res, next) => {
     if(!userId){
       return res.json({success: false, message: "Please Login To send EMAIL"})
     }
-    console.log("got the userid", userId)
 
     const user = await User.findById(userId);
-    console.log("got the user", user)
     
     const {email, message} = req.body;
-    console.log(email, message)
 
     if(!email || !message) {
       return res.json({success: false, message: "Fields are missing"});
@@ -689,7 +673,6 @@ const emailMessage = async (req, res, next) => {
       replyTo: email
     })
 
-    console.log(response)
 
     if (response.error) {
       return res.status(500).json({ success: false, message: "Failed to send message to the company. Please try again." });

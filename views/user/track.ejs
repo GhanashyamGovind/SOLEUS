@@ -95,6 +95,9 @@
         }
         
         .product-card {
+            <%= order.status === 'Returned' 
+                ? 'background: linear-gradient(135deg, #fecaca, #f87171); color: #7f1d1d;' 
+                : '' %>
             transition: all 0.3s ease;
         }
         
@@ -209,7 +212,7 @@
 
         <!-- Tracking Timeline -->
         <div class="glass-card rounded-2xl p-6 mb-8 shadow-xl">
-            <h3 class="text-xl font-bold text-gray-900 mb-6">Delivery Status <%= order.status %></h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Delivery Status: <b><%= order.status %></b></h3>
             <div class="tracking-container">
                 <div class="tracking-line"></div>
                 <div class="tracking-steps">
@@ -288,7 +291,6 @@
                         <div class="text-sm text-gray-600 mt-1">
                             <%= order.createdOn.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) %>
                         </div>
-                        <!-- <div class="text-xs text-gray-500 mt-1"></div> -->
                     </div>
                     <% } %>
                 </div>
@@ -316,19 +318,19 @@
                             </div>
                         </div>
                     </div>
-                    <% if (order.status === 'Delivered') { %>
+                    <% if (order.status === 'Delivered' || order.status === 'Returned' ) { %>
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <div class="flex gap-3">
                             <% if (product.return === 'Requested') { %>
-                                <span id="return-status-<%= product.sku %>" class="bg-yellow-500 text-white font-bold uppercase py-2 px-4 rounded-lg text-sm">
+                                <span id="return-status-<%= product.sku %>" class="bg-green-500 text-white font-bold uppercase py-2 px-4 rounded-lg text-sm">
                                     Return Requested
                                 </span>
                             <% } else if (product.return === 'Returned') { %>
-                                <span id="return-status-<%= product.sku %>" class="bg-green-500 text-white font-bold uppercase py-2 px-4 rounded-lg text-sm">
+                                <span id="return-status-<%= product.sku %>" class="bg-red-500 text-white font-bold uppercase py-2 px-4 rounded-lg text-sm">
                                     Order Returned
                                 </span>
                             <% } else if (product.return === 'Rejected') { %>
-                                <span id="return-status-<%= product.sku %>" class="bg-red-500 text-white font-bold uppercase py-2 px-4 rounded-lg text-sm">
+                                <span id="return-status-<%= product.sku %>" class="bg-orange-500 text-white font-bold uppercase py-2 px-4 rounded-lg text-sm">
                                     Request Rejected
                                 </span>
                             <% } else { %>
