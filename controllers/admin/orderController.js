@@ -8,15 +8,48 @@ const Coupon = require('../../models/couponSchema');
 
 const getAdminOrder = async (req, res, next) => {
     try {
-
         const page = parseInt(req.query.page) || 1;
         const limit = 10;
-        const skip = (page-1) * limit;
-        const totalOrders = await Order.countDocuments();
+        const skip = (page - 1) * limit;
+
+        const userSearch = req.query['search-user']?.trim().toLowerCase();
+        const searchDate = req.query['search-date'];
+
+        // Build the query object
+        let query = { status: { $ne: 'Payment-Failed' } };
+
+        if (userSearch) {
+            // Fetch users matching the search term
+            const users = await User.find({
+                name: { $regex: userSearch, $options: 'i' }
+            }).select('_id');
+            const userIds = users.map(user => user._id);
+            query.user = { $in: userIds };
+        }
+
+        if (searchDate) {
+            // Match orders by date (ignoring time)
+            const startDate = new Date(searchDate);
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + 1);
+            query.createdOn = {
+                $gte: startDate,
+                $lt: endDate
+            };
+        }
+
+        // Get total orders for pagination
+        const totalOrders = await Order.countDocuments(query);
         const totalPage = Math.ceil(totalOrders / limit);
 
-        const orders = await Order.find({status: {$ne: 'Payment-Failed'}}).populate('user','name').sort({ createdOn: -1 }).skip(skip).limit(limit);
-        const options = { day: 'numeric', month: 'short', year: 'numeric' }
+        // Fetch orders with the query
+        const orders = await Order.find(query)
+            .populate('user', 'name')
+            .sort({ createdOn: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
         const formattedOrders = orders.map(order => ({
             orderId: order.orderId,
             userName: order.user?.name || "User deleted",
@@ -24,39 +57,115 @@ const getAdminOrder = async (req, res, next) => {
             paymentMethod: order.paymentMethod,
             totalAmount: order.finalAmount,
             orderStatus: order.status,
-            totalItems: order.orderedItems.reduce((acc, item) => acc + item.quantity, 0 ),
-            viewLink: `/admin/orders/products/${order.orderId}`, // viewbutton
+            totalItems: order.orderedItems.reduce((acc, item) => acc + item.quantity, 0),
+            viewLink: `/admin/orders/products/${order.orderId}`,
             returnAlert: order.orderedItems.some((val) => val.returnStatus === 'Requested')
         }));
 
         return res.render('admin/admin-order', {
             orders: formattedOrders,
             currentPage: page,
-            totalPages: totalPage
+            totalPages: totalPage,
+            userSearch: userSearch || '',
+            searchDate: searchDate || ''
         });
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
 const updateStatus = async (req, res, next) => {
     try {
-
-        const {orderId} = req.params;
-        const {status} = req.body;
+        const { orderId } = req.params;
+        const { status, page } = req.body;
 
         const validStatuses = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
-        if(!validStatuses.includes(status)) {
-            return res.status(400).json({error: 'Invalid status'});
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
         }
 
-        // Fetch the order first to check its current values
+        // Fetch the order to check current status
         const order = await Order.findOne({ orderId });
-
         if (!order) {
-            return res.status(404).json({ error: "Order not found" });
+            return res.status(404).json({ error: 'Order not found' });
         }
 
+        // Define valid status transitions
+        const statusFlow = {
+            'Pending': ['Processing', 'Cancelled'],
+            'Processing': ['Shipped', 'Cancelled'],
+            'Shipped': ['Delivered', 'Cancelled'],
+            'Delivered': [],
+            'Cancelled': []
+        };
+
+        // Check if the new status is a valid transition
+        if (!statusFlow[order.status].includes(status)) {
+            return res.status(400).json({ error: `Cannot change status from ${order.status} to ${status}` });
+        }
+
+        //refund
+        if(status === 'Cancelled') {
+
+            //restore
+            for(const item of order.orderedItems) {
+                const product = await Product.findById(item.product);
+                if(!product) continue;
+
+                const variant = product.variants.find(v => v.sku === item.sku);
+                if(!variant) continue;
+
+                variant.stock += item.quantity;
+                product.quantity = product.variants.reduce((total, v) => total + v.stock, 0);
+                product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
+
+                await product.save();
+                console.log("stock is restored")
+            }
+            console.log("befor wallet")
+
+            if(['Wallet', 'Razorpay'].includes(order.paymentMethod) && order.paymentStatus === 'Completed') {
+                const wallet = await Wallet.findOne({userId: order.user});
+
+                console.log(" wallet finding ")
+                if(!wallet) {
+                    return res.status(404).json({error: "User wallet not found"});
+                }
+
+                //check if alredy refunded to aovid duplicate refund
+                const alreadyRefunded = wallet.transactions.some(
+                    txn => txn.orderId === order.orderId && txn.reason === 'Order cancelled by some reason'
+                );
+
+                if(!alreadyRefunded) {
+                    console.log("add to credit")
+                    wallet.balance += order.finalAmount;
+                    wallet.transactions.push({
+                        type: 'credit',
+                        amount: order.finalAmount,
+                        reason: 'Order cancelled by some reason',
+                        orderId: order.orderId,
+                        createdAt: new Date()
+                    });
+                    console.log("this is crediting")
+                    await wallet.save();
+                }
+            }
+
+            console.log("after wallet")
+
+            order.status = 'Cancelled';
+            await order.save();
+
+            return res.json({
+                orderId: order.orderId,
+                orderStatus: order.status,
+                paymentStatus: order.paymentStatus,
+                page: parseInt(page) || 1
+            })
+        }
+
+        // Update status and payment status for COD orders
         if (status === 'Delivered' && order.paymentStatus === 'Pending' && order.paymentMethod === 'COD') {
             order.status = status;
             order.paymentStatus = 'Completed';
@@ -69,20 +178,24 @@ const updateStatus = async (req, res, next) => {
         return res.json({
             orderId: order.orderId,
             orderStatus: order.status,
-            paymentStatus: order.paymentStatus
+            paymentStatus: order.paymentStatus,
+            page: parseInt(page) || 1
         });
-
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
 const getOrderProducts = async (req, res, next) => {
     try {
         const {orderId} = req.params;
-        console.log(orderId);
 
         const order = await Order.findOne({orderId}).populate('orderedItems.product').lean();
+        if(!order) {
+            const error = new Error('Page not found');
+            error.statusCode = 404;
+            throw error
+        }
 
         const getProducts = order.orderedItems.map(item => {
             return{
@@ -98,10 +211,7 @@ const getOrderProducts = async (req, res, next) => {
             }
         })
 
-        console.log("admin side ", getProducts);
-
         const address = order.address; 
-        console.log(address)
 
         return res.render('admin/order-info', {
             products: getProducts,
@@ -113,48 +223,6 @@ const getOrderProducts = async (req, res, next) => {
     }
 }
 
-const cancellOrder = async (req, res, next) => {
-    try {
-        const {status} = req.body;
-        const {orderId} = req.params;
-
-        const order = await Order.findOne({orderId}).populate('orderedItems.product');
-        if(!order){
-            return res.status(404).json({ success: false, message: 'Order not found' });
-        }
-
-        //update product stock and status
-        for(const item of order.orderedItems){
-            const product = await Product.findById(item.product);
-            if (!product) {
-                return res.status(404).json({ success: false, message: `Product with ID ${item.product} not found` });
-            }
-
-            //find the variants
-            const variant = product.variants.find(v => v.sku === item.sku);
-            if (!variant) {
-                return res.status(404).json({ success: false, message: `Variant with SKU ${item.sku} not found in product ${item.product}` });
-            }
-
-            //resoter stock
-            variant.stock += item.quantity;
-
-            //update product status and total stock
-            product.quantity = product.variants.reduce((total, v) => total + v.stock, 0);
-            product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
-
-            await product.save();
-        }
-
-        //update status
-        order.status = status;
-        await order.save();
-
-        return res.status(200).json({ success: true, message: 'Order cancelled and stock updated' });
-    } catch (error) {
-        next(error)
-    }
-}
 
 const approveReturn = async (req, res, next) => {
     try {
@@ -338,7 +406,6 @@ module.exports = {
     getAdminOrder,
     updateStatus,
     getOrderProducts,
-    cancellOrder,
     approveReturn,
     rejectReturn,
 }

@@ -5,9 +5,19 @@
         <h1 class="text-4xl font-bold text-center mb-6">LOGIN</h1>
         <form action="/login" method="POST">
             <div class="space-y-4">
-                <input type="email" name="email" placeholder="Email" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
-                <input type="password" name="password" placeholder="Password" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+                <input type="email" name="email" placeholder="Email" id="email" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
+                <div id="emailError" class="text-red-500 text-sm text-center" style="display: none;"></div>
+                <div class="relative">
+                <input type="password" name="password" placeholder="Password" id="password"
+                    class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" >
+                
+                <span id="togglePassword" class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-600">
+                    visibility
+                </span>
+                </div>
             </div>
+            <div id="passwordError" class="text-red-500 text-sm text-center" style="display: none;"></div>
+
             <br>
             <% if (locals.message && message.length > 0) { %>
                 <div id="alert-message" class="bg-red-200 border-l-4 border-red-500 text-center text-red-700 p-4 rounded-lg mb-6 " role="alert">
@@ -44,9 +54,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-
     const alertDiv = document.getElementById('alert-message');
-
     if(alertDiv) {
         setTimeout(() => {
             alertDiv.style.display = "none"
@@ -54,13 +62,13 @@
     }
 
     const urlParams = new URLSearchParams(window.location.search);
-    authError = urlParams.get('authError')
+    const authError = urlParams.get('authError');
     if (authError === 'blocked') {
         Swal.fire({
             toast: true,
             position: 'top',
             icon: 'error',
-            title: 'Your  account is temporary blocked!',
+            title: 'Your account is temporarily blocked!',
             showConfirmButton: false,
             timer: 5000,
             timerProgressBar: true,
@@ -74,10 +82,54 @@
     const spinner = document.getElementById('spinner');
     const btnText = document.getElementById('btnText');
 
-    loginForm.addEventListener('submit', function () {
-        // Show spinner
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const passwordError = document.getElementById('passwordError');
+
+    function showError(element, message) {
+        element.textContent = message;
+        element.style.display = 'block';
+        setTimeout(() => {
+            element.textContent = '';
+            element.style.display = 'none';
+        }, 4000);
+    }
+
+    loginForm.addEventListener('submit', function (e) {
+        let hasError = false;
+
+        // Clear errors before new validation
+        emailError.style.display = 'none';
+        passwordError.style.display = 'none';
+        emailError.textContent = '';
+        passwordError.textContent = '';
+
+        if (email.value.trim() === '') {
+            showError(emailError, 'Email is required!');
+            hasError = true;
+        }
+
+        if (password.value.trim() === '') {
+            showError(passwordError, 'Password is required!');
+            hasError = true;
+        }
+
+        if (hasError) {
+            e.preventDefault(); // Prevent form from submitting
+            return;
+        }
+
+        // If no error, show spinner
         spinner.classList.remove('hidden');
         btnText.textContent = "Please wait...";
         loginBtn.disabled = true;
+    });
+
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        const passwordInput = document.getElementById("password");
+        const type = passwordInput.type === "password" ? "text" : "password";
+        passwordInput.type = type;
+        this.textContent = type === "password" ? "visibility" : "visibility_off";
     });
 </script>

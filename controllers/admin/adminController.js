@@ -27,12 +27,12 @@ const login = async (req, res, next) => {
         const admin = await User.findOne({ email, isAdmin: true });
 
         if (!admin) {
-            return res.render('admin/admin-login', { message: "Enter the proper email" });
+            return res.render('admin/admin-login', { message: "Invalid Credentials" });
         }
 
         const passwordMatch = await bcrypt.compare(password, admin.password);
         if (!passwordMatch) {
-            return res.render('admin/admin-login', { message: "Wrong password" });
+            return res.render('admin/admin-login', { message: "Invalid Credentials" });
         }
 
         req.session.admin = admin._id;

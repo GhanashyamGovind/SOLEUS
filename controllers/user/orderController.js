@@ -114,6 +114,10 @@ const getTrackPage = async (req, res, next) => {
             delete req.session.lastOrderId;
         }
 
+        if (req.session.buyNow){
+            delete req.session.buyNow
+        }
+
         const {orderId} = req.params;
 
         const order = await Order.findOne({orderId}).populate('orderedItems.product').lean();

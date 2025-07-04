@@ -1,6 +1,8 @@
 const { name } = require('ejs');
 const Brand = require('../../models/brandSchema');
 const Product = require('../../models/productSchema');
+const path = require('path');
+const fs = require('fs/promises')
 
 
 const getBrandPage = async (req, res, next) => {
@@ -69,9 +71,16 @@ const deleteBrand = async (req, res, next) => {
     try {
 
         let id = req.query.id;
+        const brand = await Brand.findById(id);
+
+        if (brand && brand.brandImage && Array.isArray(brand.brandImage) && brand.brandImage.length > 0) {
+            const imageFile = brand.brandImage[0];
+            const imagePath = path.join(__dirname, '../../public/uploads/re-image/', imageFile);
+            await fs.unlink(imagePath);
+        }
+
         await Brand.deleteOne({_id: id});
         return res.redirect(`/admin/brands?page=${req.query.page || 1}`);
-        
     } catch (error) {
         next(error)
     }

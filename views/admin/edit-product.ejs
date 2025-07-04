@@ -190,64 +190,59 @@
     }
   }
 
-  function validateAndSubmit() {
-    console.log('Update button clicked');
-    if (validateForm()) {
-      const form = document.getElementById('add-product-form');
-      const formData = new FormData(form);
-      console.log('Form data:', Array.from(formData.entries()));
-      fetch(form.action, {
-        method: 'POST',
-        body: formData
-      })
-      .then(response => {
-        console.log('Fetch response:', response.status, response.statusText);
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Response data:', data);
-        if (data.error) {
-          displayErrorMessage('error-message', data.error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: data.error,
-            confirmButtonColor: '#d33'
-          });
-        } else {
-          Swal.fire({
-            icon: 'success',
-            title: 'Success',
-            text: 'Product updated successfully!',
-            confirmButtonColor: '#3085d6'
-          }).then(() => {
-            window.location.replace('/admin/productlist');
-          });
-        }
-      })
-      .catch(error => {
-        console.error('Fetch error:', error);
-        displayErrorMessage('error-message', 'Failed to submit form. Please try again.');
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to submit form. Please try again.',
-          confirmButtonColor: '#d33'
-        });
-      });
-    } else {
-      console.log('Form validation failed');
+function validateAndSubmit() {
+  console.log('Update button clicked');
+  if (validateForm()) {
+    const form = document.getElementById('add-product-form');
+    const formData = new FormData(form);
+    console.log('Form data:', Array.from(formData.entries()));
+
+    fetch(form.action, {
+      method: 'POST',
+      body: formData
+    })
+    .then(async (response) => {
+      const data = await response.json(); // wait for JSON here
+
+      if (!response.ok) {
+        // Handle server-side validation error (like duplicate product)
+        throw new Error(data.error || 'Something went wrong');
+      }
+
+      console.log('Response data:', data);
       Swal.fire({
-        icon: 'warning',
-        title: 'Validation Failed',
-        text: 'Please fix the errors in the form before submitting.',
-        confirmButtonColor: '#f39c12'
+        icon: 'success',
+        title: 'Success',
+        text: 'Product updated successfully!',
+        confirmButtonColor: '#3085d6'
+      }).then(() => {
+        window.location.replace('/admin/productlist');
       });
-    }
+    })
+    .catch(error => {
+      console.error('Fetch error:', error);
+      displayErrorMessage('error-message', error.message); // show specific error
+      Swal.fire({
+        toast: true,
+        icon: 'error',
+        title: 'Error',
+        text: error.message || 'Failed to submit form. Please try again.',
+        confirmButtonColor: '#d33'
+      });
+    });
+
+  } else {
+    console.log('Form validation failed');
+    Swal.fire({
+      toast: true,
+      icon: 'warning',
+      title: 'Validation Failed',
+      text: 'Please fix the errors in the form before submitting.',
+      confirmButtonColor: '#f39c12'
+    });
   }
+}
+
 
   function deleteImage(i) {
     console.log(`Deleting image ${i}`);

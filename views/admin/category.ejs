@@ -36,16 +36,22 @@
     </div>
   </form>
 
-  <!-- Search Bar
+<!-- Search Bar -->
   <div class="flex justify-end mb-3 md:mb-4">
-    <div class="flex items-center w-full md:w-64">
-      <input type="text" class="border rounded-full px-3 py-2 w-full text-black" placeholder="Search">
+    <div class="relative w-full md:w-80">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+      <input type="text" id="searchInput" class="block w-full pl-10 pr-20 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm" placeholder="Search categories..." value="<%= searchQuery %>">
+      <button id="searchButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm">Search</button>
     </div>
-  </div> -->
+  </div>
 
   <!-- Table -->
   <div class="bg-white shadow rounded overflow-x-auto text-black">
-    <table class="min-w-full text-center">
+    <table class="min-w-full text-center" id="categoryTable">
       <thead>
         <tr class="bg-gray-200">
           <th class="p-2 md:p-3 text-sm md:text-base">Name</th>
@@ -57,48 +63,37 @@
           <th class="p-2 md:p-3 text-sm md:text-base">Edit</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="categoryTableBody">
         <% cat.reverse().forEach((category, index) => { %>
-          <tr>
+          <tr data-category-id="<%= category._id %>">
             <td class="p-2 md:p-3 text-sm md:text-base"><%= category.name %></td>
             <td class="p-2 md:p-3 text-sm md:text-base"><%= category.description %></td>
             <td class="p-2 md:p-3 text-sm md:text-base">
-                <% if (category.categoryOffer) { %>
-                  <%= category.categoryOffer %>%
-                <% }else { %>
-                    0%
-                <% } %>          
+              <% if (category.categoryOffer) { %>
+                <%= category.categoryOffer %>%
+              <% } else { %>
+                0%
+              <% } %>
             </td>
             <td class="p-2 md:p-3">
               <div class="flex justify-center space-x-1 md:space-x-2">
                 <% if (category.categoryOffer === 0) { %>
-                    <button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); addOffer('<%= category._id %>')">Add</button>
-                <% }else { %>
-                <button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); removeOffer('<%= category._id %>')">Remove</button>
+                  <button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); addOffer('<%= category._id %>')">Add</button>
+                <% } else { %>
+                  <button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); removeOffer('<%= category._id %>')">Remove</button>
                 <% } %>
               </div>
             </td>
             <td class="p-2 md:p-3">
-              <% if (category.isListed) { %>
-              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-green-200 text-green-800">
-                Listed
+              <span class="status-span px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm <%= category.isListed ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' %>">
+                <%= category.isListed ? 'Listed' : 'Unlisted' %>
               </span>
-              <% }else { %>
-              <span class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-red-200 text-red-800">
-                Unlisted
-              </span>
-              <% } %>
             </td>
             <td class="p-2 md:p-3">
-              <% if (category.isListed) { %>
-              <button class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-red-500 text-white">
-                <a href="/admin/listCategory?id=<%= category._id %>" class="text-white">UNLIST</a>
+              <button class="toggle-list-btn px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm <%= category.isListed ? 'bg-red-500 text-white' : 'bg-green-500 text-white' %>"
+                      onclick="toggleListStatus('<%= category._id %>', <%= category.isListed %>)">
+                <%= category.isListed ? 'UNLIST' : 'LIST' %>
               </button>
-              <% }else{ %>
-              <button class="px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm bg-green-500 text-white">
-                <a href="/admin/unlistCategory?id=<%= category._id %>" class="text-white">LIST</a>
-              </button>
-              <% } %>
             </td>
             <td class="p-2 md:p-3">
               <button class="bg-blue-300 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
@@ -112,24 +107,24 @@
   </div>
 
   <!-- Pagination -->
-  <div class="pagination-container flex justify-center space-x-2 mt-4">
+  <div class="pagination-container flex justify-center space-x-2 mt-4" id="paginationContainer">
     <% if (currentPage > 1) { %>
-      <a href="?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-gray-200 rounded">« Previous</a>
+      <a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="<%= currentPage - 1 %>">« Previous</a>
     <% } %>
     <% for (let i = 1; i <= totalPage; i++) { %>
       <% if (i === currentPage) { %>
         <span class="current-page px-3 py-1 bg-yellow-500 text-white rounded"><%= i %></span>
       <% } else { %>
-        <a href="?page=<%= i %>" class="px-3 py-1 bg-gray-200 rounded"><%= i %></a>
+        <a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="<%= i %>"><%= i %></a>
       <% } %>
     <% } %>
     <% if (currentPage < totalPage) { %>
-      <a href="?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-gray-200 rounded">Next »</a>
+      <a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="<%= currentPage + 1 %>">Next »</a>
     <% } %>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
 <script>
 function handleFormSubmit(event) {
     event.preventDefault();
@@ -156,7 +151,17 @@ function handleFormSubmit(event) {
         return response.json();
     })
     .then(data => {
-        location.reload();
+        Swal.fire({
+            toast: true,
+            icon: 'success',
+            title: 'Category Added',
+            text: 'The category has been added',
+            showConfirmButton: false,
+            timer: 3000,
+            background: '#000',
+            color: 'yellow',
+            iconColor: '#00ff00'
+        }).then(() => loadCategories(1, document.getElementById('searchInput').value));
     })
     .catch(error => {
         if (error.message === "Category already exist !") {
@@ -169,7 +174,10 @@ function handleFormSubmit(event) {
             Swal.fire({
                 icon: 'error',
                 title: "Oops...",
-                text: "An error occurred while adding the category"
+                text: "An error occurred while adding the category",
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '/admin/pageerror?statusCode=500';
             });
         }
     });
@@ -212,90 +220,230 @@ function clearErrorMessage() {
 }
 
 async function addOffer(categoryId) {
-  try {
-    const { value: amount } = await Swal.fire({
-      title: "Offer in percentage",
-      input: "number",
-      inputLabel: "Percentage",
-      inputPlaceholder: "%"
-    });
+    try {
+        const { value: amount } = await Swal.fire({
+            title: "Offer in percentage",
+            input: "number",
+            inputLabel: "Percentage",
+            inputPlaceholder: "%"
+        });
 
-    if (amount) {
-      const response = await fetch('/admin/addCategoryOffer', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          percentage: amount,
-          categoryId: categoryId,
-        }),
-      });
+        if (amount) {
+            const response = await fetch('/admin/addCategoryOffer', {
+                method: 'POST',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                    percentage: amount,
+                    categoryId: categoryId,
+                }),
+            });
 
-      const data = await response.json();
-      if (response.ok && data.status === true) {
-        await Swal.fire({
-          toast: true,
-          icon: 'success',
-          title: 'Offer Added',
-          text: 'The offer has been added',
-          showConfirmButton: false,
-          timer: 3000,
-          background: '#000',     
-          color: 'yellow',       
-          iconColor: '#00ff00' 
-        }).then(() => location.reload());
-      } else {
-        await Swal.fire("Failed", data.message || "Adding offer failed", "error");
-      }
+            const data = await response.json();
+            if (response.ok && data.status === true) {
+                await Swal.fire({
+                    toast: true,
+                    icon: 'success',
+                    title: 'Offer Added',
+                    text: 'The offer has been added',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    background: '#000',
+                    color: 'yellow',
+                    iconColor: '#00ff00'
+                }).then(() => loadCategories(getCurrentPage(), document.getElementById('searchInput').value));
+            } else {
+                await Swal.fire("Failed", data.message || "Adding offer failed", "error");
+            }
+        }
+    } catch (error) {
+        await Swal.fire("Error", "An error occurred while adding the offer", "error").then(() => {
+            window.location.href = '/admin/pageerror?statusCode=500';
+        });
+        console.error("Error while adding the offer", error);
     }
-  } catch (error) {
-    await Swal.fire(
-      "Error",
-      "An error occurred while adding the offer",
-      "error"
-    );
-    console.error("Error while adding the offer", error);
-  }
 }
 
 async function removeOffer(categoryId) {
-  try {
-    const response = await fetch('/admin/removeCategoryOffer', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        categoryId: categoryId
-      })
-    });
+    try {
+        const response = await fetch('/admin/removeCategoryOffer', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                categoryId: categoryId
+            })
+        });
 
-    const data = await response.json();
-    if (response.ok && data.status === true) {
-      await Swal.fire({
-          toast: true,
-          icon: 'success',
-          title: 'Offer Removed',
-          text: 'The offer has been removed',
-          showConfirmButton: false,
-          timer: 3000,
-          background: '#000',     
-          color: 'yellow',       
-          iconColor: '#00ff00' 
-        }).then(() => location.reload());
-    } else {
-      await Swal.fire("Failed", data.message || "Removing offer failed", "error");
+        const data = await response
+
+.json();
+        if (response.ok && data.status === true) {
+            await Swal.fire({
+                toast: true,
+                icon: 'success',
+                title: 'Offer Removed',
+                text: 'The offer has been removed',
+                showConfirmButton: false,
+                timer: 3000,
+                background: '#000',
+                color: 'yellow',
+                iconColor: '#00ff00'
+            }).then(() => loadCategories(getCurrentPage(), document.getElementById('searchInput').value));
+        } else {
+            await Swal.fire("Failed", data.message || "Removing offer failed", "error");
+        }
+    } catch (error) {
+        await Swal.fire("Error", "An error occurred while removing the offer", "error").then(() => {
+            window.location.href = '/admin/pageerror?statusCode=500';
+        });
+        console.error("Error while removing the offer => ", error);
     }
-  } catch (error) {
-    await Swal.fire(
-      "Error",
-      "An error occurred while removing the offer",
-      "error"
-    );
-    console.error("Error while removing the offer => ", error);
-  }
 }
+
+async function toggleListStatus(categoryId, isListed) {
+    try {
+        const endpoint = isListed ? '/admin/listCategory' : '/admin/unlistCategory';
+        const response = await fetch(endpoint, {
+            method: 'PATCH',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({ id: categoryId })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.status === true) {
+            await Swal.fire({
+                toast: true,
+                icon: 'success',
+                title: isListed ? 'Category Unlisted' : 'Category Listed',
+                text: data.message,
+                showConfirmButton: false,
+                timer: 3000,
+                background: '#000',
+                color: 'yellow',
+                iconColor: '#00ff00'
+            }).then(() => loadCategories(getCurrentPage(), document.getElementById('searchInput').value));
+        } else {
+            await Swal.fire("Failed", data.message || "Operation failed", "error");
+        }
+    } catch (error) {
+        await Swal.fire("Error", "An error occurred while updating the status", "error").then(() => {
+            window.location.href = '/admin/pageerror?statusCode=500';
+        });
+        console.error("Error while toggling list status => ", error);
+    }
+}
+
+function getCurrentPage() {
+    const currentPageElement = document.querySelector('.current-page');
+    return currentPageElement ? parseInt(currentPageElement.textContent) : 1;
+}
+
+async function loadCategories(page, searchQuery = '') {
+    try {
+        const response = await fetch(`/admin/category?page=${page}&search=${encodeURIComponent(searchQuery)}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            updateCategoryTable(data.cat);
+            updatePagination(data.currentPage, data.totalPage);
+        } else {
+            await Swal.fire("Error", data.error || "Failed to load categories", "error").then(() => {
+                window.location.href = '/admin/pageerror?statusCode=500';
+            });
+        }
+    } catch (error) {
+        await Swal.fire("Error", "An error occurred while loading categories", "error").then(() => {
+            window.location.href = '/admin/pageerror?statusCode=500';
+        });
+        console.error("Error loading categories:", error);
+    }
+}
+
+function updateCategoryTable(categories) {
+    const tbody = document.getElementById('categoryTableBody');
+    tbody.innerHTML = '';
+    categories.reverse().forEach(category => {
+        const row = document.createElement('tr');
+        row.setAttribute('data-category-id', category._id);
+        row.innerHTML = `
+            <td class="p-2 md:p-3 text-sm md:text-base">${category.name}</td>
+            <td class="p-2 md:p-3 text-sm md:text-base">${category.description}</td>
+            <td class="p-2 md:p-3 text-sm md:text-base">${category.categoryOffer ? category.categoryOffer + '%' : '0%'}</td>
+            <td class="p-2 md:p-3">
+                <div class="flex justify-center space-x-1 md:space-x-2">
+                    ${category.categoryOffer === 0 ?
+                        `<button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); addOffer('${category._id}')">Add</button>` :
+                        `<button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); removeOffer('${category._id}')">Remove</button>`}
+                </div>
+            </td>
+            <td class="p-2 md:p-3">
+                <span class="status-span px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm ${category.isListed ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">
+                    ${category.isListed ? 'Listed' : 'Unlisted'}
+                </span>
+            </td>
+            <td class="p-2 md:p-3">
+                <button class="toggle-list-btn px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm ${category.isListed ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}" onclick="toggleListStatus('${category._id}', ${category.isListed})">
+                    ${category.isListed ? 'UNLIST' : 'LIST'}
+                </button>
+            </td>
+            <td class="p-2 md:p-3">
+                <button class="bg-blue-300 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm">
+                    <a href="/admin/editCategory?id=${category._id}" class= "text-white">Edit</a>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updatePagination(currentPage, totalPage) {
+    const container = document.getElementById('paginationContainer');
+    container.innerHTML = '';
+    if (currentPage > 1) {
+        container.innerHTML += `<a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${currentPage - 1}">« Previous</a>`;
+    }
+    for (let i = 1; i <= totalPage; i++) {
+        if (i === currentPage) {
+            container.innerHTML += `<span class="current-page px-3 py-1 bg-yellow-500 text-white rounded">${i}</span>`;
+        } else {
+            container.innerHTML += `<a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${i}">${i}</a>`;
+        }
+    }
+    if (currentPage < totalPage) {
+        container.innerHTML += `<a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${currentPage + 1}">Next »</a>`;
+    }
+
+    document.querySelectorAll('.pagination-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = parseInt(e.target.getAttribute('data-page'));
+            loadCategories(page, document.getElementById('searchInput').value);
+        });
+    });
+}
+
+document.getElementById('searchButton').addEventListener('click', () => {
+    loadCategories(1, document.getElementById('searchInput').value);
+});
+
+
+
+document.querySelectorAll('.pagination-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = parseInt(e.target.getAttribute('data-page'));
+        loadCategories(page, document.getElementById('searchInput').value);
+    });
+});
 </script>
 
 <%- include('../../views/partials/admin/footer') %>

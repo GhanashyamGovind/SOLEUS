@@ -75,6 +75,10 @@ const loadHomepage = async (req, res, next) => {
           delete req.session.failedOrder;
         }
 
+        if (req.session.buyNow){
+            delete req.session.buyNow
+        }
+
         const {cart} = req.query; console.log("cart", cart)
         if (cart && cart == 'fromProductFailure') {
           const newCart = await Cart.findOneAndUpdate(

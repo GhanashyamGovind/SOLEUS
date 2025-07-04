@@ -29,18 +29,18 @@ router.post('/download-excel', adminController.downloadExcel);
 
 //Customer management
 router.get('/users',adminAuth, customerController.customerInfo);
-router.get('/deleteCustomer', adminAuth, customerController.customerDeleted);
-router.get('/blockandUnblock', adminAuth, customerController.blockAndUnblock)
+router.delete('/deleteCustomer', adminAuth, customerController.customerDeleted);
+router.patch('/blockandUnblock', adminAuth, customerController.blockAndUnblock)
 
 //Category managemnt
 router.get('/category', adminAuth, categoryController.categoryInfo);
 router.post('/addCategory', adminAuth, categoryController.addCategory);
-router.get('/listCategory', adminAuth, categoryController.getListCategory);
-router.get('/unlistCategory', adminAuth, categoryController.getUnlistCategory);
+router.patch('/listCategory', adminAuth, categoryController.getListCategory);
+router.patch('/unlistCategory', adminAuth, categoryController.getUnlistCategory);
 router.get('/editCategory', adminAuth, categoryController.getEditCategory);
 router.post('/editCategory/:id', adminAuth, categoryController.editCategory);
 router.post('/addCategoryOffer', adminAuth, categoryController.addCategoryOffer);
-router.post('/removeCategoryOffer', adminAuth, categoryController.removeCategoryOffer)
+router.post('/removeCategoryOffer', adminAuth, categoryController.removeCategoryOffer);
 
 
 //brand controller 
@@ -64,7 +64,6 @@ router.post('/removeProductOffer', adminAuth, productController.removeProductOff
 router.get('/orders', adminAuth, orderController.getAdminOrder);
 router.patch('/orders/status/:orderId', adminAuth, orderController.updateStatus);
 router.get('/orders/products/:orderId', adminAuth, orderController.getOrderProducts);
-router.put('/orders/cancel/:orderId',adminAuth, orderController.cancellOrder);
 router.put('/orders/return/approve/:orderId', adminAuth, orderController.approveReturn);
 router.put('/orders/return/reject/:orderId', adminAuth, orderController.rejectReturn);
 

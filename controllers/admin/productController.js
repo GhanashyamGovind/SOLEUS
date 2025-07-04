@@ -4,14 +4,13 @@ const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const Brand = require('../../models/brandSchema');
 const User = require('../../models/userSchema');
-
 const fs = require('fs').promises;
 const path = require('path');
 const sharp = require('sharp'); // this is for crop and resize the images 
 
 
 
-const getProductPage = async (req, res) => {
+const getProductPage = async (req, res, next) => {
   try {
     const brands = await Brand.find({ isBlocked: false });
     const categories = await Category.find({ isListed: true });
@@ -24,21 +23,13 @@ const getProductPage = async (req, res) => {
       formData: {}   // Empty object for initial form load
     });
   } catch (error) {
-    console.error('Error rendering add products page:', error);
-    res.render('admin/add-product', {
-      success: null,
-      error: 'Failed to load the add products page',
-      brands: [],
-      categories: [],
-      formData: {}
-    });
+    next(error)
   }
 };
 
 
 const addProducts = async (req, res) => {
   try {
-    // console.log('Request body:', req.body);
     const {
       productName,
       description,
@@ -308,18 +299,13 @@ const productUnBlock = async (req, res) => {
   }
 };
 
-const getEditProduct = async (req, res) => {
+const getEditProduct = async (req, res, next) => {
   try {
     const id = req.query.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.render('admin/edit-product', {
-        product: null,
-        cat: [],
-        brand: [],
-        error: ['Invalid product ID.'],
-        success: [],
-        formData: null,
-      });
+      const error = new Error('Page not found');
+      error.statusCode = 404;
+      throw error;
     }
 
     const product = await Product.findOne({ _id: id })
@@ -371,22 +357,12 @@ const getEditProduct = async (req, res) => {
       formData: null, // Removed session-based formData
     });
   } catch (error) {
-    console.error('Error while loading edit page:', error.message);
-    return res.render('admin/edit-product', {
-      product: null,
-      cat: [],
-      brand: [],
-      error: ['An error occurred while loading the edit page. Please try again.'],
-      success: [],
-      formData: null,
-    });
+    next(error)
   }
 };
 
-const editProduct = async (req, res) => {
+const editProduct = async (req, res, next) => {
   try {
-    console.log('Edit product request body:', req.body);
-    console.log('Files:', req.files);
     const id = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ error: 'Invalid product ID' });
@@ -475,7 +451,6 @@ const editProduct = async (req, res) => {
 
     // Calculate quantity
     const quantity = variants.reduce((sum, variant) => sum + variant.stock, 0);
-    console.log('Variants:', variants, 'Quantity:', quantity);
     if (quantity === 0) {
       return res.status(400).json({ error: 'Quantity must be greater than zero' });
     }
@@ -538,13 +513,10 @@ const editProduct = async (req, res) => {
     const response = { message: 'Product updated successfully' };
     return res.status(200).json({ response });
   } catch (error) {
-    console.error('Error in edit product:', error);
-    if (error.name === 'CastError') {
-      return res.status(400).json({ error: 'Invalid data format' });
-    }
-    return res.status(500).json({ error: 'Internal server error' });
+    next(error)
   }
 };
+
 
 const addProductOffer = async (req, res, next) => {
   try {

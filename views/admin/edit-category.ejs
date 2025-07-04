@@ -22,13 +22,11 @@
   </form>
 </main>
 
-
 <script>
   const form = document.getElementById('editCategoryForm');
   form.addEventListener('submit', async (event) => {
     event.preventDefault(); 
 
-    
     const formData = new FormData(form);
     const data = {
       categoryName: formData.get('categoryName'),
@@ -36,7 +34,6 @@
     };
 
     try {
-      
       const response = await fetch(form.action, {
         method: 'POST',
         headers: {
@@ -48,16 +45,14 @@
       const result = await response.json();
 
       if (response.ok) {
-        
         await Swal.fire({
           icon: 'success',
           title: 'Success',
           text: result.message,
           confirmButtonText: 'OK'
         });
-        window.location.replace('/admin/category'); // Redirect to category list
+        window.location.replace('/admin/category');
       } else {
-        
         await Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -66,21 +61,24 @@
         });
       }
     } catch (error) {
-      
       await Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'Something went wrong!',
         confirmButtonText: 'OK'
+      }).then(() => {
+        window.location.href = '/admin/pageerror?statusCode=500';
       });
     }
   });
 
- const submitButton = document.getElementById('submitbtn');
+  const submitButton = document.getElementById('submitbtn');
   submitButton.addEventListener('click', () => {
-    history.replaceState(result, '', '/admin/category')
-    window.location.href = '/admin/category';
-  }) 
+    // Note: This listener is redundant since form submission already handles the redirect
+    // Keeping it as per your original code, but it can be removed if desired
+    // history.replaceState(null, '', '/admin/category');
+    // window.location.href = '/admin/category';
+  });
 
   const cancelButton = document.getElementById('cancelButton');
   cancelButton.addEventListener('click', () => {
@@ -88,7 +86,6 @@
     history.replaceState(null, '', '/admin/category');
     window.location.href = '/admin/category';
   });
-
 </script>
 
 <%- include('../../views/partials/admin/footer') %>

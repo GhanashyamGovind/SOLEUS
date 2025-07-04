@@ -16,11 +16,23 @@
                     <input type="tel" name="phone" placeholder="Mobile number" id="phone" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
                     <div id="error3" class="text-red-500 text-center"></div>
 
-                    <input type="password" name="password" placeholder="Password" id="password" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2-black focus:ring-yellow-400" >
-                    <div id="error4" class="text-red-500 text-center"></div>
+                    <div class="relative">
+                    <input type="password" name="password" placeholder="Password" id="password"
+                        class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" />
+                    
+                    <span id="togglePassword" class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-600">
+                        visibility
+                    </span>
+                    </div>
 
-                    <input type="password" name="confirmPassword" placeholder="Confirm password" id="confirmPassword" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
-                    <div id="error5" class="text-red-500 text-black"></div>
+                    <div class="relative">
+                    <input type="password" name="confirmPassword" placeholder="Confirm password" id="confirmPassword"
+                        class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" />
+                    
+                    <span id="toggleConfirmPassword" class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-600">
+                        visibility
+                    </span>
+                    </div>
 
                     <input type="text" name="referralCode" placeholder="Enter Referral Code if you have" id="referralCode" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
                 </div>
@@ -108,7 +120,6 @@
                 error2.innerHTML = "";
             }
         }
-
 
         function phoneValidateChecking(e){
             const phoneVal = phone.value;
@@ -202,6 +213,23 @@
         const debounceSubmit = debounce(function (){
             signform.requestSubmit();
         }, 4000);
+
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            const passwordInput = document.getElementById("password");
+            const type = passwordInput.type === "password" ? "text" : "password";
+            passwordInput.type = type;
+
+            this.textContent = type === "password" ? "visibility" : "visibility_off";
+        });
+
+        document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
+            const confirmPasswordInput = document.getElementById("confirmPassword");
+            const type = confirmPasswordInput.type === "password" ? "text" : "password";
+            confirmPasswordInput.type = type;
+
+            this.textContent = type === "password" ? "visibility" : "visibility_off";
+        });
+
     </script>
 
      

@@ -3,86 +3,76 @@ const User = require('../../models/userSchema');
 
 const customerInfo = async (req, res, next) => {
     try {
-        console.log("Accessing customerrInfo rout")
+ 
+        const search = req.query.search || ''
 
-        let search ="";
-        if(req.query.search) {
-            search = req.query.search;
-        }
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4
+        const skip = (page -1) * limit;
 
-        let page = 1;
-        if(req.query.page) {
-            page = parseInt(req.query.page);
-        }
-
-        const limit = 4;
-        const userData = await User.find({
+        const searchQuery = {
             isAdmin: false,
             $or: [
-                { name: { $regex : ".*" + search + ".*" } },
-                { email: { $regex: ".*" + search + ".*" } }
-            ],
-        })
-        .limit(limit*1)
-        .skip((page-1)*limit)
-        .exec();
+                { name: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ]
+        }
 
-        const count = await User.find({
-            isAdmin: false,
-            $or: [
-                { name: { $regex : ".*" + search + ".*" } },
-                { email: { $regex: ".*" + search + ".*" } }
-            ],
-        }).countDocuments();
+        const userData = await User.find(searchQuery)
+            .limit(limit)
+            .skip(skip)
+            .exec()
 
-        const totalPage = Math.ceil(count / limit); // total page calculate cheythu
-        const totalPageArray = Array.from({ length: totalPage}, (_, i) => i) // array undakkunu
+        const count = await User.countDocuments(searchQuery);
+        const totalPage = Math.ceil(count / limit);
+        
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.json({
+                users: userData,
+                currentPage: page,
+                totalPage: totalPage,
+                searchQuery: search
+            });
+        }
 
-        // console.log("rendering user data => ", userData)
-        res.render('admin/customers', {data: userData, totalPage: totalPageArray, currentPage: page-1})
+        res.render('admin/customers', {data: userData, totalPage: Array.from({ length: totalPage }, (_, i) => i), currentPage: page-1, searchQuery: search})
         
     } catch (error) {
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.status(500).json({ error: 'Server error' });
+        }
         next(error)
     }
 }
 
-
 const blockAndUnblock = async (req, res, next) => {
     try {
-        let id = req.query.id;
+        let id = req.body.id;
         const user =await  User.findById(id)
-
-        if(user.isBlocked){
-            await User.updateOne({ _id: id}, {$set: { isBlocked: false } });
-        } else {
-            await User.updateOne({ _id: id}, {$set: { isBlocked: true } });
+        if (!user) {
+            return res.status(404).json({ status: false, message: 'User not found' });
         }
         
-        return res.redirect('/admin/users');
+        await User.updateOne({ _id: id }, { $set: { isBlocked: !user.isBlocked } });
+        return res.status(200).json({ 
+            status: true, 
+            message: `User ${user.isBlocked ? 'unblocked' : 'blocked'} successfully` 
+        });
     } catch (error) {
        next(error)
     }
 }
 
-
-// const customerunBlocked = async (req, res, next) => {
-//     try {
-//         let id = req.query.id;
-//         await User.updateOne({ _id: id }, {$set: { isBlocked: false } });
-//         // console.log(id)
-//         return res.redirect('/admin/users');
-//     } catch (error) {
-//         next(error)
-//     }
-// }
-
-
-
 const customerDeleted = async (req, res, next) => {
     try {
-        let id = req.query.id;
-        await User.deleteOne({_id: id});
-        return res.redirect('/admin/users');
+        let id = req.body.id;
+        const user = await User.findById(id);
+        if(!user) {
+            return res.status(404).json({ status: false, message: 'User not found' });
+        }
+
+        await User.deleteOne({ _id: id })
+        return res.status(200).json({ status: true, message: 'User deleted successfully' });
     } catch (error) {
         next(error)
     }
@@ -91,8 +81,6 @@ const customerDeleted = async (req, res, next) => {
 
 module.exports = {
     customerInfo,
-    // customerBlocked,
-    // customerunBlocked,
     customerDeleted,
     blockAndUnblock,
 }
