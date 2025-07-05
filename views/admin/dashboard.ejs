@@ -1,5 +1,13 @@
 <%- include('../../views/partials/admin/header', {title: 'Dashboard'}) %>
 
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-white bg-opacity-80 flex items-center justify-center z-50" style="display: none;">
+    <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+        <p class="text-lg font-medium text-gray-700">Loading dashboard data...</p>
+    </div>
+</div>
+
 <!-- Main Content -->
 <div class="main-content flex-1 p-3 sm:p-6 overflow-auto">
   <!-- Dashboard Content -->
@@ -338,12 +346,22 @@
     max-width: 320px;
     margin: 0 auto;
   }
+
+  /* Animation for loading spinner */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
 </style>
 
 <!-- Include Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
 <script>
+// Global chart instances
 let categorySalesChartInstance = null;
 let incomeChartInstance = null;
 
@@ -352,8 +370,19 @@ const initialCategorySalesData = <%- JSON.stringify(categorySalesData || []) %>;
 const initialIncomeData = <%- JSON.stringify(incomeData || []) %>;
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Show loading overlay while initializing
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  
+  // Check if we have initial data
+  if (initialCategorySalesData && initialCategorySalesData.length > 0) {
+    updateCharts(initialCategorySalesData, initialIncomeData);
+    document.getElementById('loadingOverlay').style.display = 'none';
+  } else {
+    // If no data, trigger a default report load
+    document.getElementById('salesReportForm').dispatchEvent(new Event('submit'));
+  }
+  
   setupEventListeners();
-  updateCharts(initialCategorySalesData, initialIncomeData);
 });
 
 function setupEventListeners() {
@@ -361,16 +390,23 @@ function setupEventListeners() {
   const customRange = document.getElementById('customDateRange');
   const salesReportForm = document.getElementById('salesReportForm');
 
+  // Toggle custom date range visibility
   reportPeriod.addEventListener('change', function() {
     customRange.classList.toggle('hidden', this.value !== 'custom');
   });
 
+  // Show custom range if already selected
   if (reportPeriod.value === 'custom') {
     customRange.classList.remove('hidden');
   }
 
+  // Handle form submission
   salesReportForm.addEventListener('submit', async function(e) {
     e.preventDefault();
+    
+    // Show loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
     const formData = new FormData(salesReportForm);
     const data = {
       period: formData.get('period'),
@@ -399,6 +435,9 @@ function setupEventListeners() {
       }
     } catch (error) {
       document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
+    } finally {
+      // Hide loading overlay
+      document.getElementById('loadingOverlay').style.display = 'none';
     }
   });
 }
@@ -409,6 +448,9 @@ async function downloadReport(type) {
   const endDate = document.getElementById('endDate').value;
 
   try {
+    // Show loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
     const response = await fetch(`/admin/download-${type}`, {
       method: 'POST',
       headers: {
@@ -436,146 +478,164 @@ async function downloadReport(type) {
     document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">Downloaded ${type.toUpperCase()} successfully!</p>`;
   } catch (error) {
     document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to download ${type.toUpperCase()}: ${error.message}</p>`;
+  } finally {
+    // Hide loading overlay
+    document.getElementById('loadingOverlay').style.display = 'none';
   }
 }
 
 function updateDashboard(data) {
-  // Update Overview Cards
-  document.getElementById('totalSale').textContent = (data.totalSale || 0).toLocaleString();
-  document.getElementById('totalOrders').textContent = data.totalOrders || 0;
-  document.getElementById('totalCustomers').textContent = data.totalCustomers || 0;
-  document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString();
+  try {
+    // Update Overview Cards
+    document.getElementById('totalSale').textContent = (data.totalSale || 0).toLocaleString();
+    document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+    document.getElementById('totalCustomers').textContent = data.totalCustomers || 0;
+    document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString();
 
-  // Update Summary Cards
-  document.getElementById('summarySalesCount').textContent = data.summary.salesCount || 0;
-  document.getElementById('summaryOrderAmount').textContent = (data.summary.orderAmount || 0).toLocaleString();
-  document.getElementById('summaryDiscount').textContent = (data.summary.discount || 0).toLocaleString();
+    // Update Summary Cards
+    document.getElementById('summarySalesCount').textContent = data.summary.salesCount || 0;
+    document.getElementById('summaryOrderAmount').textContent = (data.summary.orderAmount || 0).toLocaleString();
+    document.getElementById('summaryDiscount').textContent = (data.summary.discount || 0).toLocaleString();
 
-  // Update Sales Report Table
-  const salesReportBody = document.getElementById('salesReportBody');
-  salesReportBody.innerHTML = '';
-  if (data.salesReport && data.salesReport.length > 0) {
-    data.salesReport.forEach(order => {
-      const row = `
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="p-3 font-medium text-blue-600">${order.orderId || 'N/A'}</td>
-          <td class="p-3 text-gray-600">${order.orderDate}</td>
-          <td class="p-3">${order.userName || 'Unknown'}</td>
-          <td class="p-3 text-right font-medium text-green-600">₹${(order.finalAmount || 0).toLocaleString()}</td>
-          <td class="p-3 text-right font-medium text-orange-600">₹${(order.discount || 0).toLocaleString()}</td>
-          <td class="p-3"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">${order.couponCode || 'None'}</span></td>
-        </tr>
-      `;
-      salesReportBody.insertAdjacentHTML('beforeend', row);
-    });
-  } else {
-    salesReportBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No sales data available for the selected period.</td></tr>';
-  }
+    // Update Sales Report Table
+    const salesReportBody = document.getElementById('salesReportBody');
+    salesReportBody.innerHTML = '';
+    if (data.salesReport && data.salesReport.length > 0) {
+      data.salesReport.forEach(order => {
+        const row = `
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="p-3 font-medium text-blue-600">${order.orderId || 'N/A'}</td>
+            <td class="p-3 text-gray-600">${order.orderDate}</td>
+            <td class="p-3">${order.userName || 'Unknown'}</td>
+            <td class="p-3 text-right font-medium text-green-600">₹${(order.finalAmount || 0).toLocaleString()}</td>
+            <td class="p-3 text-right font-medium text-orange-600">₹${(order.discount || 0).toLocaleString()}</td>
+            <td class="p-3"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">${order.couponCode || 'None'}</span></td>
+          </tr>
+        `;
+        salesReportBody.insertAdjacentHTML('beforeend', row);
+      });
+    } else {
+      salesReportBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No sales data available for the selected period.</td></tr>';
+    }
 
-  // Update Pagination
-  const pagination = document.getElementById('pagination');
-  if (data.pagination && data.pagination.totalPages > 1) {
-    const { currentPage, totalPages, limit, totalRecords } = data.pagination;
-    pagination.innerHTML = `
-      <div class="px-4 py-3 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 bg-gray-50">
-        <div class="mb-2 sm:mb-0">
-          <p class="text-sm text-gray-600">
-            Showing <span class="font-medium" id="paginationStart">${(currentPage - 1) * limit + 1}</span> to 
-            <span class="font-medium" id="paginationEnd">${Math.min(currentPage * limit, totalRecords)}</span> of 
-            <span class="font-medium" id="paginationTotal">${totalRecords}</span> results
-          </p>
-        </div>
-        <div class="flex items-center space-x-1" id="paginationLinks">
-          <button onclick="fetchPage(${currentPage > 1 ? currentPage - 1 : 1})"
-                  class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          ${Array.from({ length: totalPages }, (_, i) => i + 1).map(i => `
-            ${i === currentPage ?
-              `<span class="px-3 py-1 rounded-md bg-blue-600 text-white font-medium">${i}</span>` :
-              `<button onclick="fetchPage(${i})" class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">${i}</button>`
-            }
-          `).join('')}
-          <button onclick="fetchPage(${currentPage < totalPages ? currentPage + 1 : totalPages})"
-                  class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
-      </div>
-    `;
-  } else {
-    pagination.innerHTML = '';
-  }
-
-  // Update Top Categories
-  const topCategories = document.getElementById('topCategories');
-  const topCategoriesEmpty = document.getElementById('topCategoriesEmpty');
-  if (data.topCategories && data.topCategories.length > 0) {
-    topCategories.innerHTML = data.topCategories.map((category, index) => `
-      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
-        <div class="relative mb-3">
-          <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
-            #${index + 1}
-          </span>
-          <div class="bg-gray-100 h-32 rounded-lg flex items-center justify-center">
-            <span class="text-gray-600 font-medium">${category.category}</span>
+    // Update Pagination
+    const pagination = document.getElementById('pagination');
+    if (data.pagination && data.pagination.totalPages > 1) {
+      const { currentPage, totalPages, limit, totalRecords } = data.pagination;
+      pagination.innerHTML = `
+        <div class="px-4 py-3 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 bg-gray-50">
+          <div class="mb-2 sm:mb-0">
+            <p class="text-sm text-gray-600">
+              Showing <span class="font-medium" id="paginationStart">${(currentPage - 1) * limit + 1}</span> to 
+              <span class="font-medium" id="paginationEnd">${Math.min(currentPage * limit, totalRecords)}</span> of 
+              <span class="font-medium" id="paginationTotal">${totalRecords}</span> results
+            </p>
+          </div>
+          <div class="flex items-center space-x-1" id="paginationLinks">
+            <button onclick="fetchPage(${currentPage > 1 ? currentPage - 1 : 1})"
+                    class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            ${Array.from({ length: totalPages }, (_, i) => i + 1).map(i => `
+              ${i === currentPage ?
+                `<span class="px-3 py-1 rounded-md bg-blue-600 text-white font-medium">${i}</span>` :
+                `<button onclick="fetchPage(${i})" class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">${i}</button>`
+              }
+            `).join('')}
+            <button onclick="fetchPage(${currentPage < totalPages ? currentPage + 1 : totalPages})"
+                    class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+              <i class="fas fa-chevron-right"></i>
+            </button>
           </div>
         </div>
-        <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${category.totalSold}</span> units</p>
-      </div>
-    `).join('');
-    topCategoriesEmpty?.remove();
-  } else {
-    topCategories.innerHTML = '';
-    topCategoriesSection.insertAdjacentHTML('beforeend', '<p class="text-center text-gray-500" id="topCategoriesEmpty">No category sales data available.</p>');
-  }
+      `;
+    } else {
+      pagination.innerHTML = '';
+    }
 
-  // Update Top Brands
-  const topBrands = document.getElementById('topBrands');
-  const topBrandsEmpty = document.getElementById('topBrandsEmpty');
-  if (data.topBrands && data.topBrands.length > 0) {
-    topBrands.innerHTML = data.topBrands.map((brand, index) => `
-      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
-        <div class="relative mb-3">
-          <img src="/Uploads/re-image/${brand.image}" alt="${brand.name}" class="w-full h-32 object-cover rounded-lg">
-          <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
-            #${index + 1}
-          </span>
+    // Update Top Categories
+    const topCategories = document.getElementById('topCategories');
+    const topCategoriesEmpty = document.getElementById('topCategoriesEmpty');
+    if (data.topCategories && data.topCategories.length > 0) {
+      topCategories.innerHTML = data.topCategories.map((category, index) => `
+        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="relative mb-3">
+            <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+              #${index + 1}
+            </span>
+            <div class="bg-gray-100 h-32 rounded-lg flex items-center justify-center">
+              <span class="text-gray-600 font-medium">${category.category}</span>
+            </div>
+          </div>
+          <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${category.totalSold}</span> units</p>
         </div>
-        <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate">${brand.name}</h3>
-        <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${brand.totalSold}</span> units</p>
-      </div>
-    `).join('');
-    topBrandsEmpty?.remove();
-  } else {
-    topBrands.innerHTML = '';
-    topBrandsSection.insertAdjacentHTML('beforeend', '<p class="text-center text-gray-500" id="topBrandsEmpty">No brand sales data available.</p>');
-  }
+      `).join('');
+      if (topCategoriesEmpty) topCategoriesEmpty.remove();
+    } else {
+      topCategories.innerHTML = '';
+      if (!topCategoriesEmpty) {
+        document.getElementById('topCategoriesSection').insertAdjacentHTML('beforeend', 
+          '<p class="text-center text-gray-500" id="topCategoriesEmpty">No category sales data available.</p>');
+      }
+    }
 
-  // Update Top Products
-  const topProducts = document.getElementById('topProducts');
-  const topProductsEmpty = document.getElementById('topProductsEmpty');
-  if (data.topProducts && data.topProducts.length > 0) {
-    topProducts.innerHTML = data.topProducts.map((product, index) => `
-      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
-        <div class="relative mb-3">
-          <img src="/Uploads/re-image/${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded-lg">
-          <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
-            #${index + 1}
-          </span>
+    // Update Top Brands
+    const topBrands = document.getElementById('topBrands');
+    const topBrandsEmpty = document.getElementById('topBrandsEmpty');
+    if (data.topBrands && data.topBrands.length > 0) {
+      topBrands.innerHTML = data.topBrands.map((brand, index) => `
+        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="relative mb-3">
+            <img src="/Uploads/re-image/${brand.image}" alt="${brand.name}" class="w-full h-32 object-cover rounded-lg">
+            <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+              #${index + 1}
+            </span>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate">${brand.name}</h3>
+          <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${brand.totalSold}</span> units</p>
         </div>
-        <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate">${product.name}</h3>
-        <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${product.totalSold}</span> units</p>
-      </div>
-    `).join('');
-    topProductsEmpty?.remove();
-  } else {
-    topProducts.innerHTML = '';
-    topProductsSection.insertAdjacentHTML('beforeend', '<p class="text-center text-gray-500" id="topProductsEmpty">No best-selling products available.</p>');
-  }
+      `).join('');
+      if (topBrandsEmpty) topBrandsEmpty.remove();
+    } else {
+      topBrands.innerHTML = '';
+      if (!topBrandsEmpty) {
+        document.getElementById('topBrandsSection').insertAdjacentHTML('beforeend', 
+          '<p class="text-center text-gray-500" id="topBrandsEmpty">No brand sales data available.</p>');
+      }
+    }
 
-  // Update Charts
-  updateCharts(data.categorySalesData, data.incomeData);
+    // Update Top Products
+    const topProducts = document.getElementById('topProducts');
+    const topProductsEmpty = document.getElementById('topProductsEmpty');
+    if (data.topProducts && data.topProducts.length > 0) {
+      topProducts.innerHTML = data.topProducts.map((product, index) => `
+        <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="relative mb-3">
+            <img src="/Uploads/re-image/${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded-lg">
+            <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+              #${index + 1}
+            </span>
+          </div>
+          <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate">${product.name}</h3>
+          <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${product.totalSold}</span> units</p>
+        </div>
+      `).join('');
+      if (topProductsEmpty) topProductsEmpty.remove();
+    } else {
+      topProducts.innerHTML = '';
+      if (!topProductsEmpty) {
+        document.getElementById('topProductsSection').insertAdjacentHTML('beforeend', 
+          '<p class="text-center text-gray-500" id="topProductsEmpty">No best-selling products available.</p>');
+      }
+    }
+
+    // Update Charts
+    updateCharts(data.categorySalesData, data.incomeData);
+  } catch (error) {
+    console.error('Error updating dashboard:', error);
+    document.getElementById('reportMessage').innerHTML = 
+      `<p class="text-red-600">Error loading data: ${error.message}</p>`;
+  }
 }
 
 function fetchPage(page) {
@@ -583,6 +643,9 @@ function fetchPage(page) {
   const startDate = document.getElementById('startDate').value;
   const endDate = document.getElementById('endDate').value;
   const limit = 5;
+
+  // Show loading overlay
+  document.getElementById('loadingOverlay').style.display = 'flex';
 
   fetch('/admin/sales-report', {
     method: 'POST',
@@ -602,147 +665,155 @@ function fetchPage(page) {
     })
     .catch(error => {
       document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
+    })
+    .finally(() => {
+      // Hide loading overlay
+      document.getElementById('loadingOverlay').style.display = 'none';
     });
 }
 
 function updateCharts(categorySalesData, incomeData) {
-  // Destroy existing charts to prevent memory leaks
-  if (categorySalesChartInstance) {
-    categorySalesChartInstance.destroy();
-    categorySalesChartInstance = null;
-  }
-  if (incomeChartInstance) {
-    incomeChartInstance.destroy();
-    incomeChartInstance = null;
-  }
+  try {
+    // Destroy existing charts to prevent memory leaks
+    if (categorySalesChartInstance) {
+      categorySalesChartInstance.destroy();
+      categorySalesChartInstance = null;
+    }
+    if (incomeChartInstance) {
+      incomeChartInstance.destroy();
+      incomeChartInstance = null;
+    }
 
-  // Category Sales Pie Chart (unchanged)
-  const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
-  const categorySalesChartContainer = document.getElementById('categorySalesChartContainer');
-  if (categorySalesData && categorySalesData.length > 0 && categorySalesCtx) {
-    categorySalesChartContainer.innerHTML = '<canvas id="categorySalesChart"></canvas>';
-    const newCategorySalesCtx = document.getElementById('categorySalesChart').getContext('2d');
-    categorySalesChartInstance = new Chart(newCategorySalesCtx, {
-      type: 'doughnut',
-      data: {
-        labels: categorySalesData.map(item => item.category),
-        datasets: [{
-          data: categorySalesData.map(item => item.totalSold),
-          backgroundColor: [
-            'rgba(59, 130, 246, 0.8)',
-            'rgba(16, 185, 129, 0.8)',
-            'rgba(245, 158, 11, 0.8)',
-            'rgba(139, 92, 246, 0.8)',
-            'rgba(244, 63, 94, 0.8)',
-            'rgba(20, 184, 166, 0.8)',
-            'rgba(234, 179, 8, 0.8)',
-            'rgba(168, 85, 247, 0.8)',
-            'rgba(239, 68, 68, 0.8)',
-            'rgba(45, 212, 191, 0.8)'
-          ],
-          borderColor: 'white',
-          borderWidth: 2,
-          cutout: '70%',
-          radius: '90%'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'right',
-            labels: {
-              boxWidth: 12,
-              padding: 20,
-              font: { size: 12 },
-              usePointStyle: true,
-              pointStyle: 'circle'
-            }
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                const label = context.label || '';
-                const value = context.raw || 0;
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const percentage = Math.round((value / total) * 100);
-                return `${label}: ${value} units (${percentage}%)`;
-              }
-            }
-          }
+    // Category Sales Pie Chart
+    const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
+    const categorySalesChartContainer = document.getElementById('categorySalesChartContainer');
+    if (categorySalesData && categorySalesData.length > 0 && categorySalesCtx) {
+      categorySalesChartContainer.innerHTML = '<canvas id="categorySalesChart"></canvas>';
+      const newCategorySalesCtx = document.getElementById('categorySalesChart').getContext('2d');
+      categorySalesChartInstance = new Chart(newCategorySalesCtx, {
+        type: 'doughnut',
+        data: {
+          labels: categorySalesData.map(item => item.category),
+          datasets: [{
+            data: categorySalesData.map(item => item.totalSold),
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.8)',
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(139, 92, 246, 0.8)',
+              'rgba(244, 63, 94, 0.8)',
+              'rgba(20, 184, 166, 0.8)',
+              'rgba(234, 179, 8, 0.8)',
+              'rgba(168, 85, 247, 0.8)',
+              'rgba(239, 68, 68, 0.8)',
+              'rgba(45, 212, 191, 0.8)'
+            ],
+            borderColor: 'white',
+            borderWidth: 2,
+            cutout: '70%',
+            radius: '90%'
+          }]
         },
-        layout: {
-          padding: { top: 20, bottom: 20, left: 20, right: 20 }
-        }
-      }
-    });
-  } else {
-    categorySalesChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="categorySalesEmpty">No category sales data available.</p>';
-  }
-
-  // Income Over Time Line Graph
-  const incomeCtx = document.getElementById('incomeChart')?.getContext('2d');
-  const incomeChartContainer = document.getElementById('incomeChartContainer');
-  if (incomeData && incomeData.length > 0 && incomeCtx) {
-    incomeChartContainer.innerHTML = '<canvas id="incomeChart"></canvas>';
-    const newIncomeCtx = document.getElementById('incomeChart').getContext('2d');
-    incomeChartInstance = new Chart(newIncomeCtx, {
-      type: 'line',
-      data: {
-        labels: incomeData.map(item => item.date),
-        datasets: [{
-          label: 'Income (₹)',
-          data: incomeData.map(item => item.income),
-          borderColor: 'rgba(16, 185, 129, 1)',
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointBackgroundColor: 'white',
-          pointBorderColor: 'rgba(16, 185, 129, 1)',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return `₹${context.raw.toLocaleString()}`;
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                boxWidth: 12,
+                padding: 20,
+                font: { size: 12 },
+                usePointStyle: true,
+                pointStyle: 'circle'
               }
-            }
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { drawBorder: false, color: 'rgba(0, 0, 0, 0.05)' },
-            ticks: {
-              callback: function(value) {
-                return '₹' + value.toLocaleString();
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((value / total) * 100);
+                  return `${label}: ${value} units (${percentage}%)`;
+                }
               }
             }
           },
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: {
-              maxRotation: 45,
-              minRotation: 45,
-              autoSkip: incomeData.length > 12, // Skip labels if too many
-              maxTicksLimit: 12 // Limit number of ticks for readability
+          layout: {
+            padding: { top: 20, bottom: 20, left: 20, right: 20 }
+          }
+        }
+      });
+    } else {
+      categorySalesChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="categorySalesEmpty">No category sales data available.</p>';
+    }
+
+    // Income Over Time Line Graph
+    const incomeCtx = document.getElementById('incomeChart')?.getContext('2d');
+    const incomeChartContainer = document.getElementById('incomeChartContainer');
+    if (incomeData && incomeData.length > 0 && incomeCtx) {
+      incomeChartContainer.innerHTML = '<canvas id="incomeChart"></canvas>';
+      const newIncomeCtx = document.getElementById('incomeChart').getContext('2d');
+      incomeChartInstance = new Chart(newIncomeCtx, {
+        type: 'line',
+        data: {
+          labels: incomeData.map(item => item.date),
+          datasets: [{
+            label: 'Income (₹)',
+            data: incomeData.map(item => item.income),
+            borderColor: 'rgba(16, 185, 129, 1)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.3,
+            pointBackgroundColor: 'white',
+            pointBorderColor: 'rgba(16, 185, 129, 1)',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `₹${context.raw.toLocaleString()}`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { drawBorder: false, color: 'rgba(0, 0, 0, 0.05)' },
+              ticks: {
+                callback: function(value) {
+                  return '₹' + value.toLocaleString();
+                }
+              }
+            },
+            x: {
+              grid: { display: false, drawBorder: false },
+              ticks: {
+                maxRotation: 45,
+                minRotation: 45,
+                autoSkip: incomeData.length > 12,
+                maxTicksLimit: 12
+              }
             }
           }
         }
-      }
-    });
-  } else {
-    incomeChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="incomeChartEmpty">No income data available.</p>';
+      });
+    } else {
+      incomeChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="incomeChartEmpty">No income data available.</p>';
+    }
+  } catch (error) {
+    console.error('Error updating charts:', error);
   }
 }
 </script>

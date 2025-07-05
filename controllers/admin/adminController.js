@@ -56,6 +56,12 @@ const loadDashboard = async (req, res, next) => {
             page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 5
         };
+
+        // Clear session filter if it's the first load
+        if (!req.session.filter && !req.query.period) {
+            req.session.filter = { period: 'monthly' };
+        }
+
         const data = await getSalesData(filter);
 
         res.render('admin/dashboard', {
@@ -264,8 +270,10 @@ const getSalesData = async (filter) => {
             } else if (period === 'weekly') {
                 match.createdOn = { $gte: now.startOf('week').toDate(), $lte: now.endOf('week').toDate() };
             } else if (period === 'monthly') {
-                match.createdOn = { $gte: now.startOf('month').subtract(3, 'weeks').toDate(), $lte: now.endOf('month').toDate() };
-            } else if (period === 'yearly') {
+match.createdOn = { 
+        $gte: moment().startOf('month').toDate(), 
+        $lte: moment().endOf('month').toDate() 
+    };            } else if (period === 'yearly') {
                 match.createdOn = { $gte: now.startOf('year').toDate(), $lte: now.endOf('year').toDate() };
             }
         }
@@ -283,9 +291,6 @@ const getSalesData = async (filter) => {
         .skip(skip)
         .limit(limit)
         .lean()
-        .catch(err => {
-            return [];
-        });
 
     const formattedSalesReport = salesReport.map(order => ({
         orderId: order.orderId || 'N/A',
