@@ -89,7 +89,7 @@
 <body>
     <div class="profile-card rounded-xl p-10 w-full max-w-3xl relative mx-auto my-8">
         <!-- Back Button -->
-        <button class="absolute top-5 right-5 bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 flex items-center gap-2">
+        <button onclick="window.location.assign('/profile')" class="absolute top-5 right-5 bg-transparent text-gold-500 font-semibold py-2 px-4 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -354,7 +354,6 @@
     profileImageInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-            console.log('Selected file:', file.name);
             // Add logic to preview or upload the image
         }
     });
@@ -373,15 +372,13 @@
                     const data = await res.json();
 
                     if(data.success) {
-                        alert('Profile image deleted successfully!');
+                        await Swal.fire('Success!', 'Profile image deleted successfully!', 'success');
                         window.location.reload();
                     }else{
-                        alert(`Error: ${data.message}`);
-                        console.error("error in deleting profile img", data.message)
+                        Swal.fire('Error!', `Error: ${data.message}`,'error');
                     }
                 } catch (error) {
-                    alert('An error occurred while deleting the profile image.');
-                    console.error(error)
+                    Swal.fire('Error!','An error occurred while deleting the profile image.', 'error');
                 }
             });
         });
@@ -401,6 +398,9 @@
             });
 
             if (result.isConfirmed) {
+                await fetch('/confirm-delete',{
+                    method: "POST"
+                })
                 window.location.href = '/confirm-delete';
             }
         });
@@ -493,11 +493,9 @@
                         showConfirmButton: false,
                         timer: 3000
                     });
-                    console.error("Error updating username:", data.message);
                 }
             } catch (error) {
-                alert('An error occurred while updating the username.');
-                console.error("Error in fetch:", error);
+                Swal.fire('Error!', 'An error occurred while updating the username.', 'error');
             }
         });
 
@@ -565,7 +563,6 @@
                         title: 'Network Error',
                         text: 'Unable to update the phone number.',
                     });
-                    console.error("Error in fetch:", error);
                 }
             });
 
@@ -618,11 +615,9 @@
                         showConfirmButton: false,
                         timer: 3000
                     });
-                    console.error("Error generating OTP:", data.message);
                 }
             } catch (error) {
-                alert('An error occurred while sending the OTP.');
-                console.error("Error in fetch:", error);
+                Swal.fire('Error!','An error occurred while sending the OTP.', ' error');
             }
         });
 
@@ -753,11 +748,9 @@
                     oldPasswordError.textContent = data.message;
                     oldPasswordError.classList.remove('hidden');
                     oldPasswordInput.classList.add('border-red-400');
-                    console.error("Error updating password:", data.message);
                 }
             } catch (error) {
-                alert('An error occurred while updating the password.');
-                console.error("Error in fetch:", error);
+                Swal.fire('Error!', 'An error occurred while updating the password.', 'error');
             }
         });
     });

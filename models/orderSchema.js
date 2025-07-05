@@ -82,7 +82,7 @@ const orderSchema = new Schema({
     status: {
         type: String,
         required: true,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned'],
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Request', 'Returned', 'Payment-Failed'],
     },
     createdOn: {
         type: Date,
@@ -92,6 +92,23 @@ const orderSchema = new Schema({
     couponApplied: {
         type: Boolean, 
         default: false
+    },
+    razorpayPaymentId: {
+        type: String,
+        required: false
+    },
+    razorpayOrderId: {
+        type: String,
+        required: false
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['Pending', 'Completed', 'Failed'],
+        default: 'Pending'
+    },
+    couponCode: {
+        type: String,
+        default: null
     }
 });
 

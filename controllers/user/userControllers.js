@@ -2,16 +2,33 @@ const User = require('../../models/userSchema');
 const Category = require('../../models/categorySchema');
 const Product = require('../../models/productSchema');
 const Brand = require('../../models/brandSchema');
+const Referral = require('../../models/referralSchema');
+const Cart = require('../../models/cartSchema');
+const Banner = require('../../models/bannerSchema');
 const nodemailer = require('nodemailer');
 const env = require('dotenv').config();
 const bcrypt = require('bcrypt');
 const {Resend} = require('resend');
+const Wallet = require('../../models/walletSchema');
+const { default: mongoose } = require('mongoose');
+// const { default: products } = require('razorpay/dist/types/products');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 
 function generateOtp(){
     return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+async function createReferralCode (name, userId){
+  try {
+    let namePart = name.slice(0, 3).toUpperCase();
+    let userIdPart = userId.toString().slice(4, 7).toUpperCase()
+
+    return `${namePart}${userIdPart}`
+  } catch (error) {
+    return false;
+  }
 }
 
 async function sendVerificationEmail(email, otp){
@@ -41,15 +58,33 @@ async function sendVerificationEmail(email, otp){
         return info.accepted.length > 0
 
     } catch (error) {
-        console.error("Error sending email", error);
         return false;
     }
 }
+
+
 
 //home page
 const loadHomepage = async (req, res, next) => {
     try{
         const user = req.session.user;
+
+        if(req.session.failedOrder){
+          delete req.session.failedOrder;
+        }
+
+        if (req.session.buyNow){
+            delete req.session.buyNow
+        }
+
+        const {cart} = req.query;
+        if (cart && cart == 'fromProductFailure') {
+          const newCart = await Cart.findOneAndUpdate(
+            { userId: user },
+            { $set: { items: [], totalPrice: 0 } },
+            { new: true }
+          )
+        }
 
         const categories = await Category.find({isListed: true});
         let productData = await Product.find(
@@ -63,11 +98,15 @@ const loadHomepage = async (req, res, next) => {
         productData.sort((a, b) => new Date(b.createdOn) - new Date(a.createdOn));
         productData = productData.slice(0, 4);
 
+        const brand = await Brand.find({isBlocked: false}).sort({createdAt: -1}).limit(6);
+
+        const banners = await Banner.find({isActive: true}).sort({createdAt: -1}).limit(3)
+
         if(user){
             const userData = await User.findOne({_id: user._id});
-            return res.render('user/home', {user: userData, products: productData});
+            return res.render('user/home', {user: userData, products: productData, brand: brand, banners});
         } else {
-            return res.render('user/home', {products: productData})
+            return res.render('user/home', {products: productData, brand: brand, banners})
         }
        
     } catch (error){
@@ -128,13 +167,9 @@ const loadSignUp = async (req, res, next) => {
         }
 
         req.session.user = findUser._id; // => ivide aanu user session store aakunnath athum id aanu store aakunnath
-        // console.log(req.session.user)
         res.redirect('/')
         
     } catch (error) {
-
-        // console.error('login error', error);
-        // res.render('user/login', {message: "Login Failed !. Please try again later"})
         next(error)
         
     }
@@ -142,12 +177,10 @@ const loadSignUp = async (req, res, next) => {
 
 
 
-
-
 // submit signUp
 const signUp = async (req, res, next) => {
     try {
-        const {name, email, password, confirmPassword, phone} = req.body;
+        const {name, email, password, confirmPassword, phone, referralCode} = req.body;
 
         if(password !== confirmPassword){
             return res.render('user/signUp', {message: "Password not Matchig"})
@@ -165,8 +198,11 @@ const signUp = async (req, res, next) => {
             return res.json("email error");
         }
 
-        req.session.userOtp = otp;
-        req.session.userData = {name,phone,email,password};
+        req.session.userOtp = {
+          code: otp,
+          expiresAt: Date.now() + 60 * 1000
+        }
+        req.session.userData = {name,phone,email,password, referralCode};
 
         res.render("user/verify-otp");
         console.log("otp sent", otp)
@@ -190,34 +226,80 @@ const securePassword = async (password) => {
 }
 
 const verifyOtp = async (req, res, next) => {
-    try {
+  try {
 
         const {otp} = req.body;
-        // console.log(`user enterd otp ${otp}`);
+        const storedOtp = req.session.userOtp;
 
-        if(otp === req.session.userOtp){
-            const user = req.session.userData; // session ill ulla otp aay compare cheyyunu
+        if(!storedOtp || Date.now() > storedOtp.expiresAt){
+          return res.status(400).json({success: false, message: 'OTP expired, please request a new one'})
+        }
+
+        if(otp !== storedOtp.code) {
+          return res.status(400).json({ success: false, message: "Invalid OTP, Please try again"})
+        }
+
+            const user = req.session.userData; 
             const passwordHash = await securePassword(user.password);
 
+            let referralCode = await createReferralCode(user.name, new mongoose.Types.ObjectId())
             const saveUserData = new User({
                 name: user.name,
                 email: user.email,
                 phone: user.phone,
                 password: passwordHash,
+                referralCode: referralCode
             });
 
-            await saveUserData.save(); // saved user data in DB
-            // req.session.user = saveUserData._id =====> (ith karanam user reg cheyyummbol thanne login akunnu)
-            res.json({success: true, redirectUrl: "/login"})
-        }else {
-            res.status(400).json({success: false, message: "Invalid OTP, Please try again"})
-        }
+            const refCod = user.referralCode;
 
-    } catch (error) {
+            //save user first 
+            const createdUser = await saveUserData.save(); // saved user data in DB
+
+
+            // creat a wallet for the new user
+            const newWallet = new Wallet({
+              userId: createdUser._id
+            });
+            const savedWallet = await newWallet.save();
+
+            //update user walleid
+            createdUser.walletId = savedWallet._id;
+            await createdUser.save();
+
+            //reffer part
+            const refer = await Referral.findOne({isActive: true});
+            let referreUser = await User.findOne({referralCode: refCod.trim().toUpperCase()});
+
+            if(refCod && refer && referreUser){
+              await Wallet.updateOne(
+                {userId: referreUser._id},
+                {
+                  $inc: { balance: refer.referrerAmount },
+                  $push: {
+                    transactions: {
+                      type: 'credit',
+                      amount: refer.referrerAmount,
+                      reason: `Referral - Reward for inviting a user(${createdUser.name})`
+                    }
+                  }
+                }
+              )
+
+              savedWallet.balance += refer.refereeAmount;
+              savedWallet.transactions.push({
+                type: 'credit',
+                amount: refer.refereeAmount,
+                reason: `Welcome reward for using a referral`
+              })
+              await savedWallet.save();
+            }
+            
+            return res.json({success: true, redirectUrl: "/login"})
+
+  } catch (error) {
       next(error)
-        // console.error("otp verification error ====>", error);
-        // res.status(500).json({success:false, message: "An error occured"})
-    }
+   }
 }
 
 const resendOtp = async (req, res, next) => {
@@ -228,7 +310,10 @@ const resendOtp = async (req, res, next) => {
             return res.status(400).json({success: false, message: 'Email not found in session'});
         }
         const otp = generateOtp();
-        req.session.userOtp = otp;
+        req.session.userOtp = {
+          code: otp,
+          expiresAt: Date.now() + 60 * 1000
+        }
 
         const emailSent = await sendVerificationEmail(email, otp);
         if(emailSent){
@@ -247,11 +332,9 @@ const resendOtp = async (req, res, next) => {
 const loadProfile = async (req, res, next) =>{
     try {
         const userId = req.session.user
-        console.log(userId)
         const userData = await User.findOne({_id:userId});
 
         if(!userData){
-          console.log("user not found", userId);
           return res.redirect('/login');
         }
 
@@ -266,17 +349,10 @@ const loadProfile = async (req, res, next) =>{
 const logOut = async (req, res, next) => {
     try {
 
-            delete req.session.user;
-            return res.redirect('/login')
+        delete req.session.user;
+        res.clearCookie(req.sessionID);
+        return res.redirect('/login')
       
-        // req.session.destroy((err) => {
-        //     if(err){
-        //         console.log("Session destruction error ===> ", err);
-        //         return res.redirect('/pageNotFound');
-        //     }
-        //     console.log("session is deleted")
-        //     return res.redirect('/login');
-        // })
     } catch (error) {
 
         next(error)
@@ -297,21 +373,17 @@ const pageNotFound = async (req, res, next) => {
 
 const loadAllProductPage = async (req, res) => {
   try {
-    const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
-    // Handle onFire as an array
-    let onFire = req.query['onFire[]'];
-    if (onFire && !Array.isArray(onFire)) {
-      onFire = [onFire]; // Convert single value to array
+
+    if (req.session.recentOrderSuccess) {
+        delete req.session.recentOrderSuccess;
+        delete req.session.lastOrderId;
     }
-    onFire = onFire || []; // Default to empty array if not provided
 
-    // Validate onFire values
-    const validOnFireValues = ['newArrival', 'topSelling'];
-    const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
+    const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
 
-    // Fetch categories
     const categories = await Category.find({ isListed: true });
     const categoryIds = categories.map((category) => category._id.toString());
+
 
     // Build query object
     let query = {
@@ -326,9 +398,7 @@ const loadAllProductPage = async (req, res) => {
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    if (validatedOnFire.length > 0) {
-      query.onFire = { $in: validatedOnFire };
-    }
+
     if (search) {
       query.productName = { $regex: search, $options: 'i' };
     }
@@ -380,7 +450,6 @@ const loadAllProductPage = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        selectedOnFire: validatedOnFire,
         search,
         sort,
       });
@@ -397,12 +466,10 @@ const loadAllProductPage = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      selectedOnFire: validatedOnFire,
       search,
       sort,
     });
   } catch (error) {
-    console.error('Error in loadAllProductPage:', error);
     const isAjax = req.query.ajax === 'true';
     if (isAjax) {
       return res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -416,16 +483,7 @@ const loadAllProductPage = async (req, res) => {
 const filterProduct = async (req, res) => {
   try {
     const { brand = '', category = '', minPrice = '', maxPrice = '', search = '', sort = '', page = 1, ajax = '' } = req.query;
-    // Handle onFire as an array
-    let onFire = req.query['onFire[]'];
-    if (onFire && !Array.isArray(onFire)) {
-      onFire = [onFire]; // Convert single value to array
-    }
-    onFire = onFire || []; // Default to empty array if not provided
 
-    // Validate onFire values
-    const validOnFireValues = ['newArrival', 'topSelling'];
-    const validatedOnFire = onFire.filter(value => validOnFireValues.includes(value));
 
     // Fetch categories and ensure products are from listed categories
     const categories = await Category.find({ isListed: true });
@@ -444,9 +502,7 @@ const filterProduct = async (req, res) => {
       if (minPrice) query.salePrice.$gte = parseInt(minPrice);
       if (maxPrice) query.salePrice.$lte = parseInt(maxPrice);
     }
-    if (validatedOnFire.length > 0) {
-      query.onFire = { $in: validatedOnFire };
-    }
+
     if (search) {
       query.productName = { $regex: search, $options: 'i' };
     }
@@ -498,7 +554,6 @@ const filterProduct = async (req, res) => {
         selectedCategory: category,
         minPrice,
         maxPrice,
-        selectedOnFire: validatedOnFire,
         search,
         sort,
       });
@@ -515,12 +570,10 @@ const filterProduct = async (req, res) => {
       selectedCategory: category,
       minPrice,
       maxPrice,
-      selectedOnFire: validatedOnFire,
       search,
       sort,
     });
   } catch (error) {
-    console.error('Error in filterProduct:', error);
     const isAjax = req.query.ajax === 'true';
     if (isAjax) {
       return res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -552,7 +605,6 @@ const clearSearch = async (req, res) => {
     const queryString = new URLSearchParams(queryParams).toString();
     return res.redirect(`/productFilter?${queryString}`);
   } catch (error) {
-    console.error('Error in clearSearch:', error);
     const isAjax = req.query.ajax === 'true';
     if (isAjax) {
       return res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -562,6 +614,23 @@ const clearSearch = async (req, res) => {
     });
   }
 };
+
+const brandProudct = async (req, res, next) => {
+  try {
+    const {id} = req.params;
+    const products = await Product.find({brand: id, isBlocked: false}).populate('brand', 'brandName').sort({productName: -1});
+    const brand = await Brand.findById(id);
+    if(!brand){
+     const error = new Error("Page Not Found");
+     error.statusCode = 404;
+     throw error;
+    }
+
+    return res.render('user/brandPage', {products, brand})
+  } catch (error) {
+    next(error)
+  }
+}
 
 
 const aboutUs = async (req, res, next) => {
@@ -587,13 +656,10 @@ const emailMessage = async (req, res, next) => {
     if(!userId){
       return res.json({success: false, message: "Please Login To send EMAIL"})
     }
-    console.log("got the userid", userId)
 
     const user = await User.findById(userId);
-    console.log("got the user", user)
     
     const {email, message} = req.body;
-    console.log(email, message)
 
     if(!email || !message) {
       return res.json({success: false, message: "Fields are missing"});
@@ -613,7 +679,6 @@ const emailMessage = async (req, res, next) => {
       replyTo: email
     })
 
-    console.log(response)
 
     if (response.error) {
       return res.status(500).json({ success: false, message: "Failed to send message to the company. Please try again." });
@@ -621,8 +686,43 @@ const emailMessage = async (req, res, next) => {
 
     return res.status(200).json({ success: true, message: "Message sent successfully." });
   } catch (error) {
-    console.error(error)
     next(error)
+  }
+}
+
+const newDrops = async (req, res, next) => {
+  try {
+    const startofMonth = new Date();
+    startofMonth.setDate(1);
+    startofMonth.setHours(0, 0, 0, 0);
+
+    const endOfMonth = new Date(startofMonth);
+    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
+
+    const product = await Product.find({
+      createdAt: {
+        $gte: startofMonth, $lt: endOfMonth
+      },
+      isBlocked: false
+    }).populate('brand').sort({createdAt: -1})
+
+    return res.render('user/newDrops', {products: product})
+  } catch (error) {
+    next(error)
+  }
+}
+
+const offerProducts = async (req, res, next) => {
+  try {
+    const product = await Product.find({
+      isBlocked: false,
+      appliedOffer: { $gt: 0 },
+      offerType: { $ne: 'none'}
+    }).populate('brand').sort({createdAt: -1})
+
+    return res.render('user/offerProducts', {products: product})
+  } catch (error) {
+    next(MediaError)
   }
 }
 
@@ -643,4 +743,7 @@ module.exports = {
     aboutUs,
     contact,
     emailMessage,
+    brandProudct,
+    newDrops,
+    offerProducts,
 }

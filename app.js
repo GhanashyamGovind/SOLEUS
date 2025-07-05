@@ -14,10 +14,11 @@ const app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
 
 //Session
 app.use(session({
@@ -51,7 +52,6 @@ app.use('/admin',adminRoutes)
 
 //error
 app.use((req, res, next) => {
-    console.error(`404 Error: Requested URL: ${req.originalUrl}`);
     const err = new Error('Page Not Found');
     err.statusCode = 404;
     next(err);

@@ -37,11 +37,9 @@ const sendVerificationEamil = async (email, otp) => {
         }
 
         const info = await transporter.sendMail(mailOption);
-        console.log("Email sent : ", info.messageId);
         return true;
         
     } catch (error) {
-        console.error("error while emial verification", error)
     }
 }
 
@@ -54,7 +52,6 @@ const getForgotPassPage = async (req, res, next) =>{
 }
 
 //hashing the password
-
 const securePassword = async (password) => {
     try {
 
@@ -62,7 +59,7 @@ const securePassword = async (password) => {
         return passwordHash;
         
     } catch (error) {
-        console.error("error while hashing", error)
+
     }
 }
 
@@ -125,7 +122,7 @@ const verifyForgotPassOtp = async (req, res, next) => {
     }
 }
 
-const getResetPassPage = async (req, res) => {
+const getResetPassPage = async (req, res, next) => {
     try {
         res.render('user/reset-password')
     } catch (error) {
@@ -133,7 +130,7 @@ const getResetPassPage = async (req, res) => {
     }
 }
 
-const resendOtp = async (req, res) => {
+const resendOtp = async (req, res, next) => {
     try {
 
         const email = req.session.email;
@@ -143,7 +140,6 @@ const resendOtp = async (req, res) => {
             error.statusCode = 400;
             throw error;
         }
-        console.log("resending otp to email", email);
         const otp = generateOtp();
         req.session.userOtp = otp;
         req.session.otpGeneratedAt = Date.now(); // Store new OTP generation timestamp
@@ -190,9 +186,12 @@ const getProfileDetails  = async (req, res, next) => {
             error.statusCode = 404;
             throw error;
         }
-        console.log(userId);
         const userData = await User.findOne({_id: userId});
-        console.log(userData)
+
+        if(req.session.pendingDelete) {
+            delete req.session.pendingDelete;
+        }
+
         return res.render('user/profile-details', {
             user: userData,
         })
@@ -218,9 +217,6 @@ const updateImage = async (req, res, next) => {
             throw error;
         }
 
-        // Log file details for debugging
-        console.log('Uploaded file details:', req.file);
-
         // Define the upload directory
         const uploadDir = path.join(__dirname, '../../public/uploads/userImage');
 
@@ -231,9 +227,7 @@ const updateImage = async (req, res, next) => {
         const filePath = path.join(uploadDir, req.file.filename);
         try {
             await fs.access(filePath);
-            console.log('File verified at:', filePath);
         } catch (err) {
-            console.error('File not found at:', filePath);
             const error = new Error("Uploaded file not found on server");
             error.statusCode = 500;
             throw error;
@@ -247,7 +241,6 @@ const updateImage = async (req, res, next) => {
 
         return res.redirect('/getProfileDetails');
     } catch (error) {
-        console.error('Error in updateImage:', error);
         next(error);
     }
 };
@@ -272,8 +265,7 @@ const deleteImage = async (req, res, next) => {
                 await fs.unlink(imagePath);
                 console.log('File deleted:', imagePath);
             } catch (err) {
-                console.error('Error accessing/deleting file:', imagePath, err);
-                // Optionally, proceed with updating the database even if the file is missing
+                
             }
 
             // Update the user's profileImage to null
@@ -285,7 +277,6 @@ const deleteImage = async (req, res, next) => {
 
         return res.status(400).json({ success: false, message: "No profile image to delete" });
     } catch (error) {
-        console.error('Error in deleteImage:', error);
         next(error);
     }
 };
@@ -517,9 +508,19 @@ const deletePage = async (req, res, next) => {
             error.statusCode = 404;
             throw error;
         }
+        if(!req.session.pendingDelete){
+            return res.redirect('/getProfileDetails')
+        }
+        return res.render('user/delete-profile');    
+    } catch (error) {
+        next(error)
+    }
+}
 
-        return res.render('user/delete-profile');
-        
+const creatDeleteSession = async (req, res, next) => {
+    try {
+        req.session.pendingDelete = true;
+        return res.status(200).json({success: true})
     } catch (error) {
         next(error)
     }
@@ -666,16 +667,18 @@ const loadEdit = async (req, res, next) => {
 
             const addressId = req.query.id
 
-            const userAddress = await Address.findOne({userId, 'address._id': addressId}, {'address.$': 1})
-            console.log(userAddress)
+            const userAddress = await Address.findOne({userId, 'address._id': addressId}, {'address.$': 1});
+            if(!userAddress) {
+                const error = new Error ("Page Not Found");
+                error.statusCode = 404;
+                throw error;
+            }
 
             const address = userAddress.address[0];
 
-            console.log(`this is adddress: ${address}`)
-
             return res.render('user/edit-address', {address})
         } catch (error) {
-            
+            next(error)
         }
     }
 
@@ -683,8 +686,6 @@ const loadEdit = async (req, res, next) => {
     try {
         const userId = req.session.user;
         const addressId = req.query.id;
-        // const checkout = req.query.from;
-
 
         if (!userId) {
                 return res.status(401).json({success: false, message: 'User not authenticated' });
@@ -731,7 +732,7 @@ const loadEdit = async (req, res, next) => {
         );
 
         if (!updateAddress) {
-                return res.status(404).json({success: false, message: 'Address not found' });
+            return res.status(404).json({success: false, message: 'Address not found' });
         }
 
         return res.status(200).json({success: true, message: 'Address updated successfully', url: '/getAddress'});
@@ -748,15 +749,12 @@ const deleteAddress = async (req, res, next) => {
         }
 
         const addressId = req.params.id;
-        console.log('ad id', addressId);
 
         const updateAddress = await Address.findOneAndUpdate(
             {userId},
             {$pull: {address: {_id: addressId}}},
             {new: true}
         );
-
-        console.log(updateAddress)
 
         if (!updateAddress) {
             return res.status(404).json({success: false, message: 'Address not found' });
@@ -790,6 +788,7 @@ module.exports = {
     getUpdateEmail,
     updatePassword,
     deletePage,
+    creatDeleteSession,
     confirmDelete,
     loadAddress,
     getAddAdress,

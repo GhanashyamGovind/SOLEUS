@@ -67,9 +67,9 @@
 </style>
 
 <body>
-    <div class="card rounded-xl p-12 w-full max-w-lg relative mx-auto my-10">
+    <div class="card rounded-xl pt-20 pb-12 px-12 w-full max-w-lg relative mx-auto my-10">
         <!-- Back Button -->
-        <a href="/profile-settings" class="nav-link absolute top-6 left-6 bg-transparent text-gold-500 font-semibold py-2 px-5 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 flex items-center gap-3">
+        <a href="/getProfileDetails" class="nav-link absolute top-6 right-4 bg-transparent text-gold-500 font-semibold py-2 px-5 rounded-lg hover:text-gold-300 transition-all border border-gold-500 hover:border-gold-300 flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -114,7 +114,7 @@
 
         // Cancel button redirects back to profile settings
         cancelBtn.addEventListener('click', () => {
-            window.location.href = '/profile-settings';
+            window.location.href = '/getProfileDetails';
         });
 
         // Validation function
@@ -189,7 +189,6 @@
                     passwordError.textContent = data.message;
                     passwordError.classList.remove('hidden');
                     passwordInput.classList.add('border-red-400');
-                    console.error("Error deleting account:", data.message);
                 }
             } catch (error) {
                 await Swal.fire({
@@ -198,7 +197,6 @@
                     icon: 'error',
                     confirmButtonColor: '#e6b422'
                 });
-                console.error("Error in fetch:", error);
             }
         });
     });

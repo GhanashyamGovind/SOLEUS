@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soleus Admin Dashboard</title>
+    <link rel="icon" href="/images/soleus_log.png" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
@@ -61,7 +62,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <i class="fas fa-user-circle text-2xl text-white"></i>
-            <button onclick="window.location.href = '/admin/logout'" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-md w-full sm:w-auto text-center">
+            <button id="logoutButton" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition-colors shadow-md w-full sm:w-auto text-center">
                 LOGOUT
             </button>
         </div>
@@ -100,26 +101,22 @@
                     <i class="fas fa-users w-6 text-center"></i>
                     <span class="ml-4 sidebar-text">CUSTOMERS</span>
                 </a>
-                <a href="/admin/inventory" class="flex items-center p-4 sidebar-item border border-black">
-                    <i class="fas fa-boxes w-6 text-center"></i>
-                    <span class="ml-4 sidebar-text">INVENTORY</span>
-                </a>
                 <a href="/admin/coupon" class="flex items-center p-4 sidebar-item border border-black">
                     <i class="fas fa-tag w-6 text-center"></i>
                     <span class="ml-4 sidebar-text">COUPON</span>
                 </a>
-                <a href="/admin/offers" class="flex items-center p-4 sidebar-item border border-black">
+                <a href="/admin/referral" class="flex items-center p-4 sidebar-item border border-black">
                     <i class="fas fa-percentage w-6 text-center"></i>
-                    <span class="ml-4 sidebar-text">OFFERS</span>
+                    <span class="ml-4 sidebar-text">REFERRAL</span>
                 </a>
                 <a href="/admin/banner" class="flex items-center p-4 sidebar-item border border-black">
                     <i class="fas fa-image w-6 text-center"></i>
                     <span class="ml-4 sidebar-text">BANNER</span>
                 </a>
-                <a href="/admin/settings" class="flex items-center p-4 sidebar-item border border-black">
+                <!-- <a href="/admin/settings" class="flex items-center p-4 sidebar-item border border-black">
                     <i class="fas fa-cog w-6 text-center"></i>
                     <span class="ml-4 sidebar-text">SETTINGS</span>
-                </a>
+                </a> -->
             </nav>
         </div>
         

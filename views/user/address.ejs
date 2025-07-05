@@ -3,7 +3,7 @@
 <!-- Main Content -->
 <main class="flex-grow container mx-auto py-8 px-4 flex flex-col items-center relative">
     
-    <button class="absolute top-8 right-4 bg-gold text-dark-bg font-semibold py-2 px-4 rounded hover:bg-yellow-300 transition-all duration-200 shadow hover:shadow-gold-glow">
+    <button onclick="window.location.assign('/profile')" class="absolute top-8 right-4 bg-gold text-dark-bg font-semibold py-2 px-4 rounded hover:bg-yellow-300 transition-all duration-200 shadow hover:shadow-gold-glow">
         BACK
     </button>
 
@@ -124,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         });
                     }
                 } catch (error) {
-                    console.error('Error deleting address:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',

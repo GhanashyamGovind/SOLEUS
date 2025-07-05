@@ -1,0 +1,579 @@
+<%- include('../../views/partials/admin/header', {title: 'Add Coupon'}) %>
+<link href="https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    body {
+        font-family: 'Quantico', sans-serif;
+    }
+    .modal {
+        transition: opacity 0.25s ease;
+    }
+    .modal.opacity-0 {
+        pointer-events: none;
+    }
+    .modal-backdrop {
+        background: rgba(0, 0, 0, 0.5);
+    }
+</style>
+
+<!-- Main Content -->
+<div class="container mx-auto px-4 py-6">
+    <!-- Add Coupon Button -->
+    <div class="mb-6">
+        <button 
+            onclick="openAddModal()" 
+            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-200">
+            Add Coupon
+        </button>
+    </div>
+
+    <!-- Coupons Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-4 sm:px-6 py-4 bg-gray-50 border-b">
+            <h2 class="text-lg sm:text-xl font-bold text-gray-800">Available Coupons</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-full">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Name</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Offer</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Created On</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expires On</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="couponsTable" class="bg-white divide-y divide-gray-200">
+                    <% if (coupons.length > 0) { %>
+                        <% coupons.forEach(c => { %>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900"><%= c.code %></div>
+                                    <div class="text-xs text-gray-500 sm:hidden">
+                                        <%= c.discountType === 'percentage' ? `${c.offerPrice}%` : `₹${c.offerPrice}` %>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap hidden sm:table-cell">
+                                    <div class="text-sm text-gray-900"><%= c.name %></div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap hidden sm:table-cell">
+                                    <div class="text-sm text-gray-900">
+                                        <%= c.discountType === 'percentage' ? `${c.offerPrice}%` : `₹${c.offerPrice}` %>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap hidden md:table-cell">
+                                    <div class="text-sm text-gray-900"><%= c.createdOn.toDateString() %></div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900"><%= c.expireOn.toDateString() %></div>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap">
+                                    <% if (c.isListed === true) { %>
+                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Listed
+                                     </span>
+                                    <% } else { %>
+                                     <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Un-Listed
+                                     </span>
+                                    <% } %>
+                                </td>
+                                <td class="px-3 py-4 whitespace-nowrap">
+                                    <div class="flex flex-col sm:flex-row sm:space-x-2 space-y-1 sm:space-y-0">
+                                        <button 
+                                            onclick="editCoupon('<%= c.code %>')" 
+                                            class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-900 px-2 py-1 rounded border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-500 hover:text-white">
+                                            Edit
+                                        </button>
+                                        <% if (c.isListed === true) { %>
+                                            <button 
+                                                onclick="ListStatus('<%= c.code %>')" 
+                                                class="text-xs sm:text-sm text-orange-600 hover:text-orange-900 px-2 py-1 rounded border border-orange-200 hover:border-orange-300 hover:bg-orange-500 hover:text-white">
+                                                Unlist
+                                            </button>
+                                        <% } else { %>
+                                            <button 
+                                                onclick="ListStatus('<%= c.code %>')" 
+                                                class="text-xs sm:text-sm text-green-600 hover:text-green-900 px-2 py-1 rounded border border-green-200 hover:border-green-300 hover:bg-green-500 hover:text-white">
+                                                List
+                                            </button>
+                                        <% } %>
+                                        <button 
+                                            onclick="deleteCoupon('<%= c.code %>')" 
+                                            class="text-xs sm:text-sm text-red-600 hover:text-red-900 px-2 py-1 rounded border border-red-200 hover:border-red-300 hover:bg-red-500 hover:text-white">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">there is no coupon currently now</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Coupon Modal -->
+<div id="addModal" class="modal opacity-0 fixed inset-0 z-50 flex items-center justify-center text-black">
+    <div class="modal-backdrop absolute inset-0" onclick="closeAddModal()"></div>
+    <div class="bg-white rounded-lg shadow-xl p-4 sm:p-6 m-4 max-w-md w-full relative z-10">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-800">Add New Coupon</h3>
+            <button onclick="closeAddModal()" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="addCouponForm" onsubmit="addCoupon(event)">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupon Code:</label>
+                    <input type="text" id="couponCode" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupon Name:</label>
+                    <input type="text" id="couponName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount Type:</label>
+                    <select id="discountType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="fixed">Fixed Amount (₹)</option>
+                        <option value="percentage">Percentage (%)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Offer Price:</label>
+                    <input type="number" id="offerPrice" required min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Enter amount in ₹ for fixed or % for percentage (e.g., 10 for 10%)</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Purchase Amount (₹):</label>
+                    <input type="number" id="minPurchase" required min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date:</label>
+                    <input type="date" id="expiryDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="isPublic" class="mr-2">
+                    <label class="text-sm font-medium text-gray-700">Is Public Coupon (Show to all users)</label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Reward Threshold (₹):</label>
+                    <input type="number" id="rewardThreshold" min="0" value="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Leave 0 if not reward-based</p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Create Coupon
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Coupon Modal -->
+<div id="editModal" class="modal opacity-0 fixed inset-0 z-50 flex items-center justify-center text-black">
+    <div class="modal-backdrop absolute inset-0" onclick="closeEditModal()"></div>
+    <div class="text-black bg-white rounded-lg shadow-xl p-4 sm:p-6 m-4 max-w-md w-full relative z-10">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-800">Edit Coupon</h3>
+            <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="editCouponForm" onsubmit="updateCoupon(event)">
+            <input type="hidden" id="editCouponId">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupon Code:</label>
+                    <input type="text" id="editCouponCode" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Coupon Name:</label>
+                    <input type="text" id="editCouponName" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Discount Type:</label>
+                    <select id="editDiscountType" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="fixed">Fixed Amount (₹)</option>
+                        <option value="percentage">Percentage (%)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Offer Price:</label>
+                    <input type="number" id="editOfferPrice" required min="0" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Enter amount in ₹ for fixed or % for percentage (e.g., 10 for 10%)</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Purchase Amount (₹):</label>
+                    <input type="number" id="editMinPurchase" required min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date:</label>
+                    <input type="date" id="editExpiryDate" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="editIsPublic" class="mr-2">
+                    <label class="text-sm font-medium text-gray-700">Is Public Coupon (Show to all users)</label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Reward Threshold (₹):</label>
+                    <input type="number" id="editRewardThreshold" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Leave 0 if not reward-based</p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    Update Coupon
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // Modal functions
+    function openAddModal() {
+        const addModal = document.getElementById('addModal');
+        if (addModal) {
+            addModal.classList.remove('opacity-0');
+        } else {
+
+        }
+    }
+
+    function closeAddModal() {
+        const addModal = document.getElementById('addModal');
+        if (addModal) {
+            addModal.classList.add('opacity-0');
+            document.getElementById('addCouponForm').reset();
+            document.getElementById('rewardThreshold').disabled = false;
+            document.getElementById('isPublic').disabled = false;
+        } else {
+
+        }
+    }
+
+    function openEditModal() {
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.classList.remove('opacity-0');
+        } else {
+        }
+    }
+
+    function closeEditModal() {
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.classList.add('opacity-0');
+            document.getElementById('editCouponForm').reset();
+            document.getElementById('editRewardThreshold').disabled = false;
+            document.getElementById('editIsPublic').disabled = false;
+        } else {
+
+        }
+    }
+
+    // Coupon management functions
+    async function addCoupon(event) {
+        event.preventDefault();
+        
+        const coupon = {
+            code: document.getElementById('couponCode').value,
+            name: document.getElementById('couponName').value,
+            offerPrice: parseFloat(document.getElementById('offerPrice').value),
+            discountType: document.getElementById('discountType').value,
+            minPurchase: parseFloat(document.getElementById('minPurchase').value),
+            expireOn: document.getElementById('expiryDate').value,
+            isPublic: document.getElementById('isPublic').checked,
+            rewardThreshold: parseFloat(document.getElementById('rewardThreshold').value || 0),
+            isListed: true
+        };
+
+        // Client-side validation for percentage discount
+        if (coupon.discountType === 'percentage' && (coupon.offerPrice <= 0 || coupon.offerPrice > 100)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Percentage discount must be between 0 and 100'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch('/admin/coupon/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(coupon)
+            });
+
+            let errorData = { message: 'Failed to create coupon' };
+            try {
+                errorData = await response.json();
+            } catch (jsonError) {
+
+            }
+
+            if (!response.ok) {
+                throw new Error(errorData.message || 'Failed to create coupon');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: errorData.message || 'Coupon created successfully!',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                closeAddModal();
+                window.location.reload();
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to create coupon: ' + error.message
+            });
+        }
+    }
+
+    // edit modal
+    async function editCoupon(code) {
+        try {
+            const response = await fetch(`/admin/coupons/edit/${encodeURIComponent(code)}`);
+            let errorData = { message: 'Failed to fetch coupon' };
+            try {
+                errorData = await response.json();
+            } catch (jsonError) {
+            }
+
+            if (!response.ok) {
+                throw new Error(errorData.message || 'Failed to fetch coupon');
+            }
+
+            const coupon = errorData; // Since response.json() is already parsed
+
+            // Populate form fields with fallback values
+            document.getElementById('editCouponId').value = coupon.code || '';
+            document.getElementById('editCouponCode').value = coupon.code || '';
+            document.getElementById('editCouponName').value = coupon.name || '';
+            document.getElementById('editOfferPrice').value = coupon.offerPrice != null ? coupon.offerPrice : 0;
+            document.getElementById('editDiscountType').value = coupon.discountType || 'fixed';
+            document.getElementById('editMinPurchase').value = coupon.minimumPrice != null ? coupon.minimumPrice : 0;
+            document.getElementById('editExpiryDate').value = coupon.expireOn ? new Date(coupon.expireOn).toISOString().split('T')[0] : '';
+            document.getElementById('editIsPublic').checked = coupon.isPublic || false;
+            document.getElementById('editRewardThreshold').value = coupon.rewardThreshold != null ? coupon.rewardThreshold : 0;
+
+            // Apply mutual exclusivity logic
+            document.getElementById('editRewardThreshold').disabled = coupon.isPublic;
+            document.getElementById('editIsPublic').disabled = coupon.rewardThreshold > 0;
+
+            openEditModal();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to fetch coupon: ' + error.message
+            });
+            // Attempt to open modal anyway to allow manual entry
+            openEditModal();
+        }
+    }
+
+    async function updateCoupon(event) {
+        event.preventDefault();
+        
+        const code = document.getElementById('editCouponId').value;
+        const coupon = {
+            code: document.getElementById('editCouponCode').value,
+            name: document.getElementById('editCouponName').value,
+            offerPrice: parseFloat(document.getElementById('editOfferPrice').value),
+            discountType: document.getElementById('editDiscountType').value,
+            minPurchase: parseFloat(document.getElementById('editMinPurchase').value),
+            expireOn: document.getElementById('editExpiryDate').value,
+            isPublic: document.getElementById('editIsPublic').checked,
+            rewardThreshold: parseFloat(document.getElementById('editRewardThreshold').value || 0)
+        };
+
+        // Client-side validation for percentage discount
+        if (coupon.discountType === 'percentage' && (coupon.offerPrice <= 0 || coupon.offerPrice > 100)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Percentage discount must be between 0 and 100'
+            });
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/coupons/edit/${encodeURIComponent(code)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(coupon)
+            });
+
+            let errorData = { message: 'Failed to update coupon' };
+            try {
+                errorData = await response.json();
+            } catch (jsonError) {
+            }
+
+            if (!response.ok) {
+                throw new Error(errorData.message || 'Failed to update coupon');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Coupon updated successfully!',
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                closeEditModal();
+                window.location.reload();
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update coupon: ' + error.message
+            });
+        }
+    }
+
+    async function ListStatus(code) {
+        try {
+            const response = await fetch(`/admin/coupons/edit/${encodeURIComponent(code)}/toggle`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            let data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(errorData.message || 'Failed to toggle list status');
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: data.message,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.reload();
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to toggle list status: ' + error.message
+            });
+        }
+    }
+
+    async function deleteCoupon(code) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/admin/coupons/delete/${encodeURIComponent(code)}`, {
+                    method: 'DELETE'
+                });
+
+                let errorData = { message: 'Failed to delete coupon' };
+                try {
+                    errorData = await response.json();
+                } catch (jsonError) {
+                }
+
+                if (!response.ok) {
+                    throw new Error(errorData.message || 'Failed to delete coupon');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted',
+                    text: 'Coupon deleted successfully!',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.reload();
+                });
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to delete coupon: ' + error.message
+                });
+            }
+        }
+    }
+
+    // Add event listeners for mutual exclusivity in Add Coupon Modal
+    document.getElementById('isPublic').addEventListener('change', function() {
+        const rewardThreshold = document.getElementById('rewardThreshold');
+        if (this.checked) {
+            rewardThreshold.disabled = true;
+            rewardThreshold.value = 0;
+        } else {
+            rewardThreshold.disabled = false;
+        }
+    });
+
+    document.getElementById('rewardThreshold').addEventListener('input', function() {
+        const isPublic = document.getElementById('isPublic');
+        if (this.value > 0) {
+            isPublic.disabled = true;
+            isPublic.checked = false;
+        } else {
+            isPublic.disabled = false;
+        }
+    });
+
+    // Add event listeners for mutual exclusivity in Edit Coupon Modal
+    document.getElementById('editIsPublic').addEventListener('change', function() {
+        const editRewardThreshold = document.getElementById('editRewardThreshold');
+        if (this.checked) {
+            editRewardThreshold.disabled = true;
+            editRewardThreshold.value = 0;
+        } else {
+            editRewardThreshold.disabled = false;
+        }
+    });
+
+    document.getElementById('editRewardThreshold').addEventListener('input', function() {
+        const editIsPublic = document.getElementById('editIsPublic');
+        if (this.value > 0) {
+            editIsPublic.disabled = true;
+            editIsPublic.checked = false;
+        } else {
+            editIsPublic.disabled = false;
+        }
+    });
+</script>
+<%- include('../../views/partials/admin/footer') %>

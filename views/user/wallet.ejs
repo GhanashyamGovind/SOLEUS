@@ -1,0 +1,423 @@
+<%- include('../../views/partials/user/header', {title: 'Wallet'}) %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.0/feather.min.js"></script>
+    <style>
+        body {
+            font-family: 'Quantico', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .transaction-item:hover {
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        .balance-card {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+        .transaction-container {
+            max-height: 600px; /* Adjust height as needed */
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #e5e7eb;
+        }
+        .transaction-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .transaction-container::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 4px;
+        }
+        .transaction-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        .transaction-container::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Title -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2">My Wallet</h2>
+            <p class="text-gray-600">Manage your wallet balance and view transaction history</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Wallet Balance Card -->
+            <div class="lg:col-span-1">
+                <div class="relative rounded-2xl p-8 text-white card-shadow overflow-hidden min-h-[320px]" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);">
+                    <!-- Subtle Background Pattern with Shoe Icons -->
+                    <div class="absolute inset-0 opacity-10">
+                        <svg class="w-full h-full" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <g id="shoe-simple">
+                                    <!-- Simple clean sneaker silhouette -->
+                                    <path d="M5 15 Q3 13 5 11 L20 11 Q22 13 20 15 L18 18 Q16 20 14 18 L6 18 Q4 20 2 18 Z" fill="currentColor" opacity="0.3"/>
+                                    <ellipse cx="12" cy="19" rx="10" ry="2" fill="currentColor" opacity="0.2"/>
+                                </g>
+                            </defs>
+                            
+                            <!-- Clean scattered shoe icons -->
+                            <use href="#shoe-simple" transform="translate(40,30) scale(1.2) rotate(-10)" class="text-yellow-400"/>
+                            <use href="#shoe-simple" transform="translate(150,20) scale(0.8) rotate(15)" class="text-yellow-500"/>
+                            <use href="#shoe-simple" transform="translate(250,45) scale(1) rotate(-20)" class="text-yellow-400"/>
+                            <use href="#shoe-simple" transform="translate(320,25) scale(0.9) rotate(25)" class="text-yellow-600"/>
+                            
+                            <use href="#shoe-simple" transform="translate(80,90) scale(0.7) rotate(30)" class="text-yellow-500"/>
+                            <use href="#shoe-simple" transform="translate(180,85) scale(1.1) rotate(-15)" class="text-yellow-400"/>
+                            <use href="#shoe-simple" transform="translate(280,100) scale(0.9) rotate(35)" class="text-yellow-600"/>
+                            
+                            <use href="#shoe-simple" transform="translate(60,140) scale(1) rotate(-25)" class="text-yellow-400"/>
+                            <use href="#shoe-simple" transform="translate(170,150) scale(0.8) rotate(20)" class="text-yellow-500"/>
+                            <use href="#shoe-simple" transform="translate(260,135) scale(1.2) rotate(-30)" class="text-yellow-400"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Elegant accent lines -->
+                    <div class="absolute top-0 right-0 w-32 h-32 opacity-20">
+                        <div class="absolute top-4 right-4 w-20 h-0.5 bg-yellow-400 transform rotate-45"></div>
+                        <div class="absolute top-6 right-6 w-16 h-0.5 bg-yellow-500 transform rotate-45"></div>
+                        <div class="absolute top-8 right-8 w-12 h-0.5 bg-yellow-600 transform rotate-45"></div>
+                    </div>
+                    
+                    <!-- Card Content -->
+                    <div class="relative z-10 h-full flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-8">
+                                <div>
+                                    <h3 class="text-3xl font-bold tracking-wider text-white">SOLEUS</h3>
+                                    <p class="text-gray-300 text-sm mt-2 font-medium tracking-wide">E-WALLET</p>
+                                    <p class="text-gray-400 text-xs mt-1 uppercase tracking-wider">AVAILABLE BALANCE</p>
+                                </div>
+                                <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 w-16 h-12 rounded-lg flex items-center justify-center shadow-lg">
+                                    <svg class="w-7 h-7 text-black" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-8">
+                                <p class="text-6xl font-bold mb-2 text-transparent bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text">₹<%= balance %></p>
+                                <div class="w-24 h-1 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <p class="text-xl font-bold text-white tracking-wide">SOLEUS</p>
+                                <p class="text-xs text-gray-400 uppercase tracking-widest">Men's Shoes</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-400 uppercase tracking-wider">Secured by</p>
+                                <p class="text-sm font-semibold text-yellow-400">Soleus</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="mt-6 grid grid-cols-2 gap-4">
+                    <div class="bg-white rounded-xl p-4 card-shadow">
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-lg">
+                                <i data-feather="trending-up" class="w-5 h-5 text-green-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-600">Total Credits</p>
+                                <p class="text-lg font-bold text-gray-900">₹<%= credit %></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-4 card-shadow">
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-2 rounded-lg">
+                                <i data-feather="trending-down" class="w-5 h-5 text-red-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-gray-600">Total Debits</p>
+                                <p class="text-lg font-bold text-gray-900">₹<%= debit %></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-2xl card-shadow">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4 sm:mb-0">Transaction History</h3>
+                            <div class="flex space-x-3">
+                                <select id="transactionTypeFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="all">All Transactions</option>
+                                    <option value="credit">Credits</option>
+                                    <option value="debit">Debits</option>
+                                </select>
+                                <select id="timeFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option value="30days">Last 30 Days</option>
+                                    <option value="7days">Last 7 Days</option>
+                                    <option value="1year">Last Year</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <% if (transactions.length > 0) { %>
+                        <div id="transactionList" class="space-y-4 transaction-container">
+                            <!-- Transaction Item -->
+                            <% transactions.slice(0, 10).forEach(trans => { %>
+                            <div class="transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200">
+                                <div class="flex items-center">
+                                    <% if (trans.type == 'credit') { %>
+                                        <div class="bg-green-100 p-2 rounded-lg">
+                                            <i data-feather="plus" class="w-5 h-5 text-green-600"></i>
+                                        </div>
+                                    <% } else { %>
+                                         <div class="bg-red-100 p-2 rounded-lg">
+                                            <i data-feather="shopping-bag" class="w-5 h-5 text-red-600"></i>
+                                        </div> 
+                                    <% } %>
+                                    <div class="ml-4">
+                                        <p class="font-semibold text-gray-900"><%= trans.type %></p>
+                                        <p class="text-sm text-gray-600"><%= trans.reason %></p>
+                                        <% if (trans.orderId) { %>
+                                         <p class="text-sm text-gray-600">order: <%= trans.orderId %></p>
+                                        <% } %>
+                                        <p class="text-xs text-gray-500"><%= trans.createdAt.toString().split('GMT')[0].trim() %></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <% if (trans.type == 'credit') { %>
+                                        <p class="font-bold text-green-600">+₹<%= trans.amount %></p>
+                                    <% } else { %>
+                                         <p class="font-bold text-red-600">-₹<%= trans.amount %></p>
+                                    <% } %>
+                                    <p class="text-xs text-gray-500">Completed</p>
+                                </div>
+                            </div>
+                            <% }) %>
+                        </div>
+                        <% if (transactions.length >= 20) { %>
+                        <div class="mt-6 text-center" id="loadMoreContainer">
+                            <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
+                                Load More Transactions
+                            </button>
+                        </div>
+                        <% } %>
+                        <% } else { %>
+                         <p>no transaction history</p>
+                        <% } %> 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mt-8">
+            <% if (on) { %>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Referral Code</h3>
+
+            <div class="grid grid-cols-1 gap-6 max-w-md mx-auto">
+                <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-8 rounded-2xl shadow-xl border border-yellow-200 hover:shadow-2xl hover:scale-105 transform transition-all duration-300 text-center group">    
+                    <div 
+                        class="relative w-full border-3 border-amber-400 rounded-xl p-4 flex items-center justify-center gap-3 mb-6 bg-white shadow-inner hover:bg-yellow-50 transition-colors duration-200 cursor-pointer"
+                        onclick="copyText('referralCode')"
+                    >
+                        <i data-feather="copy" class="w-7 h-7 text-amber-500 group-hover:text-amber-600 transition-colors duration-200"></i>
+                        <h6 id="referralCode" class="font-black text-amber-600 text-xl tracking-wider select-all"><%= referal %></h6>
+                        <i data-feather="gift" class="w-6 h-6 text-amber-500 animate-bounce"></i>
+                    </div>
+
+                    <div class="space-y-3">
+                        <p class="font-bold text-gray-800 text-lg leading-relaxed">
+                            🎉 Invite your friends with this code
+                        </p>
+                        <p class="text-amber-700 font-semibold text-base">
+                            💰 Earn rewards in your wallet
+                        </p>
+                        <div class="flex items-center justify-center gap-2 mt-4 text-sm text-gray-600">
+                            <i data-feather="users" class="w-4 h-4"></i>
+                            <span>Share & Earn Together</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Initialize Feather icons
+        feather.replace();
+
+        // Add some interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to transaction items
+            const transactionItems = document.querySelectorAll('.transaction-item');
+            transactionItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                });
+            });
+
+            // Add click animation to buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                });
+            });
+
+            // Load More Transactions
+            let currentPage = 1;
+            const transactionsPerPage = 20;
+            const transactionList = document.getElementById('transactionList');
+            const allTransactions = <%- JSON.stringify(transactions) %>;
+            let filteredTransactions = allTransactions;
+
+            function renderTransactions(transactions, append = false) {
+                const startIndex = append ? transactionList.children.length : 0;
+                const endIndex = startIndex + transactionsPerPage;
+                const transactionsToRender = transactions.slice(startIndex, endIndex);
+
+                if (!append) {
+                    transactionList.innerHTML = '';
+                }
+
+                transactionsToRender.forEach(trans => {
+                    const transItem = document.createElement('div');
+                    transItem.className = 'transaction-item flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-gray-200';
+                    transItem.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="${trans.type === 'credit' ? 'bg-green-100' : 'bg-red-100'} p-2 rounded-lg">
+                                <i data-feather="${trans.type === 'credit' ? 'plus' : 'shopping-bag'}" class="w-5 h-5 ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-semibold text-gray-900">${trans.type}</p>
+                                <p class="text-sm text-gray-600">${trans.reason}</p>
+                                ${trans.orderId ? `<p class="text-sm text-gray-600">order: ${trans.orderId}</p>` : ''}
+                                <p class="text-xs text-gray-500">${new Date(trans.createdAt).toString().split('GMT')[0].trim()}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold ${trans.type === 'credit' ? 'text-green-600' : 'text-red-600'}">${trans.type === 'credit' ? '+' : '-'}₹${trans.amount}</p>
+                            <p class="text-xs text-gray-500">Completed</p>
+                        </div>
+                    `;
+                    transactionList.appendChild(transItem);
+                });
+                feather.replace(); // Re-initialize Feather icons for new items
+
+                // Update Load More button visibility
+                const loadMoreContainer = document.getElementById('loadMoreContainer');
+                if (transactions.length >= 20 && transactionList.children.length < transactions.length) {
+                    if (!loadMoreContainer) {
+                        const newLoadMoreContainer = document.createElement('div');
+                        newLoadMoreContainer.className = 'mt-6 text-center';
+                        newLoadMoreContainer.id = 'loadMoreContainer';
+                        newLoadMoreContainer.innerHTML = `
+                            <button id="loadMoreBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-xl transition duration-200">
+                                Load More Transactions
+                            </button>
+                        `;
+                        transactionList.parentNode.appendChild(newLoadMoreContainer);
+                        document.getElementById('loadMoreBtn').addEventListener('click', loadMoreTransactions);
+                    }
+                } else if (loadMoreContainer) {
+                    loadMoreContainer.remove();
+                }
+            }
+
+            function loadMoreTransactions() {
+                currentPage++;
+                renderTransactions(filteredTransactions, true);
+            }
+
+            // Initial render (up to 10 transactions)
+            if (allTransactions.length > 0) {
+                renderTransactions(allTransactions);
+            }
+
+            // Load More Button Handler
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', loadMoreTransactions);
+            }
+
+            // Filter Transactions
+            const typeFilter = document.getElementById('transactionTypeFilter');
+            const timeFilter = document.getElementById('timeFilter');
+
+            function applyFilters() {
+                const typeValue = typeFilter.value;
+                const timeValue = timeFilter.value;
+                filteredTransactions = allTransactions;
+
+                // Filter by type
+                if (typeValue !== 'all') {
+                    filteredTransactions = filteredTransactions.filter(trans => trans.type === typeValue);
+                }
+
+                // Filter by time range
+                const now = new Date();
+                if (timeValue === '7days') {
+                    filteredTransactions = filteredTransactions.filter(trans => {
+                        const transDate = new Date(trans.createdAt);
+                        return (now - transDate) / (1000 * 60 * 60 * 24) <= 7;
+                    });
+                } else if (timeValue === '30days') {
+                    filteredTransactions = filteredTransactions.filter(trans => {
+                        const transDate = new Date(trans.createdAt);
+                        return (now - transDate) / (1000 * 60 * 60 * 24) <= 30;
+                    });
+                } else if (timeValue === '1year') {
+                    filteredTransactions = filteredTransactions.filter(trans => {
+                        const transDate = new Date(trans.createdAt);
+                        return (now - transDate) / (1000 * 60 * 60 * 24) <= 365;
+                    });
+                }
+
+                // Reset current page and render filtered transactions
+                currentPage = 1;
+                renderTransactions(filteredTransactions);
+            }
+
+            typeFilter.addEventListener('change', applyFilters);
+            timeFilter.addEventListener('change', applyFilters);
+        });
+
+        async function copyText(id) {
+            const el = document.getElementById(id);
+            const text = el?.innerText || el?.textContent;
+            await navigator.clipboard.writeText(text);
+
+            await Swal.fire({
+                icon: 'success',
+                title: 'Referral code copied!',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                background: '#fff3cd',
+                iconColor: '#198754',
+                customClass: {
+                    popup: 'shadow-lg text-sm font-medium border border-yellow-300'
+                }
+            });
+        }
+    </script>
+<%- include('../../views/partials/user/footer') %>

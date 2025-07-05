@@ -12,8 +12,23 @@ const getCart = async (req, res, next) => {
             return res.render('user/cart', { cart: { items: [], totalPrice: 0 } });
         }
 
+        //delete the session of buynow
+        if(req.session.buyNow) {
+            req.session.buyNow = null
+        }
+
+        if (req.session.recentOrderSuccess) {
+            delete req.session.recentOrderSuccess;
+            delete req.session.lastOrderId;
+        }
+
         const cart = await Cart.findOne({ userId }).populate('items.productId');
         const cartData = cart || { items: [], totalPrice: 0 };
+
+        // If cart doesn't exist or is empty, render empty cart
+        if (!cart || cart.items.length === 0) {
+            return res.render('user/cart', { cart: { items: [], totalPrice: 0 } });
+        }
 
         // Ensure cartData.items have SKU and variant data
         if (cartData.items.length > 0) {
@@ -219,7 +234,6 @@ const removeFromCart = async (req, res, next) => {
         }
 
 
-        // console.log('Product:', JSON.stringify(product, null, 2));
         const variant = product.variants.find(v => v.size === size && v.sku === sku);
         if (!variant) {
             return res.status(404).json({ message: 'Product variant not found' });

@@ -1,209 +1,232 @@
+const { options } = require('pdfkit');
 const Category = require('../../models/categorySchema');
-const Product = require('../../models/productSchema')
+const Product = require('../../models/productSchema');
+const mongoose = require('mongoose');
 
 
-
-const categoryInfo = async (req, res) => {
+const categoryInfo = async (req, res, next) => {
     try {
-
         const page = parseInt(req.query.page) || 1;
         const limit = 4;
         const skip = (page - 1) * limit;
+        const search = req.query.search || '';
 
-        const categoryData = await Category.find({})
-        .sort({createdAt: -1})
-        .skip(skip)
-        .limit(limit);
+        const searchQuery = {
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ]
+        };
 
-        const totalCategeory = await Category.countDocuments();
-        const totalPage = Math.ceil(totalCategeory/limit);
+        const categoryData = await Category.find(searchQuery)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const totalCategory = await Category.countDocuments(searchQuery);
+        const totalPage = Math.ceil(totalCategory / limit);
+
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.json({
+                cat: categoryData,
+                currentPage: page,
+                totalPage: totalPage,
+                searchQuery: search
+            });
+        }
 
         return res.render('admin/category', {
-            cat:  categoryData,
+            cat: categoryData,
             currentPage: page,
-            totalPage: totalPage
+            totalPage: totalPage,
+            searchQuery: search
         });
-        
     } catch (error) {
-
-        console.error("error in category loading.. => ", error);
-        return res.redirect('/admin/pageerror');
-        
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        next(error)
     }
-}
-
+};
 
 const addCategory = async (req, res, next) => {
     try {
+        const { name, description } = req.body;
 
-        const {name, description} = req.body;
-
-        const existingCategory = await Category.findOne({name : {$regex: `^${name}`, $options: 'i'}});
+        const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
         
-        if(existingCategory){
-            return res.status(409).json({error: "Category already exist !"})
+        if (existingCategory) {
+            return res.status(409).json({ message: 'Category already exist !' });
         }
 
         const newCategory = new Category({
             name,
             description,
-        })
+        });
 
         await newCategory.save();
-        return res.status(201).json({messge: "Category added succesfully"});
-        
+        return res.status(201).json({ message: 'Category added successfully' });
     } catch (error) {
-        
-        next(error)
+        next(error);
     }
-}
+};
 
 const getListCategory = async (req, res, next) => {
     try {
-        let id = req.query.id;
-        await Category.updateOne({_id: id}, {$set: {isListed: false}});
-        return res.redirect('/admin/category');
+        const id = req.body.id; // Changed to req.body to match fetch request
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ status: false, message: 'Category not found' });
+        }
+        await Category.updateOne({ _id: id }, { $set: { isListed: false } });
+        return res.status(200).json({ status: true, message: 'Category unlisted successfully' });
     } catch (error) {
         next(error)
     }
-}
+};
 
 const getUnlistCategory = async (req, res, next) => {
     try {
-        let id = req.query.id;
-        await Category.updateOne({_id: id}, {$set: {isListed: true}});
-        return res.redirect('/admin/category');
+        const id = req.body.id; // Changed to req.body to match fetch request
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({ status: false, message: 'Category not found' });
+        }
+        await Category.updateOne({ _id: id }, { $set: { isListed: true } });
+        return res.status(200).json({ status: true, message: 'Category listed successfully' });
     } catch (error) {
         next(error)
     }
-}
-
+};
 
 const getEditCategory = async (req, res, next) => {
     try {
-
-        let id = req.query.id;
-
-        const category = await Category.findOne({_id: id});
-        res.render('admin/edit-category', {category: category})
-        
+        const id = req.query.id;
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            const error = new Error('Page not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        const category = await Category.findOne({ _id: id });
+        if (!category) {
+            const error = new Error('Page not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        return res.render('admin/edit-category', { category });
     } catch (error) {
         next(error)
     }
-}
+};
 
 const editCategory = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const { categoryName, description } = req.body;
+        const existingCategory = await Category.findOne({ name: { $regex: `^${categoryName}$`, $options: 'i' }, _id: { $ne: id } });
 
-try {
+        if (existingCategory) {
+            return res.status(409).json({ message: 'Category exists, please choose another name' });
+        }
 
-    let id = req.params.id;
-    const {categoryName, description} = req.body;
-    const existsingCategory = await Category.findOne({name: categoryName});
+        const updatedCategory = await Category.findByIdAndUpdate(
+            id,
+            {
+                name: categoryName,
+                description: description
+            },
+            { new: true }
+        );
 
-    if(existsingCategory){
-        return res.status(409).json({message: "Category exists, please choose another name"})
+        if (updatedCategory) {
+            return res.status(200).json({ message: 'Category updated successfully' });
+        } else {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+    } catch (error) {
+        next(error)
     }
-
-    const updateCategory = await Category.findByIdAndUpdate(id, 
-     {
-        name: categoryName,
-        description: description
-    },
-    {new: true});
-
-    if(updateCategory){
-        return res.status(200).json({message: 'Category updated successfully'});
-    } else {
-        return res.status(404).json({message: 'Category not found'});
-    }
-    
-} catch (error) {
-    next(error)
-}
-
-}
+};
 
 const addCategoryOffer = async (req, res, next) => {
-  try {
-    const { categoryId, percentage } = req.body;
-    const category = await Category.findById(categoryId);
-    if (!category) {
-      return res.status(404).json({ status: false, message: "Category not found" });
+    try {
+        const { categoryId, percentage } = req.body;
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({ status: false, message: 'Category not found' });
+        }
+
+        const parsedPercentage = parseInt(percentage);
+        if (isNaN(parsedPercentage) || parsedPercentage < 0 || parsedPercentage > 100) {
+            return res.status(400).json({ status: false, message: 'Invalid percentage value' });
+        }
+
+        category.categoryOffer = parsedPercentage;
+        await category.save();
+
+        const products = await Product.find({ category: categoryId });
+        for (const product of products) {
+            let offerToApply = parsedPercentage;
+            let offerType = 'category';
+
+            if (product.productOffer > parsedPercentage) {
+                offerToApply = product.productOffer;
+                offerType = 'product';
+            }
+
+            product.variants.forEach(variant => {
+                variant.salePrice = Math.floor(variant.regularPrice * (1 - offerToApply / 100));
+            });
+
+            product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
+            product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
+            product.appliedOffer = offerToApply;
+            product.offerType = offerType;
+
+            await product.save();
+        }
+
+        return res.json({ status: true, message: 'Offer added successfully' });
+    } catch (error) {
+        next(error)
     }
-
-    const parsedPercentage = parseInt(percentage);
-    category.categoryOffer = parsedPercentage;
-    await category.save();
-
-    const products = await Product.find({ category: categoryId });
-    for (const product of products) {
-      // Determine which offer to apply (category vs product)
-      let offerToApply = parsedPercentage;
-      let offerType = 'category';
-
-      if (product.productOffer > parsedPercentage) {
-        offerToApply = product.productOffer;
-        offerType = 'product';
-      }
-
-      // Update each variant's sale price
-      product.variants.forEach(variant => {
-        variant.salePrice = Math.floor(variant.regularPrice * (1 - offerToApply / 100));
-      });
-
-      // Update main product fields
-      product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
-      product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
-      product.appliedOffer = offerToApply;
-      product.offerType = offerType;
-
-      await product.save();
-    }
-
-    res.json({ status: true });
-  } catch (error) {
-    next(error);
-  }
 };
 
 const removeCategoryOffer = async (req, res, next) => {
-  try {
-    const { categoryId } = req.body;
-    const category = await Category.findById(categoryId);
-    if (!category) {
-      return res.status(404).json({ status: false, message: "Category not found" });
+    try {
+        const { categoryId } = req.body;
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(404).json({ status: false, message: 'Category not found' });
+        }
+
+        const products = await Product.find({ category: categoryId });
+        for (const product of products) {
+            const offerToApply = product.productOffer || 0;
+            const offerType = offerToApply > 0 ? 'product' : 'none';
+
+            product.variants.forEach(variant => {
+                variant.salePrice = offerToApply > 0
+                    ? Math.floor(variant.regularPrice * (1 - offerToApply / 100))
+                    : variant.regularPrice;
+            });
+
+            product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
+            product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
+            product.appliedOffer = offerToApply;
+            product.offerType = offerType;
+
+            await product.save();
+        }
+
+        category.categoryOffer = 0;
+        await category.save();
+
+        return res.status(200).json({ status: true, message: 'Offer removed successfully' });
+    } catch (error) {
+        next(error)
     }
-
-    const products = await Product.find({ category: category._id });
-    for (const product of products) {
-      const offerToApply = product.productOffer || 0;
-      const offerType = offerToApply > 0 ? 'product' : 'none';
-
-      // Recalculate variant sale prices
-      product.variants.forEach(variant => {
-        variant.salePrice = offerToApply > 0
-          ? Math.floor(variant.regularPrice * (1 - offerToApply / 100))
-          : variant.regularPrice;
-      });
-
-      // Update main product fields
-      product.salePrice = Math.min(...product.variants.map(v => v.salePrice));
-      product.regularPrice = Math.max(...product.variants.map(v => v.regularPrice));
-      product.appliedOffer = offerToApply;
-      product.offerType = offerType;
-
-      await product.save();
-    }
-
-    category.categoryOffer = 0;
-    await category.save();
-
-    return res.status(200).json({ status: true });
-  } catch (error) {
-    next(error);
-  }
 };
-
 
 
 module.exports = {
@@ -215,4 +238,4 @@ module.exports = {
     editCategory,
     addCategoryOffer,
     removeCategoryOffer,
-}
+};

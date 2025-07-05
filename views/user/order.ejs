@@ -13,31 +13,6 @@
             color: #000;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .nav-link {
-            color: #000;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        .nav-link:hover {
-            color: #374151;
-            transform: translateY(-2px);
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 50%;
-            background-color: #000;
-            transition: all 0.3s ease;
-            transform: translateX(-50%);
-        }
-        .nav-link:hover::after {
-            width: 100%;
-        }
         .track-btn {
             background: linear-gradient(135deg, #000 0%, #374151 100%);
             color: #FFF;
@@ -98,7 +73,6 @@
         }
         
         .status-badge {
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
             color: white;
             font-size: 0.75rem;
             font-weight: 700;
@@ -106,6 +80,16 @@
             border-radius: 20px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+        .status-badge[data-status="Cancelled"],
+        .status-badge[data-status="Payment-Failed"] {
+            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+        }
+        .status-badge[data-status="Delivered"] {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        }
+        .status-badge:not([data-status="Cancelled"]):not([data-status="Payment-Failed"]):not([data-status="Delivered"]) {
+            background: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
         }
         .back-btn {
             background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
@@ -184,6 +168,39 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
         }
+
+        .deliver-btn {
+            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            color: #FFF;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .deliver-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .deliver-btn:hover::before {
+            left: 100%;
+        }
+        .deliver-btn:hover {
+            background: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .product-image {
+            transition: opacity 0.2s ease-in-out;
+        }
     </style>
 
     <!-- Main Content -->
@@ -194,7 +211,7 @@
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">Your Orders</h1>
             <p class="text-lg text-gray-600">Total Orders: <%= totalOrders %></p>
         </div>
-        <a href="/" class="back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Back to Dashboard</a>
+        <a href="/profile" class="back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Back</a>
     </div>
 
     <!-- Orders List -->
@@ -209,8 +226,8 @@
                         <p class="text-gray-600">Delivery Address: <%= order.address %></p>
                         <p class="text-gray-600">Total Items: <%= order.totalItems %></p>
                         <p class="text-gray-600">Total Amount: <span class="price-highlight">₹<%= order.totalAmount.toFixed(2) %></span></p>
-                        <p class="text-gray-600">Status: 
-                            <span class="status-badge" style="background: <%= order.status === 'Cancelled' ? 'linear-gradient(135deg, #EF4444 0%, #F87171 100%)' : '' %>">
+                        <p class="text-gray-600 ">Status: 
+                            <span class="status-badge text-white" data-status="<%= order.status %>">
                                 <%= order.status %>
                             </span>
                         </p>
@@ -219,7 +236,14 @@
 
                     <!-- Product Image -->
                     <div class="flex-1 flex items-center gap-4">
-                        <img src="<%= order.productImage %>" alt="Product Image" class="product-image w-20 h-20 object-cover rounded-lg">
+                        <img 
+                            src="<%= order.productImages[0] %>" 
+                            alt="Product Image"
+                            class="product-image w-20 h-20 object-cover rounded-lg border-2 border-white shadow-lg transition-all duration-300"
+                            data-images='<%= JSON.stringify(order.productImages) %>'
+                            onmouseover="startFlipbook(this)"
+                            onmouseleave="stopFlipbook(this)" 
+                        />
                     </div>
 
                     <!-- Actions -->
@@ -228,10 +252,20 @@
                            <% if (order.status !== 'Pending' && order.status !== 'Processing') { %>disabled<% } %>>
                             Cancel Order
                         </button>
-                        <% if (order.status === 'Cancelled') { %>
-                         <a href="/ordeTracking/<%= order.orderId %>" class="track-btn py-2 px-4 rounded-lg text-center"
+                        <% if (order.status === 'Cancelled' || order.status === 'Returned') { %>
+                         <a href="/ordeTracking/<%= order.orderId %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
                            <% if (!order.trackingAvailable) { %>disabled<% } %>>
                             View
+                        </a>
+                        <% } else if (order.status === 'Delivered') { %>
+                        <a href="/ordeTracking/<%= order.orderId %>" class="deliver-btn py-2 px-4 rounded-lg text-center"
+                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                            View
+                        </a>
+                        <% } else if (order.status === 'Payment-Failed') { %>
+                        <a href="/check-out?orderId=<%= order.orderId %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
+                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                            Retry-Payment
                         </a>
                         <% } else { %>
                         <a href="/ordeTracking/<%= order.orderId %>" class="track-btn py-2 px-4 rounded-lg text-center"
@@ -245,16 +279,13 @@
         <% } else { %>
             <div class="order-card bg-white shadow-md rounded-lg p-6 text-center">
                 <p class="text-gray-600 text-lg">You have no orders yet. Start shopping now!</p>
-                <a href="/products" class="mt-4 inline-block back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Browse Products</a>
+                <a href="/allproducts" class="mt-4 inline-block back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Browse Products</a>
             </div>
         <% } %>
     </div>
 </main>
 
 <%- include('../../views/partials/user/footer') %>
-
-<!-- Include SweetAlert2 library -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     // Hide cancel button based on order status
@@ -323,7 +354,6 @@
                     icon: 'error',
                     confirmButtonColor: '#EF4444'
                 });
-                console.error('Error cancelling order:', error);
             }
         }
     }
@@ -398,4 +428,28 @@
         card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         observer.observe(card);
     });
+
+    let flipInterval = null;
+
+    function startFlipbook(imgElement) {
+        const images = JSON.parse(imgElement.getAttribute('data-images'));
+        if (!images || images.length <= 1) return;
+
+        let index = 0;
+        flipInterval = setInterval(() => {
+            index = (index + 1) % images.length;
+            imgElement.src = images[index];
+        }, 700);
+    }
+
+    function stopFlipbook(imgElement) {
+        clearInterval(flipInterval);
+        flipInterval = null;
+
+        const images = JSON.parse(imgElement.getAttribute('data-images'));
+        if (images && images.length > 0) {
+            imgElement.src = images[0];
+        }
+    }
+
 </script>

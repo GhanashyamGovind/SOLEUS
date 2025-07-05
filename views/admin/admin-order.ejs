@@ -37,84 +37,127 @@
 </style>
 
 <!-- Main Content -->
-<main class="container mx-auto p-4 sm:p-6">
+<main class="container mx-auto p-4 sm:p-6 w-full max-w-full box-border overflow-x-hidden min-h-[calc(100vh-120px)]">
     <!-- Header -->
-    <header class="bg-white text-black p-4">
-        <div class="container mx-auto">
+    <header class="bg-white text-black p-4 w-full max-w-full">
+        <div class="container mx-auto w-full max-w-full">
             <h1 class="text-xl sm:text-2xl font-bold tracking-wide">Admin Order Management</h1>
         </div>
     </header>
 
     <!-- Right-aligned Section for Button and Search -->
-    <div class="flex justify-end gap-4 mb-6">
-
+    <div class="flex justify-start gap-4 mb-6 flex-col sm:flex-row">
         <!-- Search Section -->
-        <div class="bg-white shadow-md rounded-lg p-4 w-1/4">
+        <div class="bg-white shadow-md rounded-lg p-4 w-full max-w-md">
             <h2 class="text-lg font-semibold mb-2 text-gray-800">Search Orders</h2>
-            <div class="flex flex-row gap-2">
-                <input type="text" id="search-user" placeholder="Search by User Name" class="border border-gray-300 rounded-lg p-1 text-xs text-black focus:outline-none focus:ring-2 focus:ring-gray-400 transition-shadow duration-200 hover:shadow-md flex-1">
-                <input type="date" id="search-date" class="border border-gray-300 rounded-lg p-1 text-xs text-black focus:outline-none focus:ring-2 focus:ring-gray-400 transition-shadow duration-200 hover:shadow-md w-28" max="2025-06-02">
-                <button onclick="searchOrders()" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-xs btn shadow-sm">Search</button>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="search-user" placeholder="Search by User Name" value="<%= userSearch %>" 
+                       class="border border-gray-300 rounded-lg p-1 text-xs text-black 
+                              focus:outline-none focus:ring-2 focus:ring-gray-400 
+                              transition-shadow duration-200 hover:shadow-md flex-1 min-w-0">
+
+                <input type="date" id="search-date" value="<%= searchDate %>"
+                       class="border border-gray-300 rounded-lg p-1 text-xs text-black 
+                              focus:outline-none focus:ring-2 focus:ring-gray-400 
+                              transition-shadow duration-200 hover:shadow-md w-28 sm:w-32">
+
+                <button onclick="searchOrders()" 
+                        class="bg-gray-700 text-white px-3 py-1 rounded-lg 
+                               hover:bg-gray-600 text-xs btn shadow-sm">
+                    Search
+                </button>
             </div>
         </div>
     </div>
 
     <!-- Orders Table -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden border">
+    <div class="bg-white shadow-md rounded-lg overflow-hidden border w-full max-w-full">
         <div class="p-4 sm:p-6">
             <h2 class="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Orders</h2>
 
-            <div class="overflow-x-auto hide-scrollbar">
+            <div class="overflow-x-auto hide-scrollbar w-full">
                 <% if (orders && orders.length > 0) { %>
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 min-w-[800px]">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">User Name</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Ordered Date</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Total Items</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Payment Method</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider">View</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Order ID</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[120px] truncate">User Name</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Ordered Date</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Total Amount</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate hidden sm:table-cell">Total Items</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate hidden sm:table-cell">Payment Method</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[100px] truncate">Status</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wider max-w-[120px] truncate">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs sm:text-sm font-medium text-gray-500. uppercase tracking-wider max-w-[100px] truncate">View</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <% orders.forEach(order => { %>
                             <tr class="table-row transition-colors duration-200">
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.orderId %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.userName %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.orderedDate %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.totalAmount %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.totalItems %></td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900"><%= order.paymentMethod %></td>
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate"><%= order.orderId %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[120px] break-words"><%= order.userName %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate"><%= order.orderedDate %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate"><%= order.totalAmount %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate hidden sm:table-cell"><%= order.totalItems %></td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 max-w-[100px] truncate hidden sm:table-cell"><%= order.paymentMethod %></td>
+                                <td class="px-4 py-4 whitespace-nowrap max-w-[100px] truncate">
                                     <span id="status-<%= order.orderId %>" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white <%= order.orderStatus === 'Pending' ? 'bg-yellow-500' : order.orderStatus === 'Processing' ? 'bg-blue-500' : order.orderStatus === 'Shipped' ? 'bg-indigo-500' : order.orderStatus === 'Delivered' ? 'bg-green-500' : order.orderStatus === 'Cancelled' ? 'bg-red-500' : 'bg-red-500' %>">
                                         <%= order.orderStatus %>
                                     </span>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
-                                    <select id="status-select-<%= order.orderId %>" onchange="handleStatusChange('<%= order.orderId %>')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" <%= order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : '' %>>
-                                        <option value="Pending" <%= order.orderStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
-                                        <option value="Processing" <%= order.orderStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
-                                        <option value="Shipped" <%= order.orderStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
-                                        <option value="Delivered" <%= order.orderStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                        <option value="Cancelled" <%= order.orderStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base max-w-[120px]">
+                                    <select id="status-select-<%= order.orderId %>" onchange="handleStatusChange('<%= order.orderId %>', '<%= order.orderStatus %>')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 w-full" <%= order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned' ? 'disabled' : '' %>>
+                                        <% if (order.orderStatus === 'Pending') { %>
+                                            <option value="Pending" selected>Pending</option>
+                                            <option value="Processing">Processing</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        <% } else if (order.orderStatus === 'Processing') { %>
+                                            <option value="Processing" selected>Processing</option>
+                                            <option value="Shipped">Shipped</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        <% } else if (order.orderStatus === 'Shipped') { %>
+                                            <option value="Shipped" selected>Shipped</option>
+                                            <option value="Delivered">Delivered</option>
+                                            <option value="Cancelled">Cancelled</option>
+                                        <% } else if (order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned') { %>
+                                            <option value="<%= order.orderStatus %>" selected><%= order.orderStatus %></option>
+                                        <% } %>
                                     </select>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base">
-                                    <button onclick="window.location.assign('<%= order.viewLink %>')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base max-w-[100px] relative">
+                                    <div class="relative inline-block">
+                                        <% if (order.returnAlert) { %>
+                                            <span class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full z-50 border-2 border-white animate-pulse"></span>
+                                        <% } %>
+                                        <button onclick="window.location.assign('<%= order.viewLink %>')" 
+                                                class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm w-full">
+                                            View Details
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <% }) %>
                         </tbody>
                     </table>
                 <% } else { %>
-                    <div id="no-orders" class="text-center text-gray-500 py-6">
+                    <div id="no-orders" class="text-center text-gray-500 py-6 w-full">
                         <p class="text-lg">No orders found</p>
                     </div>
                 <% } %>
+
+                <div class="flex justify-center items-center mt-6 gap-2 flex-wrap">
+                    <% if (totalPages > 1) { %>
+                        <% for (let i = 1; i <= totalPages; i++) { %>
+                            <button onclick="fetchPage(<%= i %>)" class="px-3 py-1 rounded-md 
+                                <%= currentPage === i ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800' %> hover:bg-gray-400 transition text-sm sm:text-base">
+                                <%= i %>
+                            </button>
+                        <% } %>
+                        <p class="text-sm text-gray-600 mt-2 text-center w-full sm:w-auto">
+                            Page <%= currentPage %> of <%= totalPages %>
+                        </p>
+                    <% } %>
+                </div>
             </div>
         </div>
     </div>
@@ -123,15 +166,12 @@
 <%- include('../../views/partials/admin/footer') %>
 
 <script>
-    // Orders data from server-side
-    const allOrders = <%- JSON.stringify(orders || []) %>;
-
     // Function to render orders in the table
-    function renderOrders(orders) {
+    function renderOrders(data) {
         const tableBody = document.querySelector('table tbody');
         const noOrdersDiv = document.getElementById('no-orders');
 
-        if (!orders || orders.length === 0) {
+        if (!data.orders || data.orders.length === 0) {
             if (tableBody) tableBody.parentElement.style.display = 'none';
             if (noOrdersDiv) noOrdersDiv.style.display = 'block';
             return;
@@ -142,7 +182,7 @@
 
         if (tableBody) {
             tableBody.innerHTML = ''; // Clear existing rows
-            orders.forEach(order => {
+            data.orders.forEach(order => {
                 const statusColor = {
                     'Pending': 'bg-yellow-500',
                     'Processing': 'bg-blue-500',
@@ -151,80 +191,146 @@
                     'Cancelled': 'bg-red-500'
                 }[order.orderStatus] || 'bg-gray-500';
 
-                const viewLink = order.viewLink || '#'; // Fallback to '#' if viewLink is undefined
+                const viewLink = order.viewLink || '#';
+                let statusOptions = '';
+                if (order.orderStatus === 'Pending') {
+                    statusOptions = `
+                        <option value="Pending" selected>Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Cancelled">Cancelled</option>
+                    `;
+                } else if (order.orderStatus === 'Processing') {
+                    statusOptions = `
+                        <option value="Processing" selected>Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Cancelled">Cancelled</option>
+                    `;
+                } else if (order.orderStatus === 'Shipped') {
+                    statusOptions = `
+                        <option value="Shipped" selected>Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                    `;
+                } else if (order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned') {
+                    statusOptions = `
+                        <option value="${order.orderStatus}" selected>${order.orderStatus}</option>
+                    `;
+                }
+
                 const row = `
                     <tr class="table-row transition-colors duration-200">
                         <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderId}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.userName}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.orderedDate}</td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.totalAmount}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.totalItems}</td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900">${order.paymentMethod}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 hidden sm:table-cell">${order.totalItems}</td>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base text-gray-900 hidden sm:table-cell">${order.paymentMethod}</td>
                         <td class="px-4 py-4 whitespace-nowrap">
                             <span id="status-${order.orderId}" class="px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}">${order.orderStatus}</span>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-black text-sm sm:text-base">
-                            <select id="status-select-${order.orderId}" onchange="handleStatusChange('${order.orderId}')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" ${order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' ? 'disabled' : ''}>
-                                <option value="Pending" ${order.orderStatus === 'Pending' ? 'selected' : ''}>Pending</option>
-                                <option value="Processing" ${order.orderStatus === 'Processing' ? 'selected' : ''}>Processing</option>
-                                <option value="Shipped" ${order.orderStatus === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                                <option value="Delivered" ${order.orderStatus === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                <option value="Cancelled" ${order.orderStatus === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                            <select id="status-select-${order.orderId}" onchange="handleStatusChange('${order.orderId}', '${order.orderStatus}')" class="status-select border border-gray-300 rounded-lg p-1 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" ${order.orderStatus === 'Delivered' || order.orderStatus === 'Cancelled' || order.orderStatus === 'Returned' ? 'disabled' : ''}>
+                                ${statusOptions}
                             </select>
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base">
-                            <button onclick="window.location.assign('${viewLink}')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm">View Details</button>
+                        <td class="px-4 py-4 whitespace-nowrap text-sm sm:text-base max-w-[100px] relative">
+                            <div class="relative inline-block">
+                                ${order.returnAlert ? '<span class="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full z-50 border-2 border-white animate-pulse"></span>' : ''}
+                                <button onclick="window.location.assign('${viewLink}')" class="bg-gray-700 text-white px-3 py-1 rounded-lg hover:bg-gray-600 text-sm btn shadow-sm w-full">View Details</button>
+                            </div>
                         </td>
                     </tr>
                 `;
                 tableBody.innerHTML += row;
             });
         }
-    }
 
-    // Initial render of orders
-    renderOrders(allOrders);
-
-    // Function to search orders
-    function searchOrders() {
-        const searchUser = document.getElementById('search-user').value.toLowerCase();
-        const searchDate = document.getElementById('search-date').value;
-
-        const filteredOrders = allOrders.filter(order => {
-            const matchesUser = searchUser ? order.userName.toLowerCase().includes(searchUser) : true;
-            const matchesDate = searchDate ? order.orderedDate === searchDate : true;
-            return matchesUser && matchesDate;
-        });
-
-        renderOrders(filteredOrders);
-    }
-
-    // Function to handle status change
-    async function handleStatusChange(orderId) {
-        const select = document.getElementById(`status-select-${orderId}`);
-        const newStatus = select.value;
-
-        if (newStatus === 'Cancelled') {
-            await cancelOrder(orderId);
-        } else {
-            await updateStatus(orderId);
+        // Update pagination
+        const paginationDiv = document.querySelector('.flex.justify-center.items-center.mt-6');
+        paginationDiv.innerHTML = '';
+        if (data.totalPages > 1) {
+            for (let i = 1; i <= data.totalPages; i++) {
+                paginationDiv.innerHTML += `
+                    <button onclick="fetchPage(${i})" class="px-3 py-1 rounded-md 
+                        ${data.currentPage === i ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800'} hover:bg-gray-400 transition text-sm sm:text-base">
+                        ${i}
+                    </button>
+                `;
+            }
+            paginationDiv.innerHTML += `
+                <p class="text-sm text-gray-600 mt-2 text-center w-full sm:w-auto">
+                    Page ${data.currentPage} of ${data.totalPages}
+                </p>
+            `;
         }
     }
 
-    // Function to update order status (except Cancelled)
-    async function updateStatus(orderId) {
+    // Function to fetch orders for a specific page
+    async function fetchPage(page) {
+        const searchUser = document.getElementById('search-user').value;
+        const searchDate = document.getElementById('search-date').value;
+        const query = new URLSearchParams({
+            page: page,
+            'search-user': searchUser,
+            'search-date': searchDate
+        }).toString();
+
+        try {
+            const response = await fetch(`/admin/orders?${query}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch orders');
+            }
+            const data = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data, 'text/html');
+            const newMain = doc.querySelector('main');
+            document.querySelector('main').innerHTML = newMain.innerHTML;
+        } catch (error) {
+            alert('Failed to load page. Please try again.');
+        }
+    }
+
+    // Function to search orders
+    async function searchOrders() {
+        const searchUser = document.getElementById('search-user').value;
+        const searchDate = document.getElementById('search-date').value;
+        const query = new URLSearchParams({
+            page: 1,
+            'search-user': searchUser,
+            'search-date': searchDate
+        }).toString();
+
+        try {
+            const response = await fetch(`/admin/orders?${query}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch orders');
+            }
+            const data = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data, 'text/html');
+            const newMain = doc.querySelector('main');
+            document.querySelector('main').innerHTML = newMain.innerHTML;
+        } catch (error) {
+            alert('Failed to search orders. Please try again.');
+        }
+    }
+
+    // Function to handle status change
+    async function handleStatusChange(orderId, currentStatus) {
         const select = document.getElementById(`status-select-${orderId}`);
         const newStatus = select.value;
+        const currentPage = <%= currentPage %>;
 
         try {
             const response = await fetch(`/admin/orders/status/${orderId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ status: newStatus, page: currentPage })
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update status');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to update status');
             }
 
             const data = await response.json();
@@ -239,66 +345,12 @@
             }[newStatus] || 'bg-gray-500';
             statusSpan.className = `px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}`;
 
-            // Update local orders array
-            const order = allOrders.find(o => o.orderId === orderId);
-            if (order) {
-                order.orderStatus = newStatus;
-            }
-
-            // Re-render orders to update the disabled state
-            renderOrders(allOrders);
+            // Fetch the current page to update the table
+            await fetchPage(data.page);
         } catch (error) {
-            console.error('Error updating status:', error);
-            alert('Failed to update status. Please try again.');
+            alert(`Failed to update status: ${error.message}`);
             // Revert select to original status
-            const order = allOrders.find(o => o.orderId === orderId);
-            if (order) {
-                select.value = order.orderStatus;
-            }
-        }
-    }
-
-    // Function to cancel order using PUT method
-    async function cancelOrder(orderId) {
-        const select = document.getElementById(`status-select-${orderId}`);
-        const newStatus = 'Cancelled';
-
-        try {
-            const response = await fetch(`/admin/orders/cancel/${orderId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to cancel order');
-            }
-
-            const data = await response.json();
-            const statusSpan = document.getElementById(`status-${orderId}`);
-            statusSpan.textContent = newStatus;
-            const statusColor = 'bg-red-500';
-            statusSpan.className = `px-2 py-1 text-xs sm:text-sm font-semibold rounded-full text-white ${statusColor}`;
-
-            // Update local orders array
-            const order = allOrders.find(o => o.orderId === orderId);
-            if (order) {
-                order.orderStatus = newStatus;
-            }
-
-            // Disable the select dropdown after cancellation
-            select.disabled = true;
-
-            // Re-render orders to update the disabled state
-            renderOrders(allOrders);
-        } catch (error) {
-            console.error('Error cancelling order:', error);
-            alert('Failed to cancel order. Please try again.');
-            // Revert select to original status
-            const order = allOrders.find(o => o.orderId === orderId);
-            if (order) {
-                select.value = order.orderStatus;
-            }
+            select.value = currentStatus;
         }
     }
 </script>

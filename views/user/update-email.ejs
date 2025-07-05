@@ -86,7 +86,6 @@
                         body: JSON.stringify({ email })
                     });
                     const data = await res.json();
-                    console.log('Response:', data); // Debug log
                     if (data.success) {
                         Swal.fire({
                             icon: "success",
@@ -105,7 +104,6 @@
                         });
                     }
                 } catch (error) {
-                    console.error("Fetch error:", error); // Debug log
                     Swal.fire({
                         icon: "error",
                         title: "Error",

@@ -8,6 +8,8 @@ const cartController = require('../controllers/user/cartController');
 const checkoutController = require('../controllers/user/checkoutController');
 const orderController = require('../controllers/user/orderController');
 const invoiceController = require('../controllers/user/invoiceController');
+const walletController = require('../controllers/user/walletController');
+const couponController = require('../controllers/user/couponController');
 const passport = require('passport');
 const { userAuth } = require('../middlewares/auth');
 const {userStorage} = require('../helpers/multer');
@@ -32,9 +34,9 @@ router.post("/resend-otp", userController.resendOtp);
 router.get('/logout', userController.logOut)
 
 //google autgh
-router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email']}));
+router.get('/auth/google', passport.authenticate('google', {scope:['profile', 'email'], prompt: 'select_account'}));
 
-router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect:'/signUp'}), (req, res) => {
+router.get('/auth/google/callback', passport.authenticate('google', {failureRedirect:'/login?authError=blocked'}), (req, res) => {
     console.log('google login successful ==> ', req.user);
     req.session.user=req.user
     res.redirect('/')
@@ -49,6 +51,9 @@ router.get('/',userController.loadHomepage);
 router.get('/allproducts', userController.loadAllProductPage);
 router.get('/productFilter', userController.filterProduct);
 router.get('/clearSearch', userController.clearSearch);
+router.get('/brand/brnadProducts/:id', userController.brandProudct);
+router.get('/newDrops', userController.newDrops);
+router.get('/offerProducts', userController.offerProducts)
 
 //other pages
 router.get('/about', userController.aboutUs);
@@ -78,6 +83,7 @@ router.get('/update-email', userAuth, profileController.getUpdateEmail);
 router.post('/update-email', userAuth, profileController.updateEmail);
 router.put('/updatePassword', userAuth, profileController.updatePassword);
 router.get('/confirm-delete', userAuth, profileController.deletePage);
+router.post('/confirm-delete', userAuth, profileController.creatDeleteSession)
 router.delete('/confirm-delete', userAuth, profileController.confirmDelete);
 
 //profil and profile address details
@@ -87,7 +93,6 @@ router.post('/addAddress', userAuth, profileController.addAddress);
 router.get('/editAddress', userAuth, profileController.loadEdit);
 router.put('/editAddress', userAuth, profileController.editAddress);
 router.delete('/deleteAddress/:id', profileController.deleteAddress)
-
 
 
 //product management
@@ -105,11 +110,22 @@ router.put('/cart/update', userAuth, cartController.updateCart);
 router.delete('/cart/remove', userAuth, cartController.removeFromCart);
 //single buy
 router.post('/buyNow', userAuth, cartController.buyNow);
+
 //checkout and payment
 router.get('/check-out', userAuth, checkoutController.loadCheckOut);
 router.post('/proceedToPayment', userAuth, checkoutController.proceedToPayment);
+router.post('/create-razorpay-order', userAuth, checkoutController.createRazorpayOrder);
+router.post('/verify-razorpay-payment', userAuth, checkoutController.verifyRazorpayPayment);
+router.post('/handle-payment-failure', userAuth, checkoutController.handlePaymentFailure);
+router.post('/applyCoupon', userAuth, checkoutController.applyCoupon);
+router.post('/removeCoupon', userAuth, checkoutController.removeCoupon);
 //success
 router.get('/order/success', userAuth, checkoutController.successPage);
+//faliure
+router.get('/order/failure', userAuth, checkoutController.failurePage);
+//retry payment
+router.get('/checkout-buy-now', userAuth, checkoutController.retryBuyNowCheckout);
+router.get('/retry-cart-checkout', userAuth, checkoutController.retryCartCheckout);
 
 
 //orders
@@ -117,9 +133,14 @@ router.get('/getOrders', userAuth, orderController.loadOrder);
 router.get('/ordeTracking/:orderId', userAuth, orderController.getTrackPage);
 router.put('/orders/cancel/:orderId', userAuth, orderController.cancelOrder);
 router.put('/order/return/:orderId', userAuth, orderController.returnOrderRequest);
-
 //invoice
-router.get('/order/invoice/downloadPDF/:orderId', userAuth, invoiceController.downloadPDF)
+router.get('/order/invoice/downloadPDF/:orderId', userAuth, invoiceController.downloadPDF);
+
+//wallet
+router.get('/getWallet', userAuth, walletController.loadWallet);
+
+//coupon
+router.get('/getCoupon', userAuth, couponController.loadCoupon);
 
 
 

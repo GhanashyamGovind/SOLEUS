@@ -39,9 +39,9 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Cart"
     }],
-    wallet: {
-        type: Number,
-        default: 0
+    walletId: {
+        type: Schema.Types.ObjectId,
+        ref: "Wallet"
     },
     wishlist: [{
         type: Schema.Types.ObjectId,
@@ -54,16 +54,6 @@ const userSchema = new Schema({
     createdOn: {
         type: Date,
         default: Date.now,
-    },
-    referalCode: {
-        type: String,
-    },
-    redeemed: {
-        type: Boolean,
-    },
-    redeemedUsers: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
     },
     profileImage: {
         type: String,
@@ -81,7 +71,12 @@ const userSchema = new Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    referralCode: {
+        type: String, 
+        unique: true,
+        sparse: true
+    }
 });
 
 const User = mongoose.model('User', userSchema);

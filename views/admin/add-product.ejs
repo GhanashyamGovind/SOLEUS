@@ -204,10 +204,7 @@ let isCropped = { 1: false, 2: false, 3: false, 4: false }; // Track cropping st
 // Check if Cropper.js is loaded
 window.addEventListener('load', () => {
     if (typeof Cropper === 'undefined') {
-        console.error('Cropper.js failed to load. Check the CDN URL or network connection.');
         displayErrorMessage('images-error', 'Image cropping library failed to load. Please try again later.');
-    } else {
-        console.log('Cropper.js loaded successfully.');
     }
 });
 
@@ -234,7 +231,6 @@ function validateAndSubmit() {
 }
 
 function viewImage(event, index) {
-    console.log(`viewImage called for input${index}`);
     const input = event.target;
     const cropperContainer = document.getElementById(`imageCropper${index}`);
     const cropperImg = document.getElementById(`cropperImg${index}`);
@@ -245,22 +241,18 @@ function viewImage(event, index) {
 
     // Clear previous cropper instance
     if (croppers[index]) {
-        console.log(`Destroying existing cropper for input${index}`);
         croppers[index].destroy();
         delete croppers[index];
     }
 
     const file = input.files[0];
     if (file) {
-        console.log(`File selected for input${index}: ${file.name}, type: ${file.type}, size: ${file.size}`);
         const reader = new FileReader();
         reader.onload = function (e) {
             try {
-                console.log(`Image loaded for input${index}, DataURL length: ${e.target.result.length}`);
                 // Show original image in preview
                 imgView.src = e.target.result;
                 imgView.classList.remove('display-none');
-                console.log(`Set imgView${index}.src, removed display-none`);
                 status.textContent = 'Image selected (not cropped)';
                 status.classList.remove('text-green-600', 'text-red-600');
                 status.classList.add('text-yellow-600');
@@ -268,7 +260,6 @@ function viewImage(event, index) {
                 // Setup cropper
                 cropperImg.src = e.target.result;
                 cropperContainer.classList.remove('hidden');
-                console.log(`Cropper container${index} shown`);
 
                 // Initialize Cropper.js
                 croppers[index] = new Cropper(cropperImg, {
@@ -279,22 +270,18 @@ function viewImage(event, index) {
                     autoCropArea: 0.8,
                     zoomable: true,
                     ready: function () {
-                        console.log(`Cropper initialized for input${index}`);
                     },
                     cropend: function () {
-                        console.log(`Crop area adjusted for input${index}`);
                     }
                 });
 
                 // Handle crop and save
                 saveButton.onclick = function () {
-                    console.log(`Saving cropped image for input${index}`);
                     const croppedCanvas = croppers[index].getCroppedCanvas({
                         width: 440,
                         height: 440
                     });
                     if (!croppedCanvas) {
-                        console.error(`Failed to get cropped canvas for input${index}`);
                         status.textContent = 'Failed to crop image';
                         status.classList.remove('text-yellow-600');
                         status.classList.add('text-red-600');
@@ -302,43 +289,35 @@ function viewImage(event, index) {
                         return;
                     }
                     const croppedDataUrl = croppedCanvas.toDataURL('image/jpeg', 1.0);
-                    console.log(`Cropped DataURL length for input${index}: ${croppedDataUrl.length}`);
                     imgView.src = croppedDataUrl;
                     imgView.classList.remove('display-none');
-                    console.log(`Updated imgView${index}.src with cropped image, removed display-none`);
                     status.textContent = 'Image cropped';
                     status.classList.remove('text-yellow-600');
                     status.classList.add('text-green-600');
 
                     croppedCanvas.toBlob(blob => {
                         if (!blob) {
-                            console.error(`Failed to create blob for input${index}`);
                             status.textContent = 'Failed to process cropped image';
                             status.classList.remove('text-yellow-600');
                             status.classList.add('text-red-600');
                             displayErrorMessage('images-error', 'Failed to process the cropped image.');
                             return;
                         }
-                        console.log(`Blob created for input${index}, size: ${blob.size}`);
                         const fileName = `cropped-img-${Date.now()}-${index}.jpeg`;
-                        console.log(`Creating file: ${fileName}`);
                         const croppedFile = new File([blob], fileName, { type: 'image/jpeg' });
                         const fileList = new DataTransfer();
                         fileList.items.add(croppedFile);
                         input.files = fileList.files;
-                        console.log(`Updated input${index} with cropped file`);
                         isCropped[index] = true;
                     }, 'image/jpeg', 1.0);
 
                     cropperContainer.classList.add('hidden');
-                    console.log(`Cropper container${index} hidden`);
                     croppers[index].destroy();
                     delete croppers[index];
                 };
 
                 // Handle cancel
                 cancelButton.onclick = function () {
-                    console.log(`Cancel cropping for input${index}`);
                     cropperContainer.classList.add('hidden');
                     input.value = '';
                     imgView.src = '';
@@ -351,10 +330,8 @@ function viewImage(event, index) {
                         croppers[index].destroy();
                         delete croppers[index];
                     }
-                    console.log(`Reset input${index} and preview`);
                 };
             } catch (error) {
-                console.error(`Error in viewImage for input${index}:`, error);
                 displayErrorMessage('images-error', 'Failed to load image for cropping. Please try again.');
                 status.textContent = 'Error loading image';
                 status.classList.remove('text-yellow-600', 'text-green-600');
@@ -362,7 +339,6 @@ function viewImage(event, index) {
             }
         };
         reader.onerror = function () {
-            console.error(`FileReader error for input${index}`);
             displayErrorMessage('images-error', 'Failed to read the selected image. Please try another file.');
             status.textContent = 'Error reading image';
             status.classList.remove('text-yellow-600', 'text-green-600');
@@ -370,7 +346,6 @@ function viewImage(event, index) {
         };
         reader.readAsDataURL(file);
     } else {
-        console.log(`No file selected for input${index}`);
         status.textContent = 'No image selected';
         status.classList.remove('text-yellow-600', 'text-green-600', 'text-red-600');
         status.classList.add('text-gray-600');
@@ -460,7 +435,7 @@ function validateForm() {
                 isValid = false;
             }
 
-            if (parseFloat(regularPrice) <= parseFloat(salePrice || 0)) {
+            if (parseFloat(regularPrice) < parseFloat(salePrice || 0)) {
                 displayErrorMessage(`regularPrice-${size}-error`, 'Regular price must be greater than sale price.');
                 isValid = false;
             }

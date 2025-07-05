@@ -16,17 +16,21 @@ const bannerSchema = new Schema({
         required: true
     },
     link: {
-        type: String
+        type: String,
+        default: ''
     },
-    startDate: {
-        type: Date,
-        required: true
+    buttonText: {
+        type: String,
+        default: 'Shop Now'
     },
-    endDate: {
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    createdAt: {
         type: Date,
-        required: true
-    }
-
+        default: Date.now
+    },
 });
 
 const Banner = mongoose.model('Banner', bannerSchema);

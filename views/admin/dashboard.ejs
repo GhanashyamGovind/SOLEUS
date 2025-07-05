@@ -1,102 +1,750 @@
 <%- include('../../views/partials/admin/header', {title: 'Dashboard'}) %>
 
-        <!-- Main Content -->
-        <div class="main-content flex-1 p-6 overflow-auto">
-            <!-- Dashboard Content -->
-            <div class="bg-white text-black p-6 rounded-lg shadow-lg">
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4">OVER ALL</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-rupee-sign text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL SALE</h3>
-                            <p class="text-2xl font-bold text-gray-900">₹9000</p>
-                        </div>
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-shopping-cart text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL ORDERS</h3>
-                            <p class="text-2xl font-bold text-gray-900">100</p>
-                        </div>
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-users text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL CUSTOMER</h3>
-                            <p class="text-2xl font-bold text-gray-900">125</p>
-                        </div>
-                        <div class="border border-gray-200 p-4 rounded-lg text-center bg-gray-50">
-                            <i class="fas fa-wallet text-gray-500 mb-2"></i>
-                            <h3 class="text-sm font-semibold text-gray-600">TOTAL INCOME</h3>
-                            <p class="text-2xl font-bold text-gray-900">₹100K</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sales Reports -->
-                <div class="mb-6">
-                    <h2 class="text-xl font-semibold mb-4">SALE REPORTS</h2>
-                    <div class="border border-gray-200 p-4 rounded-lg bg-gray-50">
-                        <svg class="w-full h-64" viewBox="0 0 600 240" preserveAspectRatio="xMidYMid meet">
-                            <!-- Y-Axis Labels -->
-                            <text x="20" y="20" fill="black" font-size="12">₹999K</text>
-                            <text x="20" y="60" fill="black" font-size="12">₹100K</text>
-                            <text x="20" y="100" fill="black" font-size="12">₹50K</text>
-                            <text x="20" y="140" fill="black" font-size="12">₹25K</text>
-                            <text x="20" y="180" fill="black" font-size="12">₹10K</text>
-                            <text x="20" y="220" fill="black" font-size="12">₹1000</text>
-                            <!-- Grid Lines -->
-                            <line x1="50" y1="10" x2="600" y2="10" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="50" x2="600" y2="50" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="90" x2="600" y2="90" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="130" x2="600" y2="130" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="170" x2="600" y2="170" stroke="#e5e7eb" stroke-width="1"/>
-                            <line x1="50" y1="210" x2="600" y2="210" stroke="#e5e7eb" stroke-width="1"/>
-                            <!-- X-Axis Labels -->
-                            <text x="50" y="230" fill="black" font-size="12">JAN</text>
-                            <text x="100" y="230" fill="black" font-size="12">FEB</text>
-                            <text x="150" y="230" fill="black" font-size="12">MAR</text>
-                            <text x="200" y="230" fill="black" font-size="12">APR</text>
-                            <text x="250" y="230" fill="black" font-size="12">MAY</text>
-                            <text x="300" y="230" fill="black" font-size="12">JUN</text>
-                            <text x="350" y="230" fill="black" font-size="12">JUL</text>
-                            <text x="400" y="230" fill="black" font-size="12">AUG</text>
-                            <text x="450" y="230" fill="black" font-size="12">SEP</text>
-                            <text x="500" y="230" fill="black" font-size="12">OCT</text>
-                            <text x="550" y="230" fill="black" font-size="12">NOV</text>
-                            <text x="600" y="230" fill="black" font-size="12">DEC</text>
-                            <!-- Sales Line -->
-                            <polyline points="50,190 100,170 150,130 200,150 250,110 300,90 350,120 400,100 450,80 500,70 550,60 600,50" fill="none" stroke="#FFC107" stroke-width="2"/>
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Top Selling Products -->
-                <div>
-                    <h2 class="text-xl font-semibold mb-4">TOP SELLING PRODUCTS</h2>
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-100">
-                                <tr class="border-b border-gray-200">
-                                    <th class="p-4 font-semibold text-gray-700">PRODUCT</th>
-                                    <th class="p-4 font-semibold text-gray-700 text-right">SALES</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-4">CASUAL SHOES WHITE</td>
-                                    <td class="p-4 text-right font-medium">101</td>
-                                </tr>
-                                <tr class="border-b border-gray-200 hover:bg-gray-50">
-                                    <td class="p-4">BLACK LEATHER SHOES</td>
-                                    <td class="p-4 text-right font-medium">69</td>
-                                </tr>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="p-4">FOOTBALL BOOTS</td>
-                                    <td class="p-4 text-right font-medium">44</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<!-- Main Content -->
+<div class="main-content flex-1 p-3 sm:p-6 overflow-auto">
+  <!-- Dashboard Content -->
+  <div class="bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg">
+    
+    <!-- Overview Cards -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Dashboard Overview</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="overviewCards">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-blue-600">Total Sales</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">₹<span id="totalSale"><%= (totalSale || 0).toLocaleString() %></span></h3>
             </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+              <i class="fas fa-rupee-sign text-blue-600 text-lg"></i>
+            </div>
+          </div>
         </div>
+        
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-green-600">Total Orders</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1"><span id="totalOrders"><%= totalOrders || 0 %></span></h3>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+              <i class="fas fa-shopping-cart text-green-600 text-lg"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-purple-600">Total Customers</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1"><span id="totalCustomers"><%= totalCustomers || 0 %></span></h3>
+            </div>
+            <div class="bg-purple-100 p-3 rounded-full">
+              <i class="fas fa-users text-purple-600 text-lg"></i>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs uppercase tracking-wider font-medium text-orange-600">Total Income</p>
+              <h3 class="text-2xl font-bold text-gray-800 mt-1">₹<span id="totalIncome"><%= (totalIncome || 0).toLocaleString() %></span></h3>
+            </div>
+            <div class="bg-orange-100 p-3 rounded-full">
+              <i class="fas fa-wallet text-orange-600 text-lg"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<%- include('../../views/partials/admin/footer') %> 
+    <!-- Sales Report Controls -->
+    <div class="mb-8 bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl sm:text-2xl font-semibold text-gray-800">Sales Analytics</h2>
+        <button class="sm:hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors" 
+                onclick="document.getElementById('reportControls').classList.toggle('hidden')">
+          Toggle Filters
+        </button>
+      </div>
+      
+      <div id="reportControls" class="hidden sm:block">
+        <form id="salesReportForm" class="space-y-4 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Report Period</label>
+            <select id="reportPeriod" name="period" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              <option value="daily" <%= selectedPeriod === 'daily' ? 'selected' : '' %>>Daily</option>
+              <option value="weekly" <%= selectedPeriod === 'weekly' ? 'selected' : '' %>>Weekly</option>
+              <option value="monthly" <%= selectedPeriod === 'monthly' ? 'selected' : '' %>>Monthly</option>
+              <option value="yearly" <%= selectedPeriod === 'yearly' ? 'selected' : '' %>>Yearly</option>
+              <option value="custom" <%= selectedPeriod === 'custom' ? 'selected' : '' %>>Custom Range</option>
+            </select>
+          </div>
+          
+          <div id="customDateRange" class="<%= selectedPeriod === 'custom' ? '' : 'hidden' %>">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <div class="grid grid-cols-2 gap-3">
+              <input type="date" id="startDate" name="startDate" class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<%= filter?.startDate || '' %>">
+              <input type="date" id="endDate" name="endDate" class="p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="<%= filter?.endDate || '' %>">
+            </div>
+          </div>
+          
+          <div class="flex items-end">
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-chart-line mr-2"></i> Generate Report
+            </button>
+          </div>
+          
+          <div class="flex items-end space-x-2">
+            <button type="button" onclick="downloadReport('pdf')" class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-file-pdf mr-2"></i> PDF
+            </button>
+            <button type="button" onclick="downloadReport('excel')" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+              <i class="fas fa-file-excel mr-2"></i> Excel
+            </button>
+          </div>
+        </form>
+      </div>
+      <div id="reportMessage" class="mt-4 text-center"></div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <!-- Category Sales Pie Chart -->
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <i class="fas fa-chart-pie text-blue-500 mr-2"></i> Category Sales Distribution
+        </h2>
+        <div class="relative h-64 md:h-80" id="categorySalesChartContainer">
+          <% if (categorySalesData && categorySalesData.length > 0) { %>
+            <canvas id="categorySalesChart"></canvas>
+          <% } else { %>
+            <p class="text-center text-gray-500 h-full flex items-center justify-center" id="categorySalesEmpty">No category sales data available.</p>
+          <% } %>
+        </div>
+      </div>
+      
+      <!-- Income Over Time Line Graph -->
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <i class="fas fa-chart-line text-green-500 mr-2"></i> Income Trend
+        </h2>
+        <div class="relative h-64 md:h-80" id="incomeChartContainer">
+          <% if (incomeData && incomeData.length > 0) { %>
+            <canvas id="incomeChart"></canvas>
+          <% } else { %>
+            <p class="text-center text-gray-500 h-full flex items-center justify-center" id="incomeChartEmpty">No income data available.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Report Table -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Sales Transactions</h2>
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm md:text-base" id="salesReportTable">
+            <thead class="bg-gray-50">
+              <tr class="border-b border-gray-200">
+                <th class="p-3 font-semibold text-gray-700 text-left">Order ID</th>
+                <th class="p-3 font-semibold text-gray-700 text-left">Date</th>
+                <th class="p-3 font-semibold text-gray-700 text-left">Customer</th>
+                <th class="p-3 font-semibold text-gray-700 text-right">Amount</th>
+                <th class="p-3 font-semibold text-gray-700 text-right">Discount</th>
+                <th class="p-3 font-semibold text-gray-700 text-left">Coupon</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200" id="salesReportBody">
+              <% if (salesReport && salesReport.length > 0) { %>
+                <% salesReport.forEach(order => { %>
+                  <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="p-3 font-medium text-blue-600"><%= order.orderId || 'N/A' %></td>
+                    <td class="p-3 text-gray-600"><%= order.orderDate %></td>
+                    <td class="p-3"><%= order.userName || 'Unknown' %></td>
+                    <td class="p-3 text-right font-medium text-green-600">₹<%= (order.finalAmount || 0).toLocaleString() %></td>
+                    <td class="p-3 text-right font-medium text-orange-600">₹<%= (order.discount || 0).toLocaleString() %></td>
+                    <td class="p-3"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded"><%= order.couponCode || 'None' %></span></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500">No sales data available for the selected period.</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="px-4 py-3 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 bg-gray-50" id="pagination">
+          <% if (pagination && pagination.totalPages > 1) { %>
+            <div class="mb-2 sm:mb-0">
+              <p class="text-sm text-gray-600">
+                Showing <span class="font-medium" id="paginationStart"><%= (pagination.currentPage - 1) * pagination.limit + 1 %></span> to 
+                <span class="font-medium" id="paginationEnd"><%= Math.min(pagination.currentPage * pagination.limit, pagination.totalRecords) %></span> of 
+                <span class="font-medium" id="paginationTotal"><%= pagination.totalRecords %></span> results
+              </p>
+            </div>
+            <div class="flex items-center space-x-1" id="paginationLinks">
+              <a href="/admin?page=<%= pagination.currentPage > 1 ? pagination.currentPage - 1 : 1 %>&period=<%= filter.period %>&startDate=<%= filter.startDate || '' %>&endDate=<%= filter.endDate || '' %>&limit=<%= pagination.limit %>"
+                 class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 <%= pagination.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : '' %>">
+                <i class="fas fa-chevron-left"></i>
+              </a>
+              
+              <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                <% if (i === pagination.currentPage) { %>
+                  <span class="px-3 py-1 rounded-md bg-blue-600 text-white font-medium"><%= i %></span>
+                <% } else { %>
+                  <a href="/admin?page=<%= i %>&period=<%= filter.period %>&startDate=<%= filter.startDate || '' %>&endDate=<%= filter.endDate || '' %>&limit=<%= pagination.limit %>"
+                     class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">
+                    <%= i %>
+                  </a>
+                <% } %>
+              <% } %>
+              
+              <a href="/admin?page=<%= pagination.currentPage < pagination.totalPages ? pagination.currentPage + 1 : pagination.totalPages %>&period=<%= filter.period %>&startDate=<%= filter.startDate || '' %>&endDate=<%= filter.endDate || '' %>&limit=<%= pagination.limit %>"
+                 class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 <%= pagination.currentPage === pagination.totalPages ? 'opacity-50 cursor-not-allowed' : '' %>">
+                <i class="fas fa-chevron-right"></i>
+              </a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sales Summary Cards -->
+    <div class="mb-8">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Performance Summary</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="summaryCards">
+        <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+          <div class="flex items-center">
+            <div class="bg-blue-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-blue-600 mb-1">Total Orders</p>
+              <h3 class="text-2xl font-bold text-gray-800"><span id="summarySalesCount"><%= summary.salesCount || 0 %></span></h3>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+          <div class="flex items-center">
+            <div class="bg-green-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-money-bill-wave text-green-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-green-600 mb-1">Total Revenue</p>
+              <h3 class="text-2xl font-bold text-gray-800">₹<span id="summaryOrderAmount"><%= (summary.orderAmount || 0).toLocaleString() %></span></h3>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all">
+          <div class="flex items-center">
+            <div class="bg-orange-100 p-3 rounded-lg mr-4">
+              <i class="fas fa-percentage text-orange-600 text-xl"></i>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-orange-600 mb-1">Total Discount</p>
+              <h3 class="text-2xl font-bold text-gray-800">₹<span id="summaryDiscount"><%= (summary.discount || 0).toLocaleString() %></span></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Top 10 Best-Selling Categories -->
+    <div class="mb-8" id="topCategoriesSection">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Top 10 Best-Selling Categories</h2>
+      <% if (topCategories && topCategories.length > 0) { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="topCategories">
+          <% topCategories.forEach((category, index) => { %>
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+              <div class="relative mb-3">
+                <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                  #<%= index + 1 %>
+                </span>
+                <div class="bg-gray-100 h-32 rounded-lg flex items-center justify-center">
+                  <span class="text-gray-600 font-medium"><%= category.category %></span>
+                </div>
+              </div>
+              <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800"><%= category.totalSold %></span> units</p>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="text-center text-gray-500" id="topCategoriesEmpty">No category sales data available.</p>
+      <% } %>
+    </div>
+
+    <!-- Top 10 Best-Selling Brands -->
+    <div class="mb-8" id="topBrandsSection">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Top 10 Best-Selling Brands</h2>
+      <% if (topBrands && topBrands.length > 0) { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="topBrands">
+          <% topBrands.forEach((brand, index) => { %>
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+              <div class="relative mb-3">
+                <img src="/Uploads/re-image/<%= brand.image %>" alt="<%= brand.name %>" class="w-full h-32 object-cover rounded-lg">
+                <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                  #<%= index + 1 %>
+                </span>
+              </div>
+              <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate"><%= brand.name %></h3>
+              <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800"><%= brand.totalSold %></span> units</p>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="text-center text-gray-500" id="topBrandsEmpty">No brand sales data available.</p>
+      <% } %>
+    </div>
+
+    <!-- Top 10 Best-Selling Products -->
+    <div class="mb-8" id="topProductsSection">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-800 border-b pb-2">Top 10 Best-Selling Products</h2>
+      <% if (topProducts && topProducts.length > 0) { %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" id="topProducts">
+          <% topProducts.forEach((product, index) => { %>
+            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+              <div class="relative mb-3">
+                <img src="/Uploads/re-image/<%= product.image %>" alt="<%= product.name %>" class="w-full h-32 object-cover rounded-lg">
+                <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                  #<%= index + 1 %>
+                </span>
+              </div>
+              <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate"><%= product.name %></h3>
+              <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800"><%= product.totalSold %></span> units</p>
+            </div>
+          <% }) %>
+        </div>
+      <% } else { %>
+        <p class="text-center text-gray-500" id="topProductsEmpty">No best-selling products available.</p>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<style>
+  th {
+    @apply sticky top-0 bg-gray-50 z-10;
+  }
+  
+  #categorySalesChart {
+    max-height: 320px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+</style>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+<script>
+let categorySalesChartInstance = null;
+let incomeChartInstance = null;
+
+// Initial chart data from server
+const initialCategorySalesData = <%- JSON.stringify(categorySalesData || []) %>;
+const initialIncomeData = <%- JSON.stringify(incomeData || []) %>;
+
+document.addEventListener('DOMContentLoaded', function() {
+  setupEventListeners();
+  updateCharts(initialCategorySalesData, initialIncomeData);
+});
+
+function setupEventListeners() {
+  const reportPeriod = document.getElementById('reportPeriod');
+  const customRange = document.getElementById('customDateRange');
+  const salesReportForm = document.getElementById('salesReportForm');
+
+  reportPeriod.addEventListener('change', function() {
+    customRange.classList.toggle('hidden', this.value !== 'custom');
+  });
+
+  if (reportPeriod.value === 'custom') {
+    customRange.classList.remove('hidden');
+  }
+
+  salesReportForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const formData = new FormData(salesReportForm);
+    const data = {
+      period: formData.get('period'),
+      startDate: formData.get('startDate'),
+      endDate: formData.get('endDate'),
+      page: 1,
+      limit: 5
+    };
+
+    try {
+      const response = await fetch('/admin/sales-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        updateDashboard(result);
+        document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">${result.message}</p>`;
+      } else {
+        document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
+      }
+    } catch (error) {
+      document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
+    }
+  });
+}
+
+async function downloadReport(type) {
+  const period = document.getElementById('reportPeriod').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+
+  try {
+    const response = await fetch(`/admin/download-${type}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ period, startDate, endDate })
+    });
+
+    if (!response.ok) {
+      const result = await response.json();
+      document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sales-report.${type === 'excel' ? 'xlsx' : 'pdf'}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">Downloaded ${type.toUpperCase()} successfully!</p>`;
+  } catch (error) {
+    document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to download ${type.toUpperCase()}: ${error.message}</p>`;
+  }
+}
+
+function updateDashboard(data) {
+  // Update Overview Cards
+  document.getElementById('totalSale').textContent = (data.totalSale || 0).toLocaleString();
+  document.getElementById('totalOrders').textContent = data.totalOrders || 0;
+  document.getElementById('totalCustomers').textContent = data.totalCustomers || 0;
+  document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString();
+
+  // Update Summary Cards
+  document.getElementById('summarySalesCount').textContent = data.summary.salesCount || 0;
+  document.getElementById('summaryOrderAmount').textContent = (data.summary.orderAmount || 0).toLocaleString();
+  document.getElementById('summaryDiscount').textContent = (data.summary.discount || 0).toLocaleString();
+
+  // Update Sales Report Table
+  const salesReportBody = document.getElementById('salesReportBody');
+  salesReportBody.innerHTML = '';
+  if (data.salesReport && data.salesReport.length > 0) {
+    data.salesReport.forEach(order => {
+      const row = `
+        <tr class="hover:bg-gray-50 transition-colors">
+          <td class="p-3 font-medium text-blue-600">${order.orderId || 'N/A'}</td>
+          <td class="p-3 text-gray-600">${order.orderDate}</td>
+          <td class="p-3">${order.userName || 'Unknown'}</td>
+          <td class="p-3 text-right font-medium text-green-600">₹${(order.finalAmount || 0).toLocaleString()}</td>
+          <td class="p-3 text-right font-medium text-orange-600">₹${(order.discount || 0).toLocaleString()}</td>
+          <td class="p-3"><span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">${order.couponCode || 'None'}</span></td>
+        </tr>
+      `;
+      salesReportBody.insertAdjacentHTML('beforeend', row);
+    });
+  } else {
+    salesReportBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No sales data available for the selected period.</td></tr>';
+  }
+
+  // Update Pagination
+  const pagination = document.getElementById('pagination');
+  if (data.pagination && data.pagination.totalPages > 1) {
+    const { currentPage, totalPages, limit, totalRecords } = data.pagination;
+    pagination.innerHTML = `
+      <div class="px-4 py-3 flex flex-col sm:flex-row justify-between items-center border-t border-gray-200 bg-gray-50">
+        <div class="mb-2 sm:mb-0">
+          <p class="text-sm text-gray-600">
+            Showing <span class="font-medium" id="paginationStart">${(currentPage - 1) * limit + 1}</span> to 
+            <span class="font-medium" id="paginationEnd">${Math.min(currentPage * limit, totalRecords)}</span> of 
+            <span class="font-medium" id="paginationTotal">${totalRecords}</span> results
+          </p>
+        </div>
+        <div class="flex items-center space-x-1" id="paginationLinks">
+          <button onclick="fetchPage(${currentPage > 1 ? currentPage - 1 : 1})"
+                  class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          ${Array.from({ length: totalPages }, (_, i) => i + 1).map(i => `
+            ${i === currentPage ?
+              `<span class="px-3 py-1 rounded-md bg-blue-600 text-white font-medium">${i}</span>` :
+              `<button onclick="fetchPage(${i})" class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">${i}</button>`
+            }
+          `).join('')}
+          <button onclick="fetchPage(${currentPage < totalPages ? currentPage + 1 : totalPages})"
+                  class="px-3 py-1 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    pagination.innerHTML = '';
+  }
+
+  // Update Top Categories
+  const topCategories = document.getElementById('topCategories');
+  const topCategoriesEmpty = document.getElementById('topCategoriesEmpty');
+  if (data.topCategories && data.topCategories.length > 0) {
+    topCategories.innerHTML = data.topCategories.map((category, index) => `
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="relative mb-3">
+          <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+            #${index + 1}
+          </span>
+          <div class="bg-gray-100 h-32 rounded-lg flex items-center justify-center">
+            <span class="text-gray-600 font-medium">${category.category}</span>
+          </div>
+        </div>
+        <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${category.totalSold}</span> units</p>
+      </div>
+    `).join('');
+    topCategoriesEmpty?.remove();
+  } else {
+    topCategories.innerHTML = '';
+    topCategoriesSection.insertAdjacentHTML('beforeend', '<p class="text-center text-gray-500" id="topCategoriesEmpty">No category sales data available.</p>');
+  }
+
+  // Update Top Brands
+  const topBrands = document.getElementById('topBrands');
+  const topBrandsEmpty = document.getElementById('topBrandsEmpty');
+  if (data.topBrands && data.topBrands.length > 0) {
+    topBrands.innerHTML = data.topBrands.map((brand, index) => `
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="relative mb-3">
+          <img src="/Uploads/re-image/${brand.image}" alt="${brand.name}" class="w-full h-32 object-cover rounded-lg">
+          <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+            #${index + 1}
+          </span>
+        </div>
+        <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate">${brand.name}</h3>
+        <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${brand.totalSold}</span> units</p>
+      </div>
+    `).join('');
+    topBrandsEmpty?.remove();
+  } else {
+    topBrands.innerHTML = '';
+    topBrandsSection.insertAdjacentHTML('beforeend', '<p class="text-center text-gray-500" id="topBrandsEmpty">No brand sales data available.</p>');
+  }
+
+  // Update Top Products
+  const topProducts = document.getElementById('topProducts');
+  const topProductsEmpty = document.getElementById('topProductsEmpty');
+  if (data.topProducts && data.topProducts.length > 0) {
+    topProducts.innerHTML = data.topProducts.map((product, index) => `
+      <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-300">
+        <div class="relative mb-3">
+          <img src="/Uploads/re-image/${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded-lg">
+          <span class="absolute top-2 left-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+            #${index + 1}
+          </span>
+        </div>
+        <h3 class="text-sm font-semibold text-gray-800 mb-1 truncate">${product.name}</h3>
+        <p class="text-xs text-gray-600">Sold: <span class="font-medium text-gray-800">${product.totalSold}</span> units</p>
+      </div>
+    `).join('');
+    topProductsEmpty?.remove();
+  } else {
+    topProducts.innerHTML = '';
+    topProductsSection.insertAdjacentHTML('beforeend', '<p class="text-center text-gray-500" id="topProductsEmpty">No best-selling products available.</p>');
+  }
+
+  // Update Charts
+  updateCharts(data.categorySalesData, data.incomeData);
+}
+
+function fetchPage(page) {
+  const period = document.getElementById('reportPeriod').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+  const limit = 5;
+
+  fetch('/admin/sales-report', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ period, startDate, endDate, page, limit })
+  })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        updateDashboard(result);
+        document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">${result.message}</p>`;
+      } else {
+        document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
+      }
+    })
+    .catch(error => {
+      document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
+    });
+}
+
+function updateCharts(categorySalesData, incomeData) {
+  // Destroy existing charts to prevent memory leaks
+  if (categorySalesChartInstance) {
+    categorySalesChartInstance.destroy();
+    categorySalesChartInstance = null;
+  }
+  if (incomeChartInstance) {
+    incomeChartInstance.destroy();
+    incomeChartInstance = null;
+  }
+
+  // Category Sales Pie Chart (unchanged)
+  const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
+  const categorySalesChartContainer = document.getElementById('categorySalesChartContainer');
+  if (categorySalesData && categorySalesData.length > 0 && categorySalesCtx) {
+    categorySalesChartContainer.innerHTML = '<canvas id="categorySalesChart"></canvas>';
+    const newCategorySalesCtx = document.getElementById('categorySalesChart').getContext('2d');
+    categorySalesChartInstance = new Chart(newCategorySalesCtx, {
+      type: 'doughnut',
+      data: {
+        labels: categorySalesData.map(item => item.category),
+        datasets: [{
+          data: categorySalesData.map(item => item.totalSold),
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(244, 63, 94, 0.8)',
+            'rgba(20, 184, 166, 0.8)',
+            'rgba(234, 179, 8, 0.8)',
+            'rgba(168, 85, 247, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(45, 212, 191, 0.8)'
+          ],
+          borderColor: 'white',
+          borderWidth: 2,
+          cutout: '70%',
+          radius: '90%'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              boxWidth: 12,
+              padding: 20,
+              font: { size: 12 },
+              usePointStyle: true,
+              pointStyle: 'circle'
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const label = context.label || '';
+                const value = context.raw || 0;
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = Math.round((value / total) * 100);
+                return `${label}: ${value} units (${percentage}%)`;
+              }
+            }
+          }
+        },
+        layout: {
+          padding: { top: 20, bottom: 20, left: 20, right: 20 }
+        }
+      }
+    });
+  } else {
+    categorySalesChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="categorySalesEmpty">No category sales data available.</p>';
+  }
+
+  // Income Over Time Line Graph
+  const incomeCtx = document.getElementById('incomeChart')?.getContext('2d');
+  const incomeChartContainer = document.getElementById('incomeChartContainer');
+  if (incomeData && incomeData.length > 0 && incomeCtx) {
+    incomeChartContainer.innerHTML = '<canvas id="incomeChart"></canvas>';
+    const newIncomeCtx = document.getElementById('incomeChart').getContext('2d');
+    incomeChartInstance = new Chart(newIncomeCtx, {
+      type: 'line',
+      data: {
+        labels: incomeData.map(item => item.date),
+        datasets: [{
+          label: 'Income (₹)',
+          data: incomeData.map(item => item.income),
+          borderColor: 'rgba(16, 185, 129, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: 'white',
+          pointBorderColor: 'rgba(16, 185, 129, 1)',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `₹${context.raw.toLocaleString()}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { drawBorder: false, color: 'rgba(0, 0, 0, 0.05)' },
+            ticks: {
+              callback: function(value) {
+                return '₹' + value.toLocaleString();
+              }
+            }
+          },
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45,
+              autoSkip: incomeData.length > 12, // Skip labels if too many
+              maxTicksLimit: 12 // Limit number of ticks for readability
+            }
+          }
+        }
+      }
+    });
+  } else {
+    incomeChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="incomeChartEmpty">No income data available.</p>';
+  }
+}
+</script>
+
+<%- include('../../views/partials/admin/footer') %>

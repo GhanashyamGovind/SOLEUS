@@ -1,6 +1,8 @@
 const { name } = require('ejs');
 const Brand = require('../../models/brandSchema');
 const Product = require('../../models/productSchema');
+const path = require('path');
+const fs = require('fs/promises')
 
 
 const getBrandPage = async (req, res, next) => {
@@ -39,9 +41,9 @@ const addBrand = async (req, res, next) => {
                 brandImage: image,
             });
             await newBrand.save();
-            res.redirect('/admin/brands')
+            return res.redirect('/admin/brands')
         } else {
-            res.render('/admin/brands', {error: 'Brand already exists'})
+            return res.render('admin/brands', {error: 'Brand already exists'})
         }
 
         
@@ -51,39 +53,34 @@ const addBrand = async (req, res, next) => {
     }
 }
 
-const blockBrand = async (req, res, next) => {
+const blockAndUnblockBrand = async (req, res, next) => {
     try {
-
         let id = req.query.id;
-        await Brand.updateOne({_id: id}, {$set: {isBlocked: true}});
-        
-        return res.redirect('/admin/brands');
-        
+        const brand = await Brand.findOne({_id: id})
+        brand.isBlocked === false ? brand.isBlocked = true : brand.isBlocked = false;
+        await brand.save()
+
+        return res.redirect(`/admin/brands?page=${req.query.page || 1}`)
     } catch (error) {
         next(error)
     }
 }
 
-
-const unBlockBrand = async (req, res, next) => {
-    try {
-
-        let id = req.query.id;
-        await Brand.updateOne({_id: id}, {$set: {isBlocked: false}});
-        return res.redirect('/admin/brands');
-
-    } catch (error) {
-        next(error)
-    }
-}
 
 const deleteBrand = async (req, res, next) => {
     try {
 
         let id = req.query.id;
+        const brand = await Brand.findById(id);
+
+        if (brand && brand.brandImage && Array.isArray(brand.brandImage) && brand.brandImage.length > 0) {
+            const imageFile = brand.brandImage[0];
+            const imagePath = path.join(__dirname, '../../public/uploads/re-image/', imageFile);
+            await fs.unlink(imagePath);
+        }
+
         await Brand.deleteOne({_id: id});
-        return res.redirect('/admin/brands');
-        
+        return res.redirect(`/admin/brands?page=${req.query.page || 1}`);
     } catch (error) {
         next(error)
     }
@@ -93,7 +90,6 @@ const deleteBrand = async (req, res, next) => {
 module.exports = {
     getBrandPage,
     addBrand,
-    blockBrand,
-    unBlockBrand,
-    deleteBrand
+    deleteBrand,
+    blockAndUnblockBrand
 }

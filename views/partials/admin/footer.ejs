@@ -48,6 +48,36 @@
             }
         });
     });
+
+    //logout
+document.getElementById('logoutButton').addEventListener('click', function () {
+    Swal.fire({
+        toast: true,
+        title: 'Logout?',
+        text: 'Do you really want to logout?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+        position: 'top-end',
+        customClass: {
+            popup: 'p-4 text-sm rounded-lg shadow-lg',
+        },
+        backdrop: false,
+        showClass: {
+            popup: 'swal2-noanimation',
+            backdrop: 'swal2-noanimation'
+        },
+        hideClass: {
+            popup: '',
+            backdrop: ''
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '/admin/logout';
+        }
+    });
+});
 </script>
 </body>
 </html>

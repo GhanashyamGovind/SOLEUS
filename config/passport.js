@@ -4,6 +4,30 @@ const User = require('../models/userSchema');
 const env = require('dotenv').config();
 
 
+const generateUniqueReferralCode = async () => {
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const digits = '0123456789';
+
+    let baseCode = '';
+    for(let i = 0; i < 3; i++){
+        baseCode += letters.charAt(Math.floor(Math.random() * letters.length));
+    }
+
+    for(let i = 0; i < 3; i++){
+        baseCode += digits.charAt(Math.floor(Math.random() * digits.length));
+    }
+
+    //check the code exists
+    let referralCode = baseCode;
+    let count = 1;
+    while(await User.findOne({referralCode})){
+        referralCode = baseCode + count;
+        count++
+    }
+
+    return referralCode
+}
+
 passport.use(new GoogleStrategy({
 
     clientID: process.env.GOOGLE_CLIENT_ID,
@@ -15,14 +39,23 @@ passport.use(new GoogleStrategy({
 async (accessToken, refreshToken, profile, done) => {
     try {
 
-        let user = await User.findOne({googleId: profile.id});
+        const email = profile.emails[0].value;
+
+        let user = await User.findOne({googleId: profile.id, email: email});
         if(user){
-            return done(null, user);
+            if (user.isBlocked) {
+                return done(null, false, { message: 'Yor this account has been blocked. Please contact the support' })
+            } else {
+                return done(null, user);
+            }
         }else {
+            const referralCode = await generateUniqueReferralCode();
+
             user = new User({
                 name: profile.displayName,
                 email: profile.emails[0].value,
-                googleId: profile.id
+                googleId: profile.id,
+                referralCode: referralCode
             });
             await user.save(); // save new user who created account wiht GOOGLE
             return done(null, user)
@@ -30,7 +63,6 @@ async (accessToken, refreshToken, profile, done) => {
         }
         
     } catch (error) {
-        console.error('Error in Google Strategy:', error);
         return done(error, null);
     }
 }

@@ -3,16 +3,32 @@ const User = require('../../models/userSchema');
 const Address = require('../../models/addressSchema');
 const Product = require('../../models/productSchema');
 const Order = require('../../models/orderSchema');
+const Wallet = require('../../models/walletSchema');
+const Cart = require('../../models/cartSchema');
 const mongoose = require('mongoose')
 const { render } = require('ejs');
 
 const loadOrder = async (req, res, next) => {
     try {
+
         const userId = req.session.user;
         if (!userId) {
             const error = new Error('User not authenticated');
             error.statusCode = 401;
             throw error;
+        }
+
+        if(req.session.failedOrder) {
+            delete req.session.failedOrder;
+        }
+
+        const {cart} = req.query;
+        if(cart && cart == 'fromProductFailure'){
+            const newCart = await Cart.findOneAndUpdate(
+                {userId},
+                { $set: { items: [], totalPrice: 0 } },
+                {new: true}
+            )
         }
 
         // Get user
@@ -41,11 +57,13 @@ const loadOrder = async (req, res, next) => {
         const formattedOrders = orders.map(order => {
             const savedAddress = order.address || {};
 
-            // Get the first product's image (if available)
-            const firstProduct = order.orderedItems[0]?.product || {};
-            const productImage = firstProduct.productImage?.[0]
-                ? `/Uploads/re-image/${firstProduct.productImage[0]}`
+            //images
+            const productImages = order.orderedItems.map(item => {
+                const product = item.product;
+                return product?.productImage?.[0]
+                ? `/Uploads/re-image/${product.productImage[0]}`
                 : 'https://via.placeholder.com/80x80?text=Product';
+            })
 
             // Calculate total quantity of items in this order
             const totalItems = order.orderedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -56,9 +74,9 @@ const loadOrder = async (req, res, next) => {
                 address: savedAddress
                     ? `${savedAddress.buildingName || ''}, ${savedAddress.landMark || ''}, ${savedAddress.city || ''}, ${savedAddress.state || ''} - ${savedAddress.pincode || ''}`
                     : 'Address not available',
-                productImage,
+                productImages,
                 totalItems,
-                totalAmount: order.finalAmount || order.totalPrice || 0,
+                totalAmount: order.finalAmount || 0,
                 status: order.status || 'Processing',
                 trackingAvailable: ['Shipped', 'Delivered'].includes(order.status)
             };
@@ -76,7 +94,6 @@ const loadOrder = async (req, res, next) => {
             totalOrders
         });
     } catch (error) {
-        console.error('Error in loadOrder:', error);
         next(error);
     }
 };
@@ -92,12 +109,19 @@ const getTrackPage = async (req, res, next) => {
             throw error;
         }
 
+        if (req.session.recentOrderSuccess) {
+            delete req.session.recentOrderSuccess;
+            delete req.session.lastOrderId;
+        }
+
+        if (req.session.buyNow){
+            delete req.session.buyNow
+        }
+
         const {orderId} = req.params;
 
         const order = await Order.findOne({orderId}).populate('orderedItems.product').lean();
-        // console.log("specific producd ::::::=====> \n", order)
        
-
         const getProducts = order.orderedItems.map((item) => {
             return{
                 name: item.product.productName,
@@ -113,10 +137,6 @@ const getTrackPage = async (req, res, next) => {
         });
         
         const address = order.address;
-
-        // console.log("get products:::======> \n",getProducts)
-        
-
 
         return res.render('user/track', {
             products: getProducts,
@@ -165,6 +185,31 @@ const cancelOrder = async (req, res, next) => {
             product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
 
             await product.save();
+        }
+
+        //return money if razor or wallet
+        if(order.paymentMethod === 'Razorpay'){
+            const wallet = await Wallet.findOne({userId});
+            wallet.balance += order.finalAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: order.finalAmount,
+                reason: "Razorpay: Order Cancellation",
+                orderId: order.orderId,
+                createdAt: new Date()
+            });
+            await wallet.save();
+        } else if (order.paymentMethod === 'Wallet'){
+            const wallet = await Wallet.findOne({userId});
+            wallet.balance += order.finalAmount;
+            wallet.transactions.push({
+                type: 'credit',
+                amount: order.finalAmount,
+                reason: "Wallet: Order Cancellation",
+                orderId: order.orderId,
+                createdAt: new Date()
+            })
+            await wallet.save()
         }
 
         // Update order status

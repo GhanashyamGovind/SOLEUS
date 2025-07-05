@@ -38,9 +38,13 @@
 <body class="bg-gray-100 flex flex-col min-h-screen"> 
 
     <header class="bg-yellow-400 w-full py-4 flex items-center justify-center shadow-md">
-        <img src="https://via.placeholder.com/40" alt="Soleus Logo" class="h-10 mr-2">
+        <img src="/images/soleus_log.png" alt="Soleus Logo" class="h-10 mr-2">
         <h1 class="text-2xl font-bold text-black">SOLEUS</h1>
     </header>
+
+  <div id="customToast" class="hidden fixed top-24 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-md shadow-lg z-50 text-center transition-opacity duration-500">
+    <span id="customToastMessage">This is a toast message</span>
+  </div>
 
     <!-- Main OTP Verification Section -->
     <main class="flex-grow flex items-center justify-center w-full">
@@ -150,17 +154,14 @@
                     }else{
                         Swal.fire({
                             icon: "error",
-                            title: Error,
-                            text: response.message,
+                            title: "Error",
+                            text: response.message || "Something went worng"
                         })
                     }
                 },
-                error: function(){
-                    Swal.fire({
-                        icon: "error",
-                        titile: "Invalid OTP",
-                        text: "Please try again"
-                    })
+                error: function(xhr){
+                    const errorMessage = xhr.responseJSON?.message || "Something went wrong"
+                    showCustomToast(errorMessage);
                 }
             })
             return false;
@@ -236,6 +237,23 @@
             }
         }, 1000);
     };
+
+    function showCustomToast(message, duration = 3000) {
+        const toast = document.getElementById('customToast');
+        const messageSpan = document.getElementById('customToastMessage');
+
+        messageSpan.textContent = message;
+        toast.classList.remove('hidden');
+        toast.classList.add('opacity-100');
+
+        setTimeout(() => {
+            toast.classList.add('opacity-0');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('opacity-100', 'opacity-0');
+            }, 500);
+        }, duration);
+    }
     </script>
 </body>
 </html>
