@@ -58,7 +58,9 @@ router.get('/offerProducts', userController.offerProducts)
 //other pages
 router.get('/about', userController.aboutUs);
 router.get('/contact', userController.contact);
-router.post('/contact/message', userController.emailMessage)
+router.post('/contact/message', userController.emailMessage);
+router.get('/privacy', userController.privacyAndPolicy);
+router.get('/terms', userController.termsAndCondtion)
 
 
 //profileMangement

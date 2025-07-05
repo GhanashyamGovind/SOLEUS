@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 const {Resend} = require('resend');
 const Wallet = require('../../models/walletSchema');
 const { default: mongoose } = require('mongoose');
+const { render } = require('ejs');
 // const { default: products } = require('razorpay/dist/types/products');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -726,6 +727,22 @@ const offerProducts = async (req, res, next) => {
   }
 }
 
+const privacyAndPolicy = async (req, res, next) => {
+  try {
+    return render('user/privacyPolicy')
+  } catch (error) {
+    next(error)
+  }
+}
+
+const termsAndCondtion = async (req, res, next) => {
+  try {
+    return render('user/terms')
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
     loadHomepage,
     loadLogin,
@@ -746,4 +763,6 @@ module.exports = {
     brandProudct,
     newDrops,
     offerProducts,
+    privacyAndPolicy,
+    termsAndCondtion,
 }

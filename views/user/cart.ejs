@@ -23,7 +23,7 @@
                                 <td class="p-4 flex items-center space-x-4">
                                     <% const productImage = item.productId && item.productId.productImage ? item.productId.productImage : 'https://via.placeholder.com/80?text=Shoes'; %>
                                     <% const productName = item.productId && item.productId.productName ? item.productId.productName : 'Product'; %>
-                                    <img src="/Uploads/re-image/<%= productImage[0] %>" alt="<%= productName %>" class="w-20 h-20 object-cover rounded-md shadow-sm">
+                                    <img src="/uploads/re-image/<%= productImage[0] %>" alt="<%= productName %>" class="w-20 h-20 object-cover rounded-md shadow-sm">
                                     <div>
                                         <% const displayName = item.productId && item.productId.productName ? item.productId.productName : 'Unknown Product'; %>
                                         <p class="font-bold text-gray-800"><%= displayName.toUpperCase() %></p>

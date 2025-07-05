@@ -61,175 +61,162 @@
     <%- include('../../views/partials/user/footer') %>
 
 
-    <script>
-        // getting elements
-        const name = document.getElementById('name');
-        const email = document.getElementById('email');
-        const phone = document.getElementById('phone');
-        const password = document.getElementById('password');
-        const confirmPassword = document.getElementById('confirmPassword');
-        const referalCode = document.getElementById('referralCode');
+<script>
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirmPassword');
+    const referalCode = document.getElementById('referralCode');
 
-        const error1 = document.getElementById('error1');
-        const error2 = document.getElementById('error2');
-        const error3 = document.getElementById('error3');
-        const error4 = document.getElementById('error4');
-        const error5 = document.getElementById('error5');
+    const error1 = document.getElementById('error1');
+    const error2 = document.getElementById('error2');
+    const error3 = document.getElementById('error3');
+    const error4 = document.getElementById('error4') || document.createElement('div');
+    const error5 = document.getElementById('error5') || document.createElement('div');
 
-        const signform = document.getElementById('signform');
+    const signform = document.getElementById('signform');
 
-
-        //fn to show alert and hide it after some secondss
-        function showError(element, message){
-            element.style.display = "block";
-            element.innerHTML = message;
-
-            setTimeout(() => {
-                element.style.display = "none";
-            }, 4000);
-        }
-
-        //defining their fucntions and rules
-        function nameValidateChecking(e){
-            const nameVal = name.value;
-            const namePatter = /^[a-zA-Z ]{4,20}$/;
-
-            if(nameVal.trim() === ""){
-                showError(error1, "Please enter a valid Name !");
-            }else if(!namePatter.test(nameVal)){
-                showError(error1, "Name can only have Alphabets and space");
-            }else if(nameVal.length < 4 || nameVal.length > 20){
-                showError(error1, "name length must 4-20");
-            }else{
-                error1.style.display = 'none';
-                error1.innerHTML = "";
-            }
-        }
-
-
-        function emailValidateChecking(e){
-            const emailVal = email.value;
-            const emailPattern = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]{2,}$/;
-
-            if(emailVal.trim() === ""){
-                showError(error2, "Pleae enter Eamil !");
-            }else if(!emailPattern.test(emailVal)){
-                showError(error2, "Invalid Format");
-            }else{
-                error2.style.display = "none";
-                error2.innerHTML = "";
-            }
-        }
-
-        function phoneValidateChecking(e){
-            const phoneVal = phone.value;
-            
-            if(phoneVal.trim() === ""){
-                showError(error3, "Enter valid phone number");
-            }else if(phoneVal.length !== 10){
-                showError(error3, "Enter 10 digit");
-            }else{
-                error3.style.display = 'none';
-                error3.innerHTML = "";
-            }
-        }
-
-        function passwordValidateChecking(e) {
-            const passwordVal = password.value;
-            const confirmPasswordVal = confirmPassword.value;
-            const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-
-            if(passwordVal.length < 8){
-                showError(error4, "password is short minimum lenght 8");
-            }else if(!passwordPattern.test(passwordVal)){
-                showError(error4, "Should contain numbers, alphabet and symbol");
-            }else {
-                error4.style.display = 'none';
-                error4.innerHTML = ""
-            }
-            //pswd matching
-            if(passwordVal !== confirmPasswordVal){
-                showError(error5, "Password is not matching");
-            }else{
-                error5.style.display = 'none';
-                error5.innerHTML = "";
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function(){
-            signform.addEventListener('submit', function(e){
-
-                nameValidateChecking();
-                emailValidateChecking();
-                phoneValidateChecking();
-                passwordValidateChecking();
-
-                if(error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML){
-                    e.preventDefault() // form submition block cheyyunu
-                    return
-                }
-
-                animationButton(submitButton);
-                debounceSubmit();
-            })
-        })
-
-        const alertDiv = document.getElementById('alert-message');
-
-        if(alertDiv) {
-            setTimeout(() => {
-                alertDiv.style.display = "none"
-            }, 6000);
-        }
-
-        //debounce utility fuction
-        function debounce(func, delay) {
-            let timer;
-            return function(...args) {
-                if(timer) return;
-                func.apply(this, args);
-                timer = setTimeout(() => {
-                    timer = null;
-                }, delay)
-            }
-        };
-
-        //animation to button
-        function animationButton(button) {
-            const spinner = document.getElementById('spinner');
-            const btnText = document.getElementById('btnText');
-
-            spinner.classList.remove('hidden');
-            btnText.textContent = "Please wait...";
-            button.disabled = true;
-
-            setTimeout(() => {
-                button.classList.remove('animate-pulse', 'bg-gray-700')
-            }, 4000);
-        }
-
-        //Wrap form submit inside debouce
-        const submitButton = document.querySelector('#signform button[type="submit"]');
-        const debounceSubmit = debounce(function (){
-            signform.requestSubmit();
+    function showError(element, message) {
+        element.style.display = "block";
+        element.innerHTML = message;
+        setTimeout(() => {
+            element.style.display = "none";
         }, 4000);
+    }
 
-        document.getElementById("togglePassword").addEventListener("click", function () {
-            const passwordInput = document.getElementById("password");
-            const type = passwordInput.type === "password" ? "text" : "password";
-            passwordInput.type = type;
+    function nameValidateChecking() {
+        const nameVal = name.value.trim();
+        const namePatter = /^[a-zA-Z ]{4,20}$/;
+        if (!nameVal) {
+            showError(error1, "Please enter a valid Name !");
+        } else if (!namePatter.test(nameVal)) {
+            showError(error1, "Name can only have Alphabets and space");
+        } else {
+            error1.style.display = 'none';
+            error1.innerHTML = "";
+        }
+    }
 
-            this.textContent = type === "password" ? "visibility" : "visibility_off";
+    function emailValidateChecking() {
+        const emailVal = email.value.trim();
+        const emailPattern = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]{2,}$/;
+        if (!emailVal) {
+            showError(error2, "Please enter Email !");
+        } else if (!emailPattern.test(emailVal)) {
+            showError(error2, "Invalid Format");
+        } else {
+            error2.style.display = "none";
+            error2.innerHTML = "";
+        }
+    }
+
+    function phoneValidateChecking() {
+        const phoneVal = phone.value.trim();
+        if (!phoneVal) {
+            showError(error3, "Enter valid phone number");
+        } else if (phoneVal.length !== 10) {
+            showError(error3, "Enter 10 digit");
+        } else {
+            error3.style.display = 'none';
+            error3.innerHTML = "";
+        }
+    }
+
+    function passwordValidateChecking() {
+        const passwordVal = password.value;
+        const confirmPasswordVal = confirmPassword.value;
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+
+        if (passwordVal.length < 8) {
+            showError(error4, "Password is too short (min 8 characters)");
+        } else if (!passwordPattern.test(passwordVal)) {
+            showError(error4, "Should contain uppercase, lowercase, number and symbol");
+        } else {
+            error4.style.display = 'none';
+            error4.innerHTML = "";
+        }
+
+        if (passwordVal !== confirmPasswordVal) {
+            showError(error5, "Passwords do not match");
+        } else {
+            error5.style.display = 'none';
+            error5.innerHTML = "";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        signform.addEventListener('submit', function (e) {
+            e.preventDefault(); 
+
+            // Validate all fields
+            nameValidateChecking();
+            emailValidateChecking();
+            phoneValidateChecking();
+            passwordValidateChecking();
+
+            // If there are any errors, stop here
+            if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
+                return;
+            }
+
+            // No errors - animate and submit with debounce
+            animationButton(submitButton);
+            debounceSubmit();
         });
+    });
 
-        document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
-            const confirmPasswordInput = document.getElementById("confirmPassword");
-            const type = confirmPasswordInput.type === "password" ? "text" : "password";
-            confirmPasswordInput.type = type;
+    const alertDiv = document.getElementById('alert-message');
+    if (alertDiv) {
+        setTimeout(() => {
+            alertDiv.style.display = "none"
+        }, 6000);
+    }
 
-            this.textContent = type === "password" ? "visibility" : "visibility_off";
-        });
+    function debounce(func, delay) {
+        let timer;
+        return function (...args) {
+            if (timer) return;
+            func.apply(this, args);
+            timer = setTimeout(() => {
+                timer = null;
+            }, delay);
+        };
+    }
 
-    </script>
+    function animationButton(button) {
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+
+        spinner.classList.remove('hidden');
+        btnText.textContent = "Please wait...";
+        button.disabled = true;
+
+        setTimeout(() => {
+            button.classList.remove('animate-pulse', 'bg-gray-700');
+        }, 4000);
+    }
+
+    const submitButton = document.querySelector('#signform button[type="submit"]');
+    const debounceSubmit = debounce(function () {
+        signform.requestSubmit(); 
+    }, 4000);
+
+    // Show/hide password
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        const passwordInput = document.getElementById("password");
+        const type = passwordInput.type === "password" ? "text" : "password";
+        passwordInput.type = type;
+        this.textContent = type === "password" ? "visibility" : "visibility_off";
+    });
+
+    document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
+        const confirmPasswordInput = document.getElementById("confirmPassword");
+        const type = confirmPasswordInput.type === "password" ? "text" : "password";
+        confirmPasswordInput.type = type;
+        this.textContent = type === "password" ? "visibility" : "visibility_off";
+    });
+</script>
+
 
      

@@ -304,7 +304,7 @@ const approveReturn = async (req, res, next) => {
         refundAmount = parseFloat(refundAmount.toFixed(2));
 
         // Update wallet
-        if (order.paymentMethod === 'Razorpay' || order.paymentMethod === 'Wallet') {
+        if (order.paymentMethod === 'Razorpay' || order.paymentMethod === 'Wallet' || order.paymentMethod === 'COD') {
             const wallet = await Wallet.findOne({ userId });
             if (!wallet) {
                 return res.status(404).json({ success: false, message: 'Wallet not found' });
