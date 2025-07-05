@@ -56,7 +56,6 @@ const creatBanner = async (req, res, next) => {
             .toFile(outputPath);
 
         const deleted = await fs.unlink(originalPath);
-        console.log("orignal delete:==> ", deleted)
 
         const banner = new Banner({
             title: title.toUpperCase(),
@@ -69,7 +68,6 @@ const creatBanner = async (req, res, next) => {
         })
 
         const newBanner = await banner.save();
-        console.log("banner", newBanner)
         if(!newBanner) {
             return res.status(400).json({success: false, message: "Failed to creat banner"});
         }
@@ -116,11 +114,8 @@ const editBanner = async (req, res, next) => {
 
         //delete old image
         const oldImagePath = path.join(__dirname, '../../public', banner.image);
-        try {
-            await fs.unlink(oldImagePath);
-        } catch (error) {
-            console.warn("old image is not found or alredy deleted")
-        }
+
+        await fs.unlink(oldImagePath);
 
         imagePath = `/uploads/banner/${outputFileName}`
     }
@@ -177,7 +172,6 @@ const deleteBanner = async (req, res, next) => {
         if(banner.image) {
             const imagePath = path.join(__dirname, '../../public/', banner.image);
             await fs.unlink(imagePath);
-            console.log("image is deleted", imagePath)
         }
 
         await Banner.findByIdAndDelete(id);

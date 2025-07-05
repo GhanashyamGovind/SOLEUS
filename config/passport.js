@@ -63,7 +63,6 @@ async (accessToken, refreshToken, profile, done) => {
         }
         
     } catch (error) {
-        console.error('Error in Google Strategy:', error);
         return done(error, null);
     }
 }

@@ -169,13 +169,10 @@
   let imageStatus = { 1: { cropped: false, edited: false }, 2: { cropped: false, edited: false }, 3: { cropped: false, edited: false }, 4: { cropped: false, edited: false } };
 
   window.addEventListener('load', () => {
-    console.log('Page loaded');
     if (typeof Cropper === 'undefined') {
-      console.error('Cropper.js not loaded');
       displayErrorMessage('images-error', 'Image cropping library failed to load. Please try again later.');
     }
     if (typeof Swal === 'undefined') {
-      console.error('SweetAlert2 not loaded');
       displayErrorMessage('error-message', 'Notification library failed to load. Please try again later.');
     }
   });
@@ -191,11 +188,9 @@
   }
 
 function validateAndSubmit() {
-  console.log('Update button clicked');
   if (validateForm()) {
     const form = document.getElementById('add-product-form');
     const formData = new FormData(form);
-    console.log('Form data:', Array.from(formData.entries()));
 
     fetch(form.action, {
       method: 'POST',
@@ -209,7 +204,6 @@ function validateAndSubmit() {
         throw new Error(data.error || 'Something went wrong');
       }
 
-      console.log('Response data:', data);
       Swal.fire({
         icon: 'success',
         title: 'Success',
@@ -220,7 +214,6 @@ function validateAndSubmit() {
       });
     })
     .catch(error => {
-      console.error('Fetch error:', error);
       displayErrorMessage('error-message', error.message); // show specific error
       Swal.fire({
         toast: true,
@@ -232,7 +225,6 @@ function validateAndSubmit() {
     });
 
   } else {
-    console.log('Form validation failed');
     Swal.fire({
       toast: true,
       icon: 'warning',
@@ -245,7 +237,6 @@ function validateAndSubmit() {
 
 
   function deleteImage(i) {
-    console.log(`Deleting image ${i}`);
     const existingImg = document.getElementById(`existingImg${i}`);
     const imgView = document.getElementById(`imgView${i}`);
     const input = document.getElementById(`input${i}`);
@@ -291,7 +282,6 @@ function validateAndSubmit() {
   }
 
   function handleImageCrop(i, isEdit, event) {
-    console.log(`handleImageCrop called: i=${i}, isEdit=${isEdit}`);
     const input = document.getElementById(`input${i}`);
     const cropperContainer = document.getElementById(`imageCropper${i}`);
     const cropperImg = document.getElementById(`cropperImg${i}`);
@@ -305,13 +295,11 @@ function validateAndSubmit() {
     const noImageDiv = document.getElementById(`noImage${i}`);
 
     if (croppers[i]) {
-      console.log(`Destroying previous cropper for slot ${i}`);
       croppers[i].destroy();
       delete croppers[i];
     }
 
     if (!isEdit && existingImg && existingImg.src && !deleteInput.value) {
-      console.log(`Marking existing image for deletion in slot ${i}`);
       deleteInput.value = existingImg.src.split('/').pop();
       existingImg.src = '';
       existingImg.style.display = 'none';
@@ -321,9 +309,7 @@ function validateAndSubmit() {
 
     let imageSrc;
     if (isEdit) {
-      console.log(`Re-cropping image in slot ${i}`);
       if (!existingImg || !existingImg.src || existingImg.src === window.location.href) {
-        console.error(`No existing image to re-crop in slot ${i}`);
         displayErrorMessage('images-error', 'No existing image to re-crop.');
         return;
       }
@@ -332,11 +318,9 @@ function validateAndSubmit() {
     } else {
       const file = event.target.files[0];
       if (!file) {
-        console.warn(`No file selected in slot ${i}`);
         resetImageState(i, input, imgView, status, cropperContainer, buttonContainer, noImageDiv);
         return;
       }
-      console.log(`New image selected in slot ${i}: ${file.name}`);
       imageSrc = URL.createObjectURL(file);
     }
 
@@ -352,7 +336,6 @@ function validateAndSubmit() {
       noImageDiv.style.display = 'none';
     }
 
-    console.log(`Initializing Cropper.js for slot ${i}`);
     croppers[i] = new Cropper(cropperImg, {
       aspectRatio: 1,
       viewMode: 1,
@@ -361,19 +344,15 @@ function validateAndSubmit() {
       autoCropArea: 0.8,
       zoomable: true,
       ready: function () {
-        console.log(`Cropper.js ready for slot ${i}`);
         this.cropper.crop();
       },
       crop: function () {
-        console.log(`Cropper.js crop event triggered for slot ${i}`);
       }
     });
 
     saveButton.onclick = () => {
-      console.log(`Saving cropped image for slot ${i}`);
       const croppedCanvas = croppers[i].getCroppedCanvas({ width: 440, height: 440 });
       if (!croppedCanvas) {
-        console.error(`Failed to get cropped canvas for slot ${i}`);
         status.textContent = 'Failed to crop image';
         status.classList.remove('text-yellow-600');
         status.classList.add('text-red-600');
@@ -389,7 +368,6 @@ function validateAndSubmit() {
       status.classList.add('text-green-600');
 
       if (!existingImg || !existingImg.src) {
-        console.log(`Creating new existingImg for slot ${i}`);
         const newExistingImg = document.createElement('img');
         newExistingImg.id = `existingImg${i}`;
         newExistingImg.className = 'w-32 h-32 object-contain rounded border mt-2';
@@ -403,7 +381,6 @@ function validateAndSubmit() {
 
       croppedCanvas.toBlob(blob => {
         if (!blob) {
-          console.error(`Failed to create blob for slot ${i}`);
           status.textContent = 'Failed to process cropped image';
           status.classList.remove('text-yellow-600');
           status.classList.add('text-red-600');
@@ -416,12 +393,10 @@ function validateAndSubmit() {
           const fileList = new DataTransfer();
           fileList.items.add(croppedFile);
           input.files = fileList.files;
-          console.log(`Cropped image saved to input for slot ${i}: ${fileName}`);
           imageStatus[i].cropped = !isEdit;
           imageStatus[i].edited = isEdit;
           buttonContainer.style.display = 'flex';
         } catch (err) {
-          console.error(`Failed to assign cropped file for slot ${i}:`, err);
           displayErrorMessage('images-error', 'Failed to process the cropped image.');
         }
       }, 'image/jpeg', 1.0);
@@ -432,7 +407,6 @@ function validateAndSubmit() {
     };
 
     cancelButton.onclick = () => {
-      console.log(`Cancel cropping for slot ${i}`);
       cropperContainer.classList.add('hidden');
       imgView.src = '';
       imgView.style.display = 'none';
@@ -455,7 +429,6 @@ function validateAndSubmit() {
   }
 
   function resetImageState(i, input, imgView, status, cropperContainer, buttonContainer, noImageDiv) {
-    console.log(`Resetting image state for slot ${i}`);
     cropperContainer.classList.add('hidden');
     input.value = '';
     imgView.src = '';
@@ -479,49 +452,40 @@ function validateAndSubmit() {
     };
     const images = document.querySelectorAll('input[name="images"]');
     let isValid = true;
-    console.log('Validating form:', fields);
 
     if (!fields.productName) {
-      console.log('Product name validation failed');
       displayErrorMessage('productName-error', 'Please enter a product name.');
       isValid = false;
     } else if (!/^[a-zA-Z0-9\s]+$/.test(fields.productName)) {
-      console.log('Product name format validation failed');
       displayErrorMessage('productName-error', 'Product name should contain only alphabetic characters and numbers.');
       isValid = false;
     }
 
     if (!fields.description) {
-      console.log('Description validation failed');
       displayErrorMessage('description-error', 'Please enter a product description.');
       isValid = false;
     } else if (!/^[a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+$/.test(fields.description)) {
-      console.log('Description format validation failed');
       displayErrorMessage('description-error', 'Product description should contain only allowed characters.');
       isValid = false;
     }
 
     if (!fields.brand) {
-      console.log('Brand validation failed');
       displayErrorMessage('brand-error', 'Please select a brand.');
       isValid = false;
     }
 
     if (!fields.category) {
-      console.log('Category validation failed');
       displayErrorMessage('category-error', 'Please select a category.');
       isValid = false;
     }
 
     if (!fields.color) {
-      console.log('Color validation failed');
       displayErrorMessage('color-error', 'Please enter a color.');
       isValid = false;
     }
 
     const selectedSizes = Array.from(fields.sizes).filter(size => size.checked).map(size => size.value);
     if (selectedSizes.length === 0) {
-      console.log('Sizes validation failed');
       displayErrorMessage('sizes-error', 'Please select at least one size.');
       isValid = false;
     } else {
@@ -532,22 +496,18 @@ function validateAndSubmit() {
         const stock = document.getElementsByName(`stock-${size}`)[0].value;
 
         if (!regularPrice || parseFloat(regularPrice) <= 0) {
-          console.log(`Regular price validation failed for size ${size}`);
           displayErrorMessage('sizes-error', `Please enter a valid regular price for size ${size}.`);
           isValid = false;
         }
         if (salePrice && parseFloat(salePrice) < 0) {
-          console.log(`Sale price validation failed for size ${size}`);
           displayErrorMessage('sizes-error', `Sale price for size ${size} cannot be negative.`);
           isValid = false;
         }
         if (regularPrice && salePrice && parseFloat(salePrice) > parseFloat(regularPrice)) {
-          console.log(`Price comparison validation failed for size ${size}`);
           displayErrorMessage('sizes-error', `Sale price must not be greater than regular price for size ${size}.`);
           isValid = false;
         }
         if (!stock || parseInt(stock) <= 0) {
-          console.log(`Stock validation failed for size ${size}`);
           displayErrorMessage('sizes-error', `Please enter a valid stock quantity for size ${size}.`);
           isValid = false;
         } else {
@@ -555,7 +515,6 @@ function validateAndSubmit() {
         }
       });
       if (totalStock === 0) {
-        console.log('Total stock validation failed');
         displayErrorMessage('sizes-error', 'Total stock quantity must be greater than zero.');
         isValid = false;
       }
@@ -568,30 +527,24 @@ function validateAndSubmit() {
       const deleteInput = document.getElementById(`deleteImage${i}`);
       if (input.files.length > 0) {
         if (imageStatus[i].cropped || imageStatus[i].edited) {
-          console.log(`Image ${i} is cropped or edited`);
           hasImage = true;
         } else {
-          console.log(`Image ${i} not cropped`);
           displayErrorMessage('images-error', `Please crop the image for input ${i} before submitting.`);
           isValid = false;
         }
       } else if (existingImg?.src && existingImg.src !== window.location.href && !deleteInput.value) {
-        console.log(`Existing image ${i} retained`);
         hasImage = true;
       }
     });
     if (!hasImage) {
-      console.log('No valid images found');
       displayErrorMessage('images-error', 'Please select, crop, or retain at least one image.');
       isValid = false;
     }
 
-    console.log('Validation result:', isValid);
     return isValid;
   }
 
   function displayErrorMessage(elementId, message) {
-    console.log(`Displaying error: ${elementId} - ${message}`);
     let errorElement = document.getElementById(elementId);
     if (!errorElement) {
       errorElement = document.createElement('div');
@@ -611,7 +564,6 @@ function validateAndSubmit() {
   }
 
   function clearErrorMessages() {
-    console.log('Clearing error messages');
     const errorElements = document.getElementsByClassName('error-message');
     Array.from(errorElements).forEach(element => {
       element.innerText = '';

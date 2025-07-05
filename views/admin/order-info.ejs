@@ -192,10 +192,8 @@ async function approve(sku) {
     if (data.success) {
       window.location.reload()
     } else {
-      console.error('Error approving return:', data.message);
     }
   } catch (error) {
-    console.error('Fetch error:', error);
   }
 }
 
@@ -214,10 +212,8 @@ async function reject(sku) {
     if (data.success) {
       window.location.reload()
     } else {
-      console.error('Error rejecting return:', data.message);
     }
   } catch (error) {
-    console.error('Fetch error:', error);
   }
 }
 </script>

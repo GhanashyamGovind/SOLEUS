@@ -234,7 +234,6 @@ const removeFromCart = async (req, res, next) => {
         }
 
 
-        // console.log('Product:', JSON.stringify(product, null, 2));
         const variant = product.variants.find(v => v.size === size && v.sku === sku);
         if (!variant) {
             return res.status(404).json({ message: 'Product variant not found' });

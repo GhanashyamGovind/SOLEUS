@@ -616,7 +616,7 @@ function updateCharts(categorySalesData, incomeData) {
     incomeChartInstance = null;
   }
 
-  // Category Sales Pie Chart
+  // Category Sales Pie Chart (unchanged)
   const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
   const categorySalesChartContainer = document.getElementById('categorySalesChartContainer');
   if (categorySalesData && categorySalesData.length > 0 && categorySalesCtx) {
@@ -692,7 +692,7 @@ function updateCharts(categorySalesData, incomeData) {
       data: {
         labels: incomeData.map(item => item.date),
         datasets: [{
-          label: 'Daily Income (₹)',
+          label: 'Income (₹)',
           data: incomeData.map(item => item.income),
           borderColor: 'rgba(16, 185, 129, 1)',
           backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -729,7 +729,15 @@ function updateCharts(categorySalesData, incomeData) {
               }
             }
           },
-          x: { grid: { display: false, drawBorder: false } }
+          x: {
+            grid: { display: false, drawBorder: false },
+            ticks: {
+              maxRotation: 45,
+              minRotation: 45,
+              autoSkip: incomeData.length > 12, // Skip labels if too many
+              maxTicksLimit: 12 // Limit number of ticks for readability
+            }
+          }
         }
       }
     });

@@ -534,7 +534,6 @@
             }
         } catch (error) {
             await Swal.fire("Error", "An error occurred while creating the banner", "error");
-            console.error("Error creating banner:", error);
         }
     });
 
@@ -581,7 +580,6 @@
             }
         } catch (error) {
             await Swal.fire("Error", "An error occurred while updating the banner", "error");
-            console.error("Error updating banner:", error);
         }
     });
 
@@ -611,7 +609,6 @@
             }
         } catch (error) {
             await Swal.fire("Error", "An error occurred while toggling the status", "error");
-            console.error("Error toggling banner status:", error);
         }
     }
 
@@ -655,7 +652,6 @@
                 }
             } catch (error) {
                 await Swal.fire("Error", "An error occurred while deleting the banner", "error");
-                console.error("Error deleting banner:", error);
             }
         }
     }

@@ -41,9 +41,9 @@ const addBrand = async (req, res, next) => {
                 brandImage: image,
             });
             await newBrand.save();
-            res.redirect('/admin/brands')
+            return res.redirect('/admin/brands')
         } else {
-            res.render('/admin/brands', {error: 'Brand already exists'})
+            return res.render('admin/brands', {error: 'Brand already exists'})
         }
 
         

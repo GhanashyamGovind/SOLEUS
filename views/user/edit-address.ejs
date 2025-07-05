@@ -207,7 +207,6 @@ if (!/^\d+$/.test(addressData.pincode)) {
                 errorMessage.classList.remove('hidden');
             }
         } catch (error) {
-            console.error('Error submitting form:', error);
             errorMessage.textContent = 'An error occurred while updating the address. Please try again.';
             errorMessage.classList.remove('hidden');
         } finally {

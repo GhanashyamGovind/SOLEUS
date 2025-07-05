@@ -56,8 +56,6 @@ const loadDashboard = async (req, res, next) => {
             page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 5
         };
-        console.log('Dashboard Filter:', filter);
-
         const data = await getSalesData(filter);
 
         res.render('admin/dashboard', {
@@ -68,7 +66,6 @@ const loadDashboard = async (req, res, next) => {
         });
         delete req.session.message;
     } catch (error) {
-        console.error('Dashboard Error:', error);
         next(error);
     }
 };
@@ -83,7 +80,6 @@ const saleReport = async (req, res, next) => {
         const { period, startDate, endDate, page = 1, limit = 5 } = req.body;
         const filter = { period, startDate, endDate, page: parseInt(page), limit: parseInt(limit) };
         req.session.filter = { period, startDate, endDate };
-        console.log('Sale Report Filter Saved:', filter);
 
         const data = await getSalesData(filter);
 
@@ -95,7 +91,6 @@ const saleReport = async (req, res, next) => {
             filter
         });
     } catch (error) {
-        console.error('Sale Report Error:', error);
         res.status(500).json({ success: false, message: `Failed to generate report: ${error.message}` });
     }
 };
@@ -193,7 +188,6 @@ const downloadPDF = async (req, res, next) => {
 
         doc.end();
     } catch (error) {
-        console.error('PDF Download Error:', error);
         res.status(500).json({ success: false, message: `Failed to download PDF: ${error.message}` });
     }
 };
@@ -249,7 +243,6 @@ const downloadExcel = async (req, res, next) => {
         await workbook.xlsx.write(res);
         res.end();
     } catch (error) {
-        console.error('Excel Download Error:', error);
         res.status(500).json({ success: false, message: `Failed to download Excel: ${error.message}` });
     }
 };
@@ -267,19 +260,17 @@ const getSalesData = async (filter) => {
         } else {
             const now = moment();
             if (period === 'daily') {
-                match.createdOn = { $gte: now.startOf('day').toDate() };
+                match.createdOn = { $gte: now.startOf('day').toDate(), $lte: now.endOf('day').toDate() };
             } else if (period === 'weekly') {
-                match.createdOn = { $gte: now.startOf('week').toDate() };
-            } else if (period === 'yearly') {
-                match.createdOn = { $gte: now.startOf('year').toDate() };
+                match.createdOn = { $gte: now.startOf('week').toDate(), $lte: now.endOf('week').toDate() };
             } else if (period === 'monthly') {
-                match.createdOn = { $gte: now.startOf('month').toDate() };
+                match.createdOn = { $gte: now.startOf('month').subtract(3, 'weeks').toDate(), $lte: now.endOf('month').toDate() };
+            } else if (period === 'yearly') {
+                match.createdOn = { $gte: now.startOf('year').toDate(), $lte: now.endOf('year').toDate() };
             }
         }
     } catch (error) {
-        console.error('Date Filter Error:', error);
     }
-    console.log('Match Query:', match);
 
     // Fetch paginated sales report
     const skip = (page - 1) * limit;
@@ -293,11 +284,8 @@ const getSalesData = async (filter) => {
         .limit(limit)
         .lean()
         .catch(err => {
-            console.error('salesReport Error:', err);
             return [];
         });
-
-    console.log('Raw Orders (Paginated):', salesReport);
 
     const formattedSalesReport = salesReport.map(order => ({
         orderId: order.orderId || 'N/A',
@@ -308,8 +296,6 @@ const getSalesData = async (filter) => {
         couponCode: order.couponCode || 'None',
         orderedItems: order.orderedItems || []
     }));
-    console.log('Formatted Sales Report Length:', formattedSalesReport.length);
-    console.log('Formatted Sales Report:', formattedSalesReport);
 
     // Fetch all orders for charts and aggregates (no pagination)
     const allOrdersForCharts = await Order.find(match)
@@ -323,7 +309,6 @@ const getSalesData = async (filter) => {
         .sort({ createdOn: 1 })
         .lean()
         .catch(err => {
-            console.error('allOrdersForCharts Error:', err);
             return [];
         });
 
@@ -344,7 +329,6 @@ const getSalesData = async (filter) => {
         }))
         .sort((a, b) => b.totalSold - a.totalSold)
         .slice(0, 10);
-    console.log('Top Categories:', topCategories);
 
     // Brand-wise sales (Top 10)
     const brandSales = {};
@@ -367,9 +351,8 @@ const getSalesData = async (filter) => {
     const topBrands = Object.values(brandSales)
         .sort((a, b) => b.totalSold - a.totalSold)
         .slice(0, 10);
-    console.log('Top Brands:', topBrands);
 
-    // Top 10 best-selling products (filtered by period)
+    // Top 10 best-selling products
     const productSales = {};
     allOrdersForCharts.forEach(order => {
         order.orderedItems.forEach(item => {
@@ -397,24 +380,131 @@ const getSalesData = async (filter) => {
         }))
         .sort((a, b) => b.totalSold - a.totalSold)
         .slice(0, 10);
-    console.log('Top Products:', topProducts);
 
-    // Daily income for line graph
-    const dailyIncome = {};
-    allOrdersForCharts.forEach(order => {
-        const date = moment(order.createdOn).format('DD/MM/YYYY');
-        const income = (order.finalAmount || 0) - (order.discount || 0);
-        dailyIncome[date] = (dailyIncome[date] || 0) + income;
-    });
-
-    const incomeData = Object.keys(dailyIncome).map(date => ({
-        date,
-        income: dailyIncome[date]
-    }));
-    console.log('Income Data:', incomeData);
+    // Aggregate income data based on period
+    const incomeData = [];
+    if (period === 'daily') {
+        // For daily, aggregate by hour if you have granular data, else just one point
+        const dailyIncome = {};
+        allOrdersForCharts.forEach(order => {
+            const hour = moment(order.createdOn).format('HH:00');
+            const income = (order.finalAmount || 0) - (order.discount || 0);
+            dailyIncome[hour] = (dailyIncome[hour] || 0) + income;
+        });
+        incomeData.push(...Object.keys(dailyIncome).map(hour => ({
+            date: hour,
+            income: dailyIncome[hour]
+        })).sort((a, b) => a.date.localeCompare(b.date)));
+    } else if (period === 'weekly') {
+        // For weekly, aggregate by day (last 7 days)
+        const dailyIncome = {};
+        const start = moment().startOf('week');
+        for (let i = 0; i < 7; i++) {
+            const date = moment(start).add(i, 'days').format('DD/MM/YYYY');
+            dailyIncome[date] = 0;
+        }
+        allOrdersForCharts.forEach(order => {
+            const date = moment(order.createdOn).format('DD/MM/YYYY');
+            const income = (order.finalAmount || 0) - (order.discount || 0);
+            dailyIncome[date] = (dailyIncome[date] || 0) + income;
+        });
+        incomeData.push(...Object.keys(dailyIncome).map(date => ({
+            date,
+            income: dailyIncome[date]
+        })).sort((a, b) => moment(a.date, 'DD/MM/YYYY').unix() - moment(b.date, 'DD/MM/YYYY').unix()));
+    } else if (period === 'monthly') {
+        // For monthly, aggregate by week (last 4 weeks)
+        const weeklyIncome = {};
+        const start = moment().startOf('month').subtract(3, 'weeks');
+        for (let i = 0; i < 4; i++) {
+            const weekStart = moment(start).add(i, 'weeks').format('DD/MM/YYYY');
+            weeklyIncome[`Week ${i + 1}`] = 0;
+        }
+        allOrdersForCharts.forEach(order => {
+            const orderDate = moment(order.createdOn);
+            const weeksDiff = Math.floor(orderDate.diff(start, 'days') / 7);
+            const weekLabel = weeksDiff >= 0 && weeksDiff < 4 ? `Week ${weeksDiff + 1}` : null;
+            if (weekLabel) {
+                const income = (order.finalAmount || 0) - (order.discount || 0);
+                weeklyIncome[weekLabel] = (weeklyIncome[weekLabel] || 0) + income;
+            }
+        });
+        incomeData.push(...Object.keys(weeklyIncome).map(week => ({
+            date: week,
+            income: weeklyIncome[week]
+        })).sort((a, b) => a.date.localeCompare(b.date)));
+    } else if (period === 'yearly') {
+        // For yearly, aggregate by month (last 12 months)
+        const monthlyIncome = {};
+        const start = moment().startOf('year');
+        for (let i = 0; i < 12; i++) {
+            const month = moment(start).add(i, 'months').format('MMM YYYY');
+            monthlyIncome[month] = 0;
+        }
+        allOrdersForCharts.forEach(order => {
+            const month = moment(order.createdOn).format('MMM YYYY');
+            const income = (order.finalAmount || 0) - (order.discount || 0);
+            monthlyIncome[month] = (monthlyIncome[month] || 0) + income;
+        });
+        incomeData.push(...Object.keys(monthlyIncome).map(month => ({
+            date: month,
+            income: monthlyIncome[month]
+        })).sort((a, b) => moment(a.date, 'MMM YYYY').unix() - moment(b.date, 'MMM YYYY').unix()));
+    } else if (period === 'custom' && startDate && endDate) {
+        // For custom range, aggregate based on duration
+        const durationDays = moment(endDate).diff(moment(startDate), 'days');
+        if (durationDays <= 1) {
+            // Treat as daily (by hour)
+            const dailyIncome = {};
+            allOrdersForCharts.forEach(order => {
+                const hour = moment(order.createdOn).format('HH:00');
+                const income = (order.finalAmount || 0) - (order.discount || 0);
+                dailyIncome[hour] = (dailyIncome[hour] || 0) + income;
+            });
+            incomeData.push(...Object.keys(dailyIncome).map(hour => ({
+                date: hour,
+                income: dailyIncome[hour]
+            })).sort((a, b) => a.date.localeCompare(b.date)));
+        } else if (durationDays <= 31) {
+            // Treat as weekly/daily (by day)
+            const dailyIncome = {};
+            const start = moment(startDate).startOf('day');
+            for (let i = 0; i <= durationDays; i++) {
+                const date = moment(start).add(i, 'days').format('DD/MM/YYYY');
+                dailyIncome[date] = 0;
+            }
+            allOrdersForCharts.forEach(order => {
+                const date = moment(order.createdOn).format('DD/MM/YYYY');
+                const income = (order.finalAmount || 0) - (order.discount || 0);
+                dailyIncome[date] = (dailyIncome[date] || 0) + income;
+            });
+            incomeData.push(...Object.keys(dailyIncome).map(date => ({
+                date,
+                income: dailyIncome[date]
+            })).sort((a, b) => moment(a.date, 'DD/MM/YYYY').unix() - moment(b.date, 'DD/MM/YYYY').unix()));
+        } else {
+            // Treat as monthly (by month)
+            const monthlyIncome = {};
+            const start = moment(startDate).startOf('month');
+            const end = moment(endDate).endOf('month');
+            const monthsDiff = end.diff(start, 'months') + 1;
+            for (let i = 0; i < monthsDiff; i++) {
+                const month = moment(start).add(i, 'months').format('MMM YYYY');
+                monthlyIncome[month] = 0;
+            }
+            allOrdersForCharts.forEach(order => {
+                const month = moment(order.createdOn).format('MMM YYYY');
+                const income = (order.finalAmount || 0) - (order.discount || 0);
+                monthlyIncome[month] = (monthlyIncome[month] || 0) + income;
+            });
+            incomeData.push(...Object.keys(monthlyIncome).map(month => ({
+                date: month,
+                income: monthlyIncome[month]
+            })).sort((a, b) => moment(a.date, 'MMM YYYY').unix() - moment(b.date, 'MMM YYYY').unix()));
+        }
+    }
 
     const totalOrders = await Order.countDocuments().catch(err => {
-        console.error('totalOrders Error:', err);
         return 0;
     });
 
@@ -428,7 +518,6 @@ const getSalesData = async (filter) => {
         orderAmount: allOrdersForCharts.reduce((sum, order) => sum + (order.finalAmount || 0), 0),
         discount: allOrdersForCharts.reduce((sum, order) => sum + (order.discount || 0), 0)
     };
-    console.log('Summary:', summary);
 
     const totalSale = summary.orderAmount;
     const totalIncome = summary.orderAmount - summary.discount;

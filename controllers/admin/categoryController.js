@@ -42,7 +42,6 @@ const categoryInfo = async (req, res, next) => {
             searchQuery: search
         });
     } catch (error) {
-        console.error('Error in categoryInfo:', error);
         if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
             return res.status(500).json({ error: 'Server error' });
         }
@@ -57,7 +56,7 @@ const addCategory = async (req, res, next) => {
         const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
         
         if (existingCategory) {
-            return res.status(409).json({ error: 'Category already exists!' });
+            return res.status(409).json({ message: 'Category already exist !' });
         }
 
         const newCategory = new Category({

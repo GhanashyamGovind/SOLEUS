@@ -189,7 +189,6 @@
                     passwordError.textContent = data.message;
                     passwordError.classList.remove('hidden');
                     passwordInput.classList.add('border-red-400');
-                    console.error("Error deleting account:", data.message);
                 }
             } catch (error) {
                 await Swal.fire({
@@ -198,7 +197,6 @@
                     icon: 'error',
                     confirmButtonColor: '#e6b422'
                 });
-                console.error("Error in fetch:", error);
             }
         });
     });

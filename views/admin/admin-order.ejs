@@ -286,7 +286,6 @@
             const newMain = doc.querySelector('main');
             document.querySelector('main').innerHTML = newMain.innerHTML;
         } catch (error) {
-            console.error('Error fetching page:', error);
             alert('Failed to load page. Please try again.');
         }
     }
@@ -312,7 +311,6 @@
             const newMain = doc.querySelector('main');
             document.querySelector('main').innerHTML = newMain.innerHTML;
         } catch (error) {
-            console.error('Error searching orders:', error);
             alert('Failed to search orders. Please try again.');
         }
     }
@@ -350,7 +348,6 @@
             // Fetch the current page to update the table
             await fetchPage(data.page);
         } catch (error) {
-            console.error('Error updating status:', error);
             alert(`Failed to update status: ${error.message}`);
             // Revert select to original status
             select.value = currentStatus;

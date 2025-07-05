@@ -506,7 +506,6 @@
           });
         }
       } catch (error) {
-        console.error('Error submitting return request:', error);
       }
     });
   });
@@ -539,7 +538,6 @@
             showConfirmButton: false,
         });
     } catch (error) {
-        console.error('Error downloading invoice:', error);
         Swal.fire({
             toast: true,
             icon: 'error',

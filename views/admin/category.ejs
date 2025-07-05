@@ -261,7 +261,6 @@ async function addOffer(categoryId) {
         await Swal.fire("Error", "An error occurred while adding the offer", "error").then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error("Error while adding the offer", error);
     }
 }
 
@@ -299,7 +298,6 @@ async function removeOffer(categoryId) {
         await Swal.fire("Error", "An error occurred while removing the offer", "error").then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error("Error while removing the offer => ", error);
     }
 }
 
@@ -334,7 +332,6 @@ async function toggleListStatus(categoryId, isListed) {
         await Swal.fire("Error", "An error occurred while updating the status", "error").then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error("Error while toggling list status => ", error);
     }
 }
 
@@ -364,7 +361,6 @@ async function loadCategories(page, searchQuery = '') {
         await Swal.fire("Error", "An error occurred while loading categories", "error").then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error("Error loading categories:", error);
     }
 }
 

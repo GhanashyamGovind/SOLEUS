@@ -1,5 +1,4 @@
 const errorHandler = (err, req, res, next) => {
-    console.error(`${req.path.startsWith('/admin') ? 'Admin' : 'User'} error:`, err.stack);
     const statusCode = err.statusCode || 500;
     const isAdmin = req.path.startsWith('/admin');
     const errorMessage = err.message || (isAdmin ? 'Admin error occurred' : 'User error occurred');

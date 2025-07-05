@@ -113,7 +113,6 @@ async function loadCustomers(page, searchQuery = '') {
         }).then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error('Error loading customers:', error);
     }
 }
 
@@ -228,7 +227,6 @@ async function confirmDelete(userId) {
         }).then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error('Error deleting customer:', error);
     }
 }
 
@@ -289,7 +287,6 @@ async function confirmBlock(userId, isBlocked) {
         }).then(() => {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
-        console.error(`Error ${isBlocked ? 'unblocking' : 'blocking'} customer:`, error);
     }
 }
 

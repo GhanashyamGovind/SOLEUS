@@ -304,7 +304,6 @@ async function applyCoupon(isBuyNow) {
             });
         }
     } catch (error) {
-        console.error('Error applying coupon:', error);
         await Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -355,7 +354,6 @@ async function removeCoupon(isBuyNow) {
             });
         }
     } catch (error) {
-        console.error('Error removing coupon:', error);
         await Swal.fire({
             icon: 'error',
             title: 'Error',
@@ -510,7 +508,6 @@ async function proceedToPayment(isBuyNow) {
                         }).then(res => res.json()).then(data => {
                             window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                         }).catch(err => {
-                            console.error('Error handling modal closure:', err);
                             window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                         });
                     }
@@ -536,7 +533,6 @@ async function proceedToPayment(isBuyNow) {
                 }).then(res => res.json()).then(data => {
                     window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                 }).catch(err => {
-                    console.error('Error handling payment failure:', err);
                     window.location.href = `/order/failure?razorpayOrderId=${order.id}&isBuyNow=${isBuyNow || isFailedPayment}`;
                 });
             });
@@ -594,7 +590,6 @@ async function proceedToPayment(isBuyNow) {
             }
         }
     } catch (error) {
-        console.error('Error in proceedToPayment:', error);
         await Swal.fire({
             icon: 'error',
             title: 'Error',

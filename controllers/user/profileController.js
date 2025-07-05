@@ -37,11 +37,9 @@ const sendVerificationEamil = async (email, otp) => {
         }
 
         const info = await transporter.sendMail(mailOption);
-        console.log("Email sent : ", info.messageId);
         return true;
         
     } catch (error) {
-        console.error("error while emial verification", error)
     }
 }
 
@@ -61,7 +59,7 @@ const securePassword = async (password) => {
         return passwordHash;
         
     } catch (error) {
-        console.error("error while hashing", error)
+
     }
 }
 
@@ -142,7 +140,6 @@ const resendOtp = async (req, res, next) => {
             error.statusCode = 400;
             throw error;
         }
-        console.log("resending otp to email", email);
         const otp = generateOtp();
         req.session.userOtp = otp;
         req.session.otpGeneratedAt = Date.now(); // Store new OTP generation timestamp
@@ -244,7 +241,6 @@ const updateImage = async (req, res, next) => {
 
         return res.redirect('/getProfileDetails');
     } catch (error) {
-        console.error('Error in updateImage:', error);
         next(error);
     }
 };
@@ -269,8 +265,7 @@ const deleteImage = async (req, res, next) => {
                 await fs.unlink(imagePath);
                 console.log('File deleted:', imagePath);
             } catch (err) {
-                console.error('Error accessing/deleting file:', imagePath, err);
-                // Optionally, proceed with updating the database even if the file is missing
+                
             }
 
             // Update the user's profileImage to null
@@ -282,7 +277,6 @@ const deleteImage = async (req, res, next) => {
 
         return res.status(400).json({ success: false, message: "No profile image to delete" });
     } catch (error) {
-        console.error('Error in deleteImage:', error);
         next(error);
     }
 };

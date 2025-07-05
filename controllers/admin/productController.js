@@ -232,7 +232,6 @@ const addProducts = async (req, res) => {
       formData: {}
     });
   } catch (error) {
-    console.error('Error in the product adding page:', error);
     return res.render('admin/add-product', {
       error: error.message || 'Internal server error',
       brands: await Brand.find({ isBlocked: false }),
@@ -470,9 +469,7 @@ const editProduct = async (req, res, next) => {
         const imgPath = path.join('public', 'uploads', 'product-images', img); //check
         try {
           await fs.unlink(imgPath);
-          console.log(`Deleted image: ${imgPath}`);
         } catch (err) {
-          console.warn(`Failed to delete image ${imgPath}:`, err.message);
         }
       }
     }

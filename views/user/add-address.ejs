@@ -191,8 +191,7 @@ if (!/^\d+$/.test(addressData.pincode)) {
                 });
             }
         } catch (error) {
-            console.error('Error submitting form:', error);
-            alert('An error occurred while adding the address. Please try again.');
+             Swal.fire('Error!', 'An error occurred while adding the address. Please try again.', 'error');
         }
     });
 });

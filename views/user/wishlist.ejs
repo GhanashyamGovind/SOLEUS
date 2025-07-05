@@ -178,7 +178,6 @@
       });
 
     } catch (error) {
-      console.error('Error in addToCartFromWishlist:', error.message, error.stack);
       await Swal.fire({
         toast: true,
         position: 'top-end',
@@ -248,7 +247,6 @@
         });
       }
     } catch (error) {
-      console.error('Error in confirmRemove:', error.message, error.stack);
       await Swal.fire({
         toast: true,
         position: 'top-end',

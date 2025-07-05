@@ -199,7 +199,6 @@ const cancelOrder = async (req, res, next) => {
                 createdAt: new Date()
             });
             await wallet.save();
-            console.log("razorpay order is returned")
         } else if (order.paymentMethod === 'Wallet'){
             const wallet = await Wallet.findOne({userId});
             wallet.balance += order.finalAmount;

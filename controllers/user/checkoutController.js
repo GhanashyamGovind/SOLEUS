@@ -29,14 +29,10 @@ const rewardEligibleCoupon = async (userId, amountPaid) => {
 
         if (bestCoupon) {
             bestCoupon.givenTo.push(userId);
-            console.log(`Coupon '${bestCoupon.name}'- ${bestCoupon.code} is given to user ${userId} `);
             await bestCoupon.save();
-        } else {
-            console.log('No eligible coupon found to reward.');
         }
 
     } catch (error) {
-        console.error('Error giving coupon to user:', error);
     }
 };
 
@@ -48,7 +44,6 @@ const razorpay = new Razorpay({
 const loadCheckOut = async (req, res, next) => {
     try {
         const userId = req.session.user;
-        console.log('User ID:', userId);
 
         if (!userId) {
             return res.redirect('/login');
@@ -155,20 +150,17 @@ const loadCheckOut = async (req, res, next) => {
             // Handle cart-based checkout
             const cart = await Cart.findOne({ userId }).populate('items.productId');
             if (!cart || !cart.items.length) {
-                console.log('Cart is empty');
                 return res.redirect('/cart');
             }
 
             cartItems = cart.items.map(item => {
                 const product = item.productId;
                 if (!product || !product.variants || !product.variants.length || product.isBlocked) {
-                    console.warn(`Product not found or has no variants: ${item.productId}`);
                     return null;
                 }
 
                 const variant = product.variants.find(v => v.size === item.size && v.sku === item.sku);
                 if (!variant || variant.stock < item.quantity) {
-                    console.warn(`Variant not found or insufficient stock for product ${product.productName}, size: ${item.size}, sku: ${item.sku}`);
                     return null;
                 }
 
@@ -185,7 +177,6 @@ const loadCheckOut = async (req, res, next) => {
 
             // If no valid items remain after filtering, redirect to cart
             if (!cartItems.length) {
-                console.log('No valid items in cart after filtering blocked products or insufficient stock');
                 return res.redirect('/cart?error=All items in your cart are unavailable or out of stock');
             }
 
@@ -219,7 +210,6 @@ const loadCheckOut = async (req, res, next) => {
             applicableCoupons
         });
     } catch (error) {
-        console.error('Error in loadCheckOut:', error);
         next(error);
     }
 };
@@ -399,7 +389,6 @@ const applyCoupon = async (req, res, next) => {
             message: 'Coupon applied successfully'
         });
     } catch (error) {
-        console.error('Error in applyCoupon:', error);
         return res.status(500).json({ success: false, message: 'Failed to apply coupon' });
     }
 };
@@ -515,7 +504,6 @@ const removeCoupon = async (req, res, next) => {
             message: 'Coupon removed successfully'
         });
     } catch (error) {
-        console.error('Error in removeCoupon:', error);
         return res.status(500).json({ success: false, message: 'Failed to remove coupon' });
     }
 };
@@ -752,7 +740,6 @@ const proceedToPayment = async (req, res, next) => {
 
             await wallet.save();
             order.paymentStatus = 'Completed';
-            console.log('Wallet payment completed');
             await rewardEligibleCoupon(userId, order.finalAmount); // Coupon for wallet payment (not for COD)
         }
 
@@ -763,7 +750,6 @@ const proceedToPayment = async (req, res, next) => {
                 { code: order.couponCode.trim().toUpperCase() },
                 { $addToSet: { usedBy: userId } }
             );
-            console.log('Coupon marked as used');
         }
 
         if (!isFailedPayment) {
@@ -795,7 +781,6 @@ const proceedToPayment = async (req, res, next) => {
         req.session.recentOrderSuccess = true;
 
         const redirectUrl = `/order/success?orderId=${order._id}`;
-        console.log(`Order processed: ${order._id}, Payment Method: ${paymentMethod}, Redirecting to: ${redirectUrl}`);
 
         res.status(200).json({
             success: true,
@@ -803,7 +788,6 @@ const proceedToPayment = async (req, res, next) => {
             redirectUrl
         });
     } catch (error) {
-        console.error('Error in proceedToPayment:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Something went wrong'
@@ -979,7 +963,6 @@ const createRazorpayOrder = async (req, res, next) => {
             key_id: process.env.RAZORPAY_KEY_ID
         });
     } catch (error) {
-        console.error('Error creating Razorpay order:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to create Razorpay order'
@@ -1008,7 +991,6 @@ const verifyRazorpayPayment = async (req, res) => {
         const isFailedPayment = !!orderId;
 
         if (!req.session.razorpayOrderDetails || req.session.razorpayOrderDetails.razorpayOrderId !== razorpay_order_id) {
-            console.warn('Invalid order details - session:', req.session.razorpayOrderDetails);
             const failureRedirectUrl = `/order/failure?razorpayOrderId=${razorpay_order_id}&isBuyNow=${isBuyNowBoolean || isFailedPayment}`;
             return res.status(400).json({
                 success: false,
@@ -1151,7 +1133,6 @@ const verifyRazorpayPayment = async (req, res) => {
             });
         }
     } catch (error) {
-        console.error('Error verifying Razorpay payment:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to verify payment'
@@ -1239,7 +1220,6 @@ const handlePaymentFailure = async (req, res, next) => {
             redirectUrl 
         });
     } catch (error) {
-        console.error('Error in handlePaymentFailure:', error);
         res.status(500).json({
             success: false,
             message: error.message || 'Failed to handle payment failure'
@@ -1338,7 +1318,6 @@ const failurePage = async (req, res, next) => {
             isBuyNow: isBuyNowBoolean,
         });
     } catch (error) {
-        console.error('Error in failurePage:', error);
         next(error);
     }
 };
@@ -1350,7 +1329,6 @@ const retryBuyNowCheckout = async (req, res, next) => {
         }
         res.redirect('/check-out?buyNow=true');
     } catch (error) {
-        console.error('Error in retryBuyNowCheckout:', error);
         next(error);
     }
 };
@@ -1377,7 +1355,6 @@ const retryCartCheckout = async (req, res, next) => {
         req.session.razorpayOrderDetails = req.session.razorpayOrderDetails || { isBuyNow: false };
         return res.redirect('/check-out');
     } catch (error) {
-        console.error('Error in retryCartCheckout:', error);
         next(error);
     }
 };

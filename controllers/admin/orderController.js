@@ -120,14 +120,11 @@ const updateStatus = async (req, res, next) => {
                 product.status = product.quantity > 0 ? 'Available' : 'Out of stock';
 
                 await product.save();
-                console.log("stock is restored")
             }
-            console.log("befor wallet")
 
             if(['Wallet', 'Razorpay'].includes(order.paymentMethod) && order.paymentStatus === 'Completed') {
                 const wallet = await Wallet.findOne({userId: order.user});
 
-                console.log(" wallet finding ")
                 if(!wallet) {
                     return res.status(404).json({error: "User wallet not found"});
                 }
@@ -138,7 +135,6 @@ const updateStatus = async (req, res, next) => {
                 );
 
                 if(!alreadyRefunded) {
-                    console.log("add to credit")
                     wallet.balance += order.finalAmount;
                     wallet.transactions.push({
                         type: 'credit',
@@ -147,12 +143,9 @@ const updateStatus = async (req, res, next) => {
                         orderId: order.orderId,
                         createdAt: new Date()
                     });
-                    console.log("this is crediting")
                     await wallet.save();
                 }
             }
-
-            console.log("after wallet")
 
             order.status = 'Cancelled';
             await order.save();
@@ -296,11 +289,7 @@ const approveReturn = async (req, res, next) => {
                 let excessDiscount = order.discount; // Use stored discount (accounts for scaling in applyCoupon)
 
                 refundAmount = Math.max(0, refundAmount - excessDiscount);
-                console.log(
-                    `Coupon invalid: Effective remaining value (${effectiveRemainingValue}) < minimum (${
-                        coupon.minimumPrice
-                    })`
-                );
+
             } else {
                 // Coupon is still valid, prorate discount
                 let proportionalDiscount = (itemTotal / totalItemAmount) * order.discount;
@@ -309,7 +298,6 @@ const approveReturn = async (req, res, next) => {
                     proportionalDiscount = (itemTotal / totalItemAmount) * order.discount;
                 }
                 refundAmount = Math.max(0, refundAmount - proportionalDiscount);
-                console.log(`Proportional discount applied: ${proportionalDiscount}`);
             }
         }
 
@@ -365,7 +353,6 @@ const approveReturn = async (req, res, next) => {
 
         return res.status(200).json({ success: true, message: 'Return approved, product stock updated' });
     } catch (error) {
-        console.error('Error in approveReturn:', error);
         next(error);
     }
 };

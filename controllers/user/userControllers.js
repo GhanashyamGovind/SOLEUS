@@ -27,7 +27,6 @@ async function createReferralCode (name, userId){
 
     return `${namePart}${userIdPart}`
   } catch (error) {
-    console.error("Error while generating referral code", error);
     return false;
   }
 }
@@ -59,7 +58,6 @@ async function sendVerificationEmail(email, otp){
         return info.accepted.length > 0
 
     } catch (error) {
-        console.error("Error sending email", error);
         return false;
     }
 }
@@ -79,7 +77,7 @@ const loadHomepage = async (req, res, next) => {
             delete req.session.buyNow
         }
 
-        const {cart} = req.query; console.log("cart", cart)
+        const {cart} = req.query;
         if (cart && cart == 'fromProductFailure') {
           const newCart = await Cart.findOneAndUpdate(
             { userId: user },
@@ -287,7 +285,6 @@ const verifyOtp = async (req, res, next) => {
                   }
                 }
               )
-              console.log("1st money ok")
 
               savedWallet.balance += refer.refereeAmount;
               savedWallet.transactions.push({
@@ -295,7 +292,6 @@ const verifyOtp = async (req, res, next) => {
                 amount: refer.refereeAmount,
                 reason: `Welcome reward for using a referral`
               })
-              console.log("second money ok")
               await savedWallet.save();
             }
             
@@ -336,11 +332,9 @@ const resendOtp = async (req, res, next) => {
 const loadProfile = async (req, res, next) =>{
     try {
         const userId = req.session.user
-        console.log(userId)
         const userData = await User.findOne({_id:userId});
 
         if(!userData){
-          console.log("user not found", userId);
           return res.redirect('/login');
         }
 
@@ -476,7 +470,6 @@ const loadAllProductPage = async (req, res) => {
       sort,
     });
   } catch (error) {
-    console.error('Error in loadAllProductPage:', error);
     const isAjax = req.query.ajax === 'true';
     if (isAjax) {
       return res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -581,7 +574,6 @@ const filterProduct = async (req, res) => {
       sort,
     });
   } catch (error) {
-    console.error('Error in filterProduct:', error);
     const isAjax = req.query.ajax === 'true';
     if (isAjax) {
       return res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -613,7 +605,6 @@ const clearSearch = async (req, res) => {
     const queryString = new URLSearchParams(queryParams).toString();
     return res.redirect(`/productFilter?${queryString}`);
   } catch (error) {
-    console.error('Error in clearSearch:', error);
     const isAjax = req.query.ajax === 'true';
     if (isAjax) {
       return res.status(500).json({ error: 'Something went wrong. Please try again.' });
@@ -695,7 +686,6 @@ const emailMessage = async (req, res, next) => {
 
     return res.status(200).json({ success: true, message: "Message sent successfully." });
   } catch (error) {
-    console.error(error)
     next(error)
   }
 }

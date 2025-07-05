@@ -354,7 +354,6 @@
     profileImageInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-            console.log('Selected file:', file.name);
             // Add logic to preview or upload the image
         }
     });
@@ -373,15 +372,13 @@
                     const data = await res.json();
 
                     if(data.success) {
-                        alert('Profile image deleted successfully!');
+                        await Swal.fire('Success!', 'Profile image deleted successfully!', 'success');
                         window.location.reload();
                     }else{
-                        alert(`Error: ${data.message}`);
-                        console.error("error in deleting profile img", data.message)
+                        Swal.fire('Error!', `Error: ${data.message}`,'error');
                     }
                 } catch (error) {
-                    alert('An error occurred while deleting the profile image.');
-                    console.error(error)
+                    Swal.fire('Error!','An error occurred while deleting the profile image.', 'error');
                 }
             });
         });
@@ -498,8 +495,7 @@
                     });
                 }
             } catch (error) {
-                alert('An error occurred while updating the username.');
-                console.error("Error in fetch:", error);
+                Swal.fire('Error!', 'An error occurred while updating the username.', 'error');
             }
         });
 
@@ -567,7 +563,6 @@
                         title: 'Network Error',
                         text: 'Unable to update the phone number.',
                     });
-                    console.error("Error in fetch:", error);
                 }
             });
 
@@ -620,11 +615,9 @@
                         showConfirmButton: false,
                         timer: 3000
                     });
-                    console.error("Error generating OTP:", data.message);
                 }
             } catch (error) {
-                alert('An error occurred while sending the OTP.');
-                console.error("Error in fetch:", error);
+                Swal.fire('Error!','An error occurred while sending the OTP.', ' error');
             }
         });
 
@@ -757,8 +750,7 @@
                     oldPasswordInput.classList.add('border-red-400');
                 }
             } catch (error) {
-                alert('An error occurred while updating the password.');
-                console.error("Error in fetch:", error);
+                Swal.fire('Error!', 'An error occurred while updating the password.', 'error');
             }
         });
     });
