@@ -61,7 +61,7 @@ const loadOrder = async (req, res, next) => {
             const productImages = order.orderedItems.map(item => {
                 const product = item.product;
                 return product?.productImage?.[0]
-                ? `/Uploads/re-image/${product.productImage[0]}`
+                ? `/uploads/re-image/${product.productImage[0]}`
                 : 'https://via.placeholder.com/80x80?text=Product';
             })
 

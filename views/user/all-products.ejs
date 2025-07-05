@@ -79,7 +79,7 @@
                 <% if (product.appliedOffer > 0) { %>
                   <p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10"><%= product.appliedOffer %>% off</p>
                 <% } %>
-                <img src="/Uploads/re-image/<%= product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg' %>" alt="<%= product.productName || 'Product' %>" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
+                <img src="/uploads/re-image/<%= product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg' %>" alt="<%= product.productName || 'Product' %>" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
                 <button onclick="addToWishlist('<%= product._id %>')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -169,7 +169,7 @@
                 <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-yellow-400 hover:bg-gray-200">
                   <div class="relative overflow-hidden rounded-lg mb-3 h-48 bg-gray-100 flex items-center justify-center group">
                     ${product.appliedOffer > 0 ? `<p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10 block opacity-100">${product.appliedOffer}% off</p>` : ''}
-                    <img src="/Uploads/re-image/${escapeHTML(product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg')}" alt="${escapeHTML(product.productName || 'Product')}" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
+                    <img src="/uploads/re-image/${escapeHTML(product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg')}" alt="${escapeHTML(product.productName || 'Product')}" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
                     <button onclick="addToWishlist('${product._id}')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
