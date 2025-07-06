@@ -729,7 +729,7 @@ const offerProducts = async (req, res, next) => {
 
 const privacyAndPolicy = async (req, res, next) => {
   try {
-    return render('user/privacyPolicy')
+    return res.render('user/privacyPolicy')
   } catch (error) {
     next(error)
   }
@@ -737,7 +737,7 @@ const privacyAndPolicy = async (req, res, next) => {
 
 const termsAndCondtion = async (req, res, next) => {
   try {
-    return render('user/terms')
+    return res.render('user/terms')
   } catch (error) {
     next(error)
   }

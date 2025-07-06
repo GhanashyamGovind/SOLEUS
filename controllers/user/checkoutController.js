@@ -767,14 +767,23 @@ const proceedToPayment = async (req, res, next) => {
 
         if (!isFailedPayment) {
             for (const item of order.orderedItems) {
-                const result = await Product.findByIdAndUpdate(
-                    item.product,
-                    { $inc: { 'variants.$[elem].stock': -item.quantity } },
-                    { arrayFilters: [{ 'elem.sku': item.sku }], new: true }
-                );
-                if (!result) {
-                    throw new Error(`Failed to update stock for product ${item.product}`);
+                const product = await Product.findById(item.product);
+                if (!product) {
+                    throw new Error(`Product not found for ID ${item.product}`);
                 }
+
+                const variant = product.variants.find(v => v.sku === item.sku);
+                if (!variant) {
+                    throw new Error(`Variant with SKU ${item.sku} not found`);
+                }
+
+                if (variant.stock < item.quantity) {
+                    throw new Error(`Insufficient stock for ${item.product} (SKU: ${item.sku})`);
+                }
+
+                variant.stock -= item.quantity;
+                await product.save();
+
             }
         }
 
@@ -1077,15 +1086,19 @@ const verifyRazorpayPayment = async (req, res) => {
 
         if (isValidPayment) {
             // Update stock
-            for (const item of order.orderedItems) {
-                const result = await Product.findByIdAndUpdate(
-                    item.product,
-                    { $inc: { 'variants.$[elem].stock': -item.quantity } },
-                    { arrayFilters: [{ 'elem.sku': item.sku }], new: true }
-                );
-                if (!result) {
-                    throw new Error(`Failed to update stock for product ${item.product}`);
+            for(const item of order.orderedItems) {
+                const product = await Product.findById(item.product);
+                if (!product) {
+                    throw new Error(`Product not found for ID ${item.product}`);
                 }
+
+                const variant = product.variants.find(v => v.sku === item.sku);
+                if (!variant || variant.stock < item.quantity) {
+                    throw new Error(`Variant not found or insufficient stock for SKU ${item.sku}`);
+                }
+
+                variant.stock -= item.quantity;
+                await product.save();
             }
 
             // Mark coupon as used

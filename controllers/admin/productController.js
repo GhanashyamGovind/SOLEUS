@@ -506,7 +506,13 @@ const editProduct = async (req, res, next) => {
       status: quantity > 0 ? 'Available' : 'Out of stock'
     };
 
-    await Product.findByIdAndUpdate(id, updatedProduct, { new: true });
+    const productToUpdate = await Product.findById(id);
+    if (!productToUpdate) {
+      return res.status(404).json({ error: 'Product not found for update' });
+    }
+
+    Object.assign(productToUpdate, updatedProduct);
+    await productToUpdate.save()
     const response = { message: 'Product updated successfully' };
     return res.status(200).json({ response });
   } catch (error) {
