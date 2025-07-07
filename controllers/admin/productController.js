@@ -28,7 +28,7 @@ const getProductPage = async (req, res, next) => {
 };
 
 
-const addProducts = async (req, res) => {
+const addProducts = async (req, res, next) => {
   try {
     const {
       productName,
@@ -184,7 +184,7 @@ const addProducts = async (req, res) => {
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
         const originalImagePath = req.files[i].path;
-        const resizedImagePath = path.join('public', 'Uploads', 'product-images', req.files[i].filename);
+        const resizedImagePath = path.join('public', 'uploads', 'product-images', req.files[i].filename);
         await sharp(originalImagePath)
           .resize({ width: 440, height: 440, fit: 'cover' })
           .toFile(resizedImagePath);

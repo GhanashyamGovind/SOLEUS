@@ -93,7 +93,7 @@ const downloadPDF = async (req, res, next) => {
 
       // Product image handling
       if (item.product.productImage && item.product.productImage[0]) {
-        const imagePath = path.resolve(__dirname, `../../public/Uploads/re-image/${item.product.productImage[0]}`);
+        const imagePath = path.resolve(__dirname, `../../public/uploads/re-image/${item.product.productImage[0]}`);
         if (fs.existsSync(imagePath)) {
           doc.image(imagePath, 50, y - 5, {
             fit: [30, 30],

@@ -723,7 +723,7 @@ const offerProducts = async (req, res, next) => {
 
     return res.render('user/offerProducts', {products: product})
   } catch (error) {
-    next(MediaError)
+    next(error)
   }
 }
 
