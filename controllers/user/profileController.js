@@ -559,10 +559,6 @@ const confirmDelete = async (req, res, next) => {
 const loadAddress = async (req, res, next) => {
     try {
 
-        if(req.session.addressToCheckout){
-            delete req.session.addressToCheckout;
-        }
-
         const userId = req.session.user;
         const user = await User.findById(userId);
         if(!user) {
@@ -587,9 +583,6 @@ const loadAddress = async (req, res, next) => {
 const getAddAdress = async (req, res, next) => {
     try {
 
-        if(req.session.addressToCheckout){
-            delete req.session.addressToCheckout;
-        }
         const userId = req.session.user;
         const user = await User.findById(userId);
 
@@ -673,10 +666,6 @@ const loadEdit = async (req, res, next) => {
             }
 
             const addressId = req.query.id;
-            const checkOut = req.query.from;
-            if(checkOut === 'checkOut'){
-                req.session.addressToCheckout = true;
-            }
 
             if(!mongoose.Types.ObjectId.isValid(addressId)) {
                 const error = new Error('Page not found');
@@ -752,7 +741,7 @@ const loadEdit = async (req, res, next) => {
             return res.status(404).json({success: false, message: 'Address not found' });
         }
 
-        return res.status(200).json({success: true, message: 'Address updated successfully', url: req.session.addressToCheckout ? '/check-out' : '/getAddress'});
+        return res.status(200).json({success: true, message: 'Address updated successfully', url:'/getAddress'});
     } catch (error) {
         next(error)
     }

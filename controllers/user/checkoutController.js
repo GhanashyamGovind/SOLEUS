@@ -49,10 +49,6 @@ const loadCheckOut = async (req, res, next) => {
             return res.redirect('/login');
         }
 
-        if(req.session.addressToCheckout){
-            delete req.session.addressToCheckout;
-        }
-
         const user = await User.findById(userId).select('name email phone');
         if (!user) {
             req.session.user = null;
