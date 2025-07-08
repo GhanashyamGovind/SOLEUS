@@ -121,6 +121,11 @@ const getTrackPage = async (req, res, next) => {
         const {orderId} = req.params;
 
         const order = await Order.findOne({orderId}).populate('orderedItems.product').lean();
+        if(!order) {
+            const error = new Error('Page not found');
+            error.statusCode = 404;
+            throw error;
+        }
        
         const getProducts = order.orderedItems.map((item) => {
             return{

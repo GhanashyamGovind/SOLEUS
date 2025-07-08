@@ -1,12 +1,18 @@
 const Product = require('../../models/productSchema');
 const Category = require('../../models/categorySchema');
 const User = require('../../models/userSchema');
+const mongoose = require('mongoose')
 
 
 const productDeatils = async (req, res, next) => {
     try {
 
         const productId = req.query.id;
+        if(!mongoose.Types.ObjectId.isValid(productId)) {
+            const error = new Error('Page not found');
+            error.statusCode = 404;
+            throw error;
+        }
         const product = await Product.findById(productId, {isBlocked: false}).populate(['category', 'brand']);
         if(!product) {
             const error = new Error("Page Not Foound");

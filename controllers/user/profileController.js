@@ -7,6 +7,7 @@ const session = require('express-session');
 const fs = require('fs').promises;
 const path = require('path');
 const { isFloat32Array } = require('util/types');
+const mongoose = require('mongoose')
 
 
 
@@ -558,6 +559,9 @@ const confirmDelete = async (req, res, next) => {
 const loadAddress = async (req, res, next) => {
     try {
 
+        if(req.session.addressToCheckout){
+            delete req.session.addressToCheckout;
+        }
 
         const userId = req.session.user;
         const user = await User.findById(userId);
@@ -583,6 +587,9 @@ const loadAddress = async (req, res, next) => {
 const getAddAdress = async (req, res, next) => {
     try {
 
+        if(req.session.addressToCheckout){
+            delete req.session.addressToCheckout;
+        }
         const userId = req.session.user;
         const user = await User.findById(userId);
 
@@ -665,7 +672,17 @@ const loadEdit = async (req, res, next) => {
                 throw error
             }
 
-            const addressId = req.query.id
+            const addressId = req.query.id;
+            const checkOut = req.query.from;
+            if(checkOut === 'checkOut'){
+                req.session.addressToCheckout = true;
+            }
+
+            if(!mongoose.Types.ObjectId.isValid(addressId)) {
+                const error = new Error('Page not found');
+                error.statusCode = 404;
+                throw error;
+            }
 
             const userAddress = await Address.findOne({userId, 'address._id': addressId}, {'address.$': 1});
             if(!userAddress) {
@@ -735,7 +752,7 @@ const loadEdit = async (req, res, next) => {
             return res.status(404).json({success: false, message: 'Address not found' });
         }
 
-        return res.status(200).json({success: true, message: 'Address updated successfully', url: '/getAddress'});
+        return res.status(200).json({success: true, message: 'Address updated successfully', url: req.session.addressToCheckout ? '/check-out' : '/getAddress'});
     } catch (error) {
         next(error)
     }

@@ -12,7 +12,6 @@ const {Resend} = require('resend');
 const Wallet = require('../../models/walletSchema');
 const { default: mongoose } = require('mongoose');
 const { render } = require('ejs');
-// const { default: products } = require('razorpay/dist/types/products');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 
@@ -619,6 +618,11 @@ const clearSearch = async (req, res) => {
 const brandProudct = async (req, res, next) => {
   try {
     const {id} = req.params;
+    if(!mongoose.Types.ObjectId.isValid(id)) {
+      const error = new Error('Page not found');
+      error.statusCode = 404;
+      throw error;
+    }
     const products = await Product.find({brand: id, isBlocked: false}).populate('brand', 'brandName').sort({productName: -1});
     const brand = await Brand.findById(id);
     if(!brand){
