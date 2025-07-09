@@ -1,65 +1,63 @@
 <%- include('../../views/partials/user/header', {title: 'SignUp'}) %>
 
-    <!-- Main Content -->
-    <main class="flex justify-center items-center min-h-screen">
-        <div class="bg-yellow-200 p-8 rounded-3xl shadow-lg w-full max-w-md">
-            <h1 class="text-4xl font-bold text-center mb-6">REGISTER</h1>
+<main class="flex justify-center items-center min-h-screen">
+    <div class="bg-yellow-200 p-8 rounded-3xl shadow-lg w-full max-w-md">
+        <h1 class="text-4xl font-bold text-center mb-6">REGISTER</h1>
 
-            <form action="/signUp" method="POST" id="signform">
-                <div class="space-y-4">
-                    <input type="text" name="name" placeholder="User name" id="name" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
-                    <div id="error1" class="text-red-500 text-center"></div>
+        <form action="/signUp" method="POST" id="signform">
+            <div class="space-y-4">
+                <input type="text" name="name" placeholder="User name" id="name" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+                <div id="error1" class="text-red-500 text-center"></div>
 
-                    <input type="email" name="email" placeholder="Email" id="email" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
-                    <div id="error2" class="text-red-500 text-center"></div>
+                <input type="email" name="email" placeholder="Email" id="email" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+                <div id="error2" class="text-red-500 text-center"></div>
 
-                    <input type="tel" name="phone" placeholder="Mobile number" id="phone" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" >
-                    <div id="error3" class="text-red-500 text-center"></div>
+                <input type="tel" name="phone" placeholder="Mobile number" id="phone" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" required>
+                <div id="error3" class="text-red-500 text-center"></div>
 
-                    <div class="relative">
+                <div class="relative">
                     <input type="password" name="password" placeholder="Password" id="password"
-                        class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" />
-                    
+                        class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" required>
                     <span id="togglePassword" class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-600">
                         visibility
                     </span>
-                    </div>
+                </div>
+                <div id="error4" class="text-red-500 text-center"></div>
 
-                    <div class="relative">
+                <div class="relative">
                     <input type="password" name="confirmPassword" placeholder="Confirm password" id="confirmPassword"
-                        class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" />
-                    
+                        class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 pr-10" required>
                     <span id="toggleConfirmPassword" class="material-icons absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-600">
                         visibility
                     </span>
-                    </div>
-
-                    <input type="text" name="referralCode" placeholder="Enter Referral Code if you have" id="referralCode" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
                 </div>
-                <br>
-                <% if (locals.message && message.length > 0) { %>
-                    <div id="alert-message" class="bg-red-200 border-l-4 border-red-500 text-center text-red-700 p-4 rounded-lg mb-6 " role="alert">
-                        <%= message %>
-                    </div>
-                <% } %>
-                <button type="submit" id="submitBtn" class="w-full bg-black text-white p-3 rounded-lg mt-6 hover:bg-white hover:text-black hover:ring-2 hover:ring-black flex justify-center items-center gap-2">
-                    <svg id="spinner" class="hidden w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                    </svg>
-                    <span id="btnText">CREATE</span>
-                </button>
-            </form>
+                <div id="error5" class="text-red-500 text-center"></div>
 
-            <div class="text-center mt-4">
-                <p class="text-sm">ALREADY HAVE AN ACCOUNT ? <a href="/login" class="underline hover:text-yellow-600">/Login</a></p>
+                <input type="text" name="referralCode" placeholder="Enter Referral Code if you have" id="referralCode" class="w-full p-3 bg-pink-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400">
             </div>
+            <br>
+            <% if (locals.message) { %>
+                <div id="alert-message" class="bg-red-200 border-l-4 border-red-500 text-center text-red-700 p-4 rounded-lg mb-6" role="alert">
+                    <%= message %>
+                </div>
+            <% } %>
+            <button type="submit" id="submitBtn" class="w-full bg-black text-white p-3 rounded-lg mt-6 hover:bg-white hover:text-black hover:ring-2 hover:ring-black flex justify-center items-center gap-2">
+                <svg id="spinner" class="hidden w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                </svg>
+                <span id="btnText">CREATE</span>
+            </button>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-sm">ALREADY HAVE AN ACCOUNT ? <a href="/login" class="underline hover:text-yellow-600">/Login</a></p>
         </div>
-    </main>
+    </div>
+</main>
 
-    <%- include('../../views/partials/user/footer') %>
-
+<%- include('../../views/partials/user/footer') %>
 
 <script>
     const name = document.getElementById('name');
@@ -76,148 +74,161 @@
     const error5 = document.getElementById('error5');
 
     const signform = document.getElementById('signform');
-    const submitButton = document.querySelector('#signform button[type="submit"]');
-
-    let allowSubmit = false;
+    const submitButton = document.getElementById('submitBtn');
 
     function showError(element, message) {
         element.style.display = "block";
         element.innerHTML = message;
-        setTimeout(() => {
-            element.style.display = "none";
-        }, 4000);
     }
 
-    function nameValidateChecking() {
+    function hideError(element) {
+        element.style.display = "none";
+        element.innerHTML = "";
+    }
+
+    function validateName() {
         const nameVal = name.value.trim();
         const namePattern = /^[a-zA-Z ]{4,20}$/;
+        
         if (!nameVal) {
-            showError(error1, "Please enter a valid Name !");
+            showError(error1, "Please enter a valid Name!");
+            return false;
         } else if (!namePattern.test(nameVal)) {
-            showError(error1, "Name can only have Alphabets and space");
+            showError(error1, "Name can only have alphabets and space (4-20 characters)");
+            return false;
         } else {
-            error1.style.display = 'none';
-            error1.innerHTML = "";
+            hideError(error1);
+            return true;
         }
     }
 
-    function emailValidateChecking() {
+    function validateEmail() {
         const emailVal = email.value.trim();
-        const emailPattern = /^[a-z0-9.]+@[a-z0-9]+\.[a-z]{2,}$/;
+        const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+        
         if (!emailVal) {
-            showError(error2, "Please enter Email !");
+            showError(error2, "Please enter Email!");
+            return false;
         } else if (!emailPattern.test(emailVal)) {
-            showError(error2, "Invalid Format");
+            showError(error2, "Invalid email format");
+            return false;
         } else {
-            error2.style.display = "none";
-            error2.innerHTML = "";
+            hideError(error2);
+            return true;
         }
     }
 
-    function phoneValidateChecking() {
+    function validatePhone() {
         const phoneVal = phone.value.trim();
+        const phonePattern = /^\d{10}$/;
+        
         if (!phoneVal) {
             showError(error3, "Enter valid phone number");
-        } else if (phoneVal.length !== 10 || isNaN(phoneVal)) {
-            showError(error3, "Enter 10 digit number");
+            return false;
+        } else if (!phonePattern.test(phoneVal)) {
+            showError(error3, "Enter 10 digit phone number");
+            return false;
         } else {
-            error3.style.display = 'none';
-            error3.innerHTML = "";
+            hideError(error3);
+            return true;
         }
     }
 
-    function passwordValidateChecking() {
+    function validatePassword() {
+        const passwordVal = password.value;
+        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        
+        if (!passwordVal) {
+            showError(error4, "Please enter password");
+            return false;
+        } else if (passwordVal.length < 8) {
+            showError(error4, "Password must be at least 8 characters");
+            return false;
+        } else if (!passwordPattern.test(passwordVal)) {
+            showError(error4, "Must contain uppercase, lowercase, number and special character");
+            return false;
+        } else {
+            hideError(error4);
+            return true;
+        }
+    }
+
+    function validateConfirmPassword() {
         const passwordVal = password.value;
         const confirmPasswordVal = confirmPassword.value;
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-
-        if (passwordVal.length < 8) {
-            showError(error4, "Password is too short (min 8 characters)");
-        } else if (!passwordPattern.test(passwordVal)) {
-            showError(error4, "Should contain uppercase, lowercase, number and symbol");
-        } else {
-            error4.style.display = 'none';
-            error4.innerHTML = "";
-        }
-
-        if (passwordVal !== confirmPasswordVal) {
+        
+        if (!confirmPasswordVal) {
+            showError(error5, "Please confirm password");
+            return false;
+        } else if (passwordVal !== confirmPasswordVal) {
             showError(error5, "Passwords do not match");
+            return false;
         } else {
-            error5.style.display = 'none';
-            error5.innerHTML = "";
+            hideError(error5);
+            return true;
         }
     }
 
-    function animationButton(button) {
+    function validateForm() {
+        const isNameValid = validateName();
+        const isEmailValid = validateEmail();
+        const isPhoneValid = validatePhone();
+        const isPasswordValid = validatePassword();
+        const isConfirmPasswordValid = validateConfirmPassword();
+        
+        return isNameValid && isEmailValid && isPhoneValid && 
+               isPasswordValid && isConfirmPasswordValid;
+    }
+
+    function showLoading() {
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
-
+        
         spinner.classList.remove('hidden');
-        btnText.textContent = "Please wait...";
-        button.disabled = true;
+        btnText.textContent = "Processing...";
+        submitButton.disabled = true;
     }
 
-    function debounce(func, delay) {
-        let timer;
-        return function (...args) {
-            if (timer) return;
-            func.apply(this, args);
-            timer = setTimeout(() => {
-                timer = null;
-            }, delay);
-        };
+    function hideLoading() {
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        
+        spinner.classList.add('hidden');
+        btnText.textContent = "CREATE";
+        submitButton.disabled = false;
     }
 
-    const debounceSubmit = debounce(function () {
-        allowSubmit = true;
-        signform.requestSubmit();
-    }, 1000); // you can increase if needed
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const type = password.type === 'password' ? 'text' : 'password';
+            password.type = type;
+            this.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
 
-    document.addEventListener('DOMContentLoaded', function () {
-        signform.addEventListener('submit', function (e) {
-            if (!allowSubmit) {
-                e.preventDefault();
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const type = confirmPassword.type === 'password' ? 'text' : 'password';
+            confirmPassword.type = type;
+            this.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
 
-                // validations
-                nameValidateChecking();
-                emailValidateChecking();
-                phoneValidateChecking();
-                passwordValidateChecking();
-
-                if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
-                    return;
-                }
-
-                animationButton(submitButton);
-                debounceSubmit();
+        // Form submission
+        signform.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (validateForm()) {
+                showLoading();
+                this.submit();
             }
         });
 
-        // Auto-hide alert message
-        const alertDiv = document.getElementById('alert-message');
-        if (alertDiv) {
+        // Hide server error message after 6 seconds
+        const alertMessage = document.getElementById('alert-message');
+        if (alertMessage) {
             setTimeout(() => {
-                alertDiv.style.display = "none"
+                alertMessage.style.display = 'none';
             }, 6000);
         }
-
-        // Toggle password visibility
-        document.getElementById("togglePassword").addEventListener("click", function () {
-            const input = password;
-            const type = input.type === "password" ? "text" : "password";
-            input.type = type;
-            this.textContent = type === "password" ? "visibility" : "visibility_off";
-        });
-
-        document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
-            const input = confirmPassword;
-            const type = input.type === "password" ? "text" : "password";
-            input.type = type;
-            this.textContent = type === "password" ? "visibility" : "visibility_off";
-        });
     });
 </script>
-
-
-
-     

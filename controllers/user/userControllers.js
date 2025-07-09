@@ -178,39 +178,100 @@ const loadSignUp = async (req, res, next) => {
 
 
 // submit signUp
+// const signUp = async (req, res, next) => {
+//     try {
+//         const {name, email, password, confirmPassword, phone, referralCode} = req.body;
+
+//         if(password !== confirmPassword){
+//             return res.render('user/signUp', {message: "Password not Matchig"})
+//         }
+
+//         const findUser = await User.findOne({email});
+//         if(findUser){
+//             return res.render("user/signUp", {message: "User with this email already exists"})
+//         }
+
+//         const otp = generateOtp();
+
+//         const emailSent = await sendVerificationEmail(email, otp);
+//         if(!emailSent){
+//             return res.json("email error");
+//         }
+
+//         req.session.userOtp = {
+//           code: otp,
+//           expiresAt: Date.now() + 60 * 1000
+//         }
+//         req.session.userData = {name,phone,email,password, referralCode};
+
+//         res.render("user/verify-otp");
+//         console.log("otp sent", otp)
+
+//     } catch (error) {
+//         next(error)
+//     }
+// }
+
 const signUp = async (req, res, next) => {
     try {
-        const {name, email, password, confirmPassword, phone, referralCode} = req.body;
+        const { name, email, password, confirmPassword, phone, referralCode } = req.body;
 
-        if(password !== confirmPassword){
-            return res.render('user/signUp', {message: "Password not Matchig"})
+        // Basic validation
+        if (!name || !email || !password || !confirmPassword || !phone) {
+            return res.render("user/signUp", { 
+                message: "All fields are required" 
+            });
         }
 
-        const findUser = await User.findOne({email});
-        if(findUser){
-            return res.render("user/signUp", {message: "User with this email already exists"})
+        if (password !== confirmPassword) {
+            return res.render("user/signUp", { 
+                message: "Passwords do not match" 
+            });
         }
 
+        // Check if user already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.render("user/signUp", { 
+                message: "User with this email already exists" 
+            });
+        }
+
+        // Generate OTP
         const otp = generateOtp();
 
+        // Send verification email
         const emailSent = await sendVerificationEmail(email, otp);
-        if(!emailSent){
-            return res.json("email error");
+        if (!emailSent) {
+            return res.render("user/signUp", { 
+                message: "Failed to send verification email. Please try again." 
+            });
         }
 
+        // Store OTP and user data in session
         req.session.userOtp = {
-          code: otp,
-          expiresAt: Date.now() + 60 * 1000
-        }
-        req.session.userData = {name,phone,email,password, referralCode};
+            code: otp,
+            expiresAt: Date.now() + 60 * 1000 // 1 minute expiry
+        };
+        
+        req.session.userData = { 
+            name, 
+            phone, 
+            email, 
+            password, 
+            referralCode 
+        };
 
-        res.render("user/verify-otp");
-        console.log("otp sent", otp)
+        console.log("OTP sent:", otp); // For development only
+        return res.render("user/verify-otp");
 
     } catch (error) {
-        next(error)
+        console.error("Signup error:", error);
+        return res.render("user/signUp", { 
+            message: "An error occurred during signup. Please try again." 
+        });
     }
-}
+};
 
 
 const securePassword = async (password) => {
