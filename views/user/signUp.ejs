@@ -67,15 +67,18 @@
     const phone = document.getElementById('phone');
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirmPassword');
-    const referalCode = document.getElementById('referralCode');
+    const referralCode = document.getElementById('referralCode');
 
     const error1 = document.getElementById('error1');
     const error2 = document.getElementById('error2');
     const error3 = document.getElementById('error3');
-    const error4 = document.getElementById('error4') || document.createElement('div');
-    const error5 = document.getElementById('error5') || document.createElement('div');
+    const error4 = document.getElementById('error4');
+    const error5 = document.getElementById('error5');
 
     const signform = document.getElementById('signform');
+    const submitButton = document.querySelector('#signform button[type="submit"]');
+
+    let allowSubmit = false;
 
     function showError(element, message) {
         element.style.display = "block";
@@ -87,10 +90,10 @@
 
     function nameValidateChecking() {
         const nameVal = name.value.trim();
-        const namePatter = /^[a-zA-Z ]{4,20}$/;
+        const namePattern = /^[a-zA-Z ]{4,20}$/;
         if (!nameVal) {
             showError(error1, "Please enter a valid Name !");
-        } else if (!namePatter.test(nameVal)) {
+        } else if (!namePattern.test(nameVal)) {
             showError(error1, "Name can only have Alphabets and space");
         } else {
             error1.style.display = 'none';
@@ -115,8 +118,8 @@
         const phoneVal = phone.value.trim();
         if (!phoneVal) {
             showError(error3, "Enter valid phone number");
-        } else if (phoneVal.length !== 10) {
-            showError(error3, "Enter 10 digit");
+        } else if (phoneVal.length !== 10 || isNaN(phoneVal)) {
+            showError(error3, "Enter 10 digit number");
         } else {
             error3.style.display = 'none';
             error3.innerHTML = "";
@@ -145,32 +148,13 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        signform.addEventListener('submit', function (e) {
-            e.preventDefault(); 
+    function animationButton(button) {
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
 
-            // Validate all fields
-            nameValidateChecking();
-            emailValidateChecking();
-            phoneValidateChecking();
-            passwordValidateChecking();
-
-            // If there are any errors, stop here
-            if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
-                return;
-            }
-
-            // No errors - animate and submit with debounce
-            animationButton(submitButton);
-            debounceSubmit();
-        });
-    });
-
-    const alertDiv = document.getElementById('alert-message');
-    if (alertDiv) {
-        setTimeout(() => {
-            alertDiv.style.display = "none"
-        }, 6000);
+        spinner.classList.remove('hidden');
+        btnText.textContent = "Please wait...";
+        button.disabled = true;
     }
 
     function debounce(func, delay) {
@@ -184,39 +168,56 @@
         };
     }
 
-    function animationButton(button) {
-        const spinner = document.getElementById('spinner');
-        const btnText = document.getElementById('btnText');
-
-        spinner.classList.remove('hidden');
-        btnText.textContent = "Please wait...";
-        button.disabled = true;
-
-        setTimeout(() => {
-            button.classList.remove('animate-pulse', 'bg-gray-700');
-        }, 4000);
-    }
-
-    const submitButton = document.querySelector('#signform button[type="submit"]');
     const debounceSubmit = debounce(function () {
-        signform.requestSubmit(); 
-    }, 4000);
+        allowSubmit = true;
+        signform.requestSubmit();
+    }, 1000); // you can increase if needed
 
-    // Show/hide password
-    document.getElementById("togglePassword").addEventListener("click", function () {
-        const passwordInput = document.getElementById("password");
-        const type = passwordInput.type === "password" ? "text" : "password";
-        passwordInput.type = type;
-        this.textContent = type === "password" ? "visibility" : "visibility_off";
-    });
+    document.addEventListener('DOMContentLoaded', function () {
+        signform.addEventListener('submit', function (e) {
+            if (!allowSubmit) {
+                e.preventDefault();
 
-    document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
-        const confirmPasswordInput = document.getElementById("confirmPassword");
-        const type = confirmPasswordInput.type === "password" ? "text" : "password";
-        confirmPasswordInput.type = type;
-        this.textContent = type === "password" ? "visibility" : "visibility_off";
+                // validations
+                nameValidateChecking();
+                emailValidateChecking();
+                phoneValidateChecking();
+                passwordValidateChecking();
+
+                if (error1.innerHTML || error2.innerHTML || error3.innerHTML || error4.innerHTML || error5.innerHTML) {
+                    return;
+                }
+
+                animationButton(submitButton);
+                debounceSubmit();
+            }
+        });
+
+        // Auto-hide alert message
+        const alertDiv = document.getElementById('alert-message');
+        if (alertDiv) {
+            setTimeout(() => {
+                alertDiv.style.display = "none"
+            }, 6000);
+        }
+
+        // Toggle password visibility
+        document.getElementById("togglePassword").addEventListener("click", function () {
+            const input = password;
+            const type = input.type === "password" ? "text" : "password";
+            input.type = type;
+            this.textContent = type === "password" ? "visibility" : "visibility_off";
+        });
+
+        document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
+            const input = confirmPassword;
+            const type = input.type === "password" ? "text" : "password";
+            input.type = type;
+            this.textContent = type === "password" ? "visibility" : "visibility_off";
+        });
     });
 </script>
+
 
 
      
