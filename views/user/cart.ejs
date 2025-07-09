@@ -20,13 +20,13 @@
                     <% if (cart && cart.items && cart.items.length > 0) { %>
                         <% cart.items.forEach(item => { %>
                             <tr class="border-b hover:bg-gray-50">
-                                <td class="p-4 flex items-center space-x-4">
+                                <td class="p-4 product-cell">
                                     <% const productImage = item.productId && item.productId.productImage ? item.productId.productImage : 'https://via.placeholder.com/80?text=Shoes'; %>
                                     <% const productName = item.productId && item.productId.productName ? item.productId.productName : 'Product'; %>
-                                    <img src="/uploads/re-image/<%= productImage[0] %>" alt="<%= productName %>" class="w-20 h-20 object-cover rounded-md shadow-sm">
-                                    <div>
+                                    <img src="/uploads/re-image/<%= productImage[0] %>" alt="<%= productName %>" class="product-image">
+                                    <div class="product-info">
                                         <% const displayName = item.productId && item.productId.productName ? item.productId.productName : 'Unknown Product'; %>
-                                        <p class="font-bold text-gray-800"><%= displayName.toUpperCase() %></p>
+                                        <span class="product-name"><%= displayName.toUpperCase() %></span>
                                         <p class="text-sm text-gray-500">SKU: <%= item.sku || 'N/A' %></p>
                                     </div>
                                 </td>
@@ -310,110 +310,139 @@ if(errorMessage){
     }
     table {
         border-collapse: collapse;
+        width: 100%;
     }
     th, td {
         border: 1px solid #e5e7eb;
+        padding: 1rem;
+        vertical-align: middle;
     }
     tr:hover {
+        background-color: #f9fafb;
         transition: background-color 0.2s ease;
     }
     button {
-        transition: background-color 0.2s ease, transform 0.1s ease;
+        transition: all 0.2s ease;
     }
     button:hover {
         transform: scale(1.05);
     }
 
-    /* Responsive table styles */
-    .overflow-x-auto {
-        -webkit-overflow-scrolling: touch;
+    /* Product cell styling */
+    .product-cell {
+        display: flex;
+        align-items: center;
+        min-width: 200px;
+        max-width: 300px;
     }
-    table {
-        width: 100%;
-        table-layout: auto;
+    .product-info {
+        flex: 1;
+        min-width: 0; /* Allows text truncation */
     }
-    th, td {
-        padding: 1rem;
-        white-space: nowrap; /* Prevent wrapping for most cells */
-    }
-    th:first-child, td:first-child {
-        min-width: 200px; /* Ensure product column has enough space */
-        max-width: 300px; /* Limit max width to prevent overflow */
-    }
-    td:first-child .font-bold {
-        white-space: normal; /* Allow product name to wrap if needed */
+    .product-name {
+        font-weight: bold;
+        color: #1f2937;
+        white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis; /* Truncate with ellipsis if too long */
-        display: -webkit-box;
-        -webkit-line-clamp: 2; /* Legacy WebKit support */
-        line-clamp: 2; /* Standard property */
-        -webkit-box-orient: vertical;
+        text-overflow: ellipsis;
+        display: block;
     }
-    th:nth-child(2), td:nth-child(2) {
-        min-width: 120px; /* Quantity column */
-    }
-    th:nth-child(3), td:nth-child(3) {
-        min-width: 100px; /* Total column */
-    }
-    th:nth-child(4), td:nth-child(4) {
-        min-width: 80px; /* Size column */
-    }
-    th:nth-child(5), td:nth-child(5) {
-        min-width: 80px; /* Action column */
+    .product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 0.375rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
     }
 
-    /* Adjustments for smaller screens */
+    /* Quantity controls */
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .quantity-btn {
+        background-color: #e5e7eb;
+        color: #1f2937;
+        width: 30px;
+        height: 30px;
+        border-radius: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .quantity-value {
+        min-width: 30px;
+        text-align: center;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .product-cell {
+            min-width: 180px;
+        }
+    }
+
     @media (max-width: 768px) {
         .main-content {
-            flex-direction: column;
             padding: 1rem;
         }
         table {
-            min-width: 600px; /* Ensure table is wide enough to show all columns */
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .product-cell {
+            min-width: 160px;
+        }
+        .product-image {
+            width: 50px;
+            height: 50px;
+            margin-right: 0.75rem;
         }
         th, td {
-            font-size: 0.875rem; /* Slightly smaller font on mobile */
             padding: 0.75rem;
-        }
-        th:first-child, td:first-child {
-            min-width: 150px; /* Slightly smaller product column on mobile */
-            max-width: 200px; /* Limit max width on mobile */
-        }
-        .flex.items-center.space-x-2 {
-            justify-content: center; /* Center quantity buttons */
-        }
-        button {
-            padding: 0.5rem;
-        }
-        img.w-20.h-20 {
-            width: 60px;
-            height: 60px; /* Smaller images on mobile */
-        }
-        td:first-child .font-bold {
-            -webkit-line-clamp: 1; /* Legacy WebKit support */
-            line-clamp: 1; /* Standard property */
         }
     }
 
     @media (max-width: 640px) {
+        .product-cell {
+            min-width: 140px;
+            max-width: 200px;
+        }
+        .product-image {
+            width: 40px;
+            height: 40px;
+            margin-right: 0.5rem;
+        }
         th, td {
-            font-size: 0.75rem;
             padding: 0.5rem;
+            font-size: 0.875rem;
         }
-        th:first-child, td:first-child {
-            min-width: 120px; /* Further reduce product column width */
-            max-width: 150px;
+        .product-name {
+            font-size: 0.875rem;
         }
-        .flex.items-center.space-x-2 {
-            flex-wrap: wrap; /* Allow quantity buttons to wrap if needed */
-            gap: 0.5rem;
+        .quantity-btn {
+            width: 25px;
+            height: 25px;
         }
-        button {
-            padding: 0.4rem; /* Corrected typo from paddingelsk */
+    }
+
+    @media (max-width: 480px) {
+        .product-cell {
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 120px;
         }
-        img.w-20.h-20 {
-            width: 50px;
-            height: 50px;
+        .product-image {
+            margin-right: 0;
+            margin-bottom: 0.5rem;
+        }
+        .quantity-controls {
+            justify-content: flex-start;
         }
     }
 </style>
