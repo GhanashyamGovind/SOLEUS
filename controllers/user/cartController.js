@@ -86,6 +86,13 @@ const addToCart = async (req, res) => {
         const existingQuantity = itemIndex > -1 ? cart.items[itemIndex].quantity : 0;
         const totalQuantity = existingQuantity + quantity;
 
+        if (totalQuantity > variant.stock) {
+            return res.status(400).json({
+                success: false,
+                message: `Only ${variant.stock} item(s) available in stock for size ${size}. You already have ${existingQuantity} in your cart.`
+            });
+        }
+
         // Enforce max 3 units per product (size and SKU)
         if (totalQuantity > 3) {
             return res.status(400).json({
@@ -108,10 +115,7 @@ const addToCart = async (req, res) => {
             });
         }
 
-        //product korakkunu
-        // variant.stock -= quantity; ith venda because stock minus aakendath buy cheytha shesham annu
         await product.save();
-
         // calculte total price
         cart.totalPrice = cart.items.reduce((total, item) => {
             return total + (item.price * item.quantity);

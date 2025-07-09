@@ -70,29 +70,43 @@ const securePassword = async (password) => {
     }
 }
 
-const forgotEmailValid = async (req, res, next) => {
+const forgotpassEmailValid = async (req, res, next) => {
     try {
         const {email} = req.body;
         const findUser = await User.findOne({email: email});
 
-        if(findUser){
+        if(findUser && findUser.isBlocked === false){
             const otp = generateOtp();
             const emailSent = await sendVerificationEamil(email, otp);
 
             if(emailSent){
                 req.session.userOtp = otp;
                 req.session.email = email;
-                req.session.otpGeneratedAt = Date.now(); // Store OTP generation timestamp
-                res.render('user/forgotPass-otp');
-                console.log("OTP: ", otp)
+                req.session.otpGeneratedAt = Date.now(); 
+                
+                return res.json({success: true, redirectUrl: 'forgotPassword/Otp'})
+            } else if (findUser.isBlocked === true) {
+                return res.json({success: false, message: "Failed to send OTP, Please try again later"});
             } else {
-                res.json({success: false, message: "Failed to send OTP, Please try again later"})
+                return res.json({success: false, message: "Failed to send OTP, Please try again later"})
             }
 
         }else{
             res.render("user/forgot-password", {
                 message: "User with this email does not exist"
             })
+        }
+    } catch (error) {
+        next(error)
+    }
+}
+
+const loadVerifyOtp = async (req, res, next) => {
+    try {
+        if(req.session.user){
+            return res.redirect('/')
+        } else {
+            return res.render('user/forgotPass-otp');
         }
     } catch (error) {
         next(error)
@@ -782,7 +796,8 @@ const deleteAddress = async (req, res, next) => {
 
 module.exports = {
     getForgotPassPage,
-    forgotEmailValid,
+    forgotpassEmailValid,
+    loadVerifyOtp,
     verifyForgotPassOtp,
     getResetPassPage,
     resendOtp,

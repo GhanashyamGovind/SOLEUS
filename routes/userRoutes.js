@@ -65,7 +65,8 @@ router.get('/terms', userController.termsAndCondtion)
 
 //profileMangement
 router.get('/forgot-password', profileController.getForgotPassPage);
-router.post('/forgot-email-valid', profileController.forgotEmailValid);
+router.post('/forgot-email-valid', profileController.forgotpassEmailValid);
+router.get('/forgotPassword/Otp', profileController.loadVerifyOtp)
 router.post('/verify-passForgot-otp', profileController.verifyForgotPassOtp);
 router.get('/reset-password', profileController.getResetPassPage);
 router.post('/resend-forgot-otp', profileController.resendOtp);
