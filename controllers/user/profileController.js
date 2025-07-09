@@ -46,7 +46,13 @@ const sendVerificationEamil = async (email, otp) => {
 
 const getForgotPassPage = async (req, res, next) =>{
     try {
-        return res.render("user/forgot-password");
+        const {from} = req.query;
+        if(from === 'loginPage'){
+            return !req.session.user ? res.render("user/forgot-password") : res.redirect('/')
+        } else {
+            return req.session.user ? res.render("user/forgot-password") : res.redirect('/login');
+        }
+        
     } catch (error) {
         next(error)
     }

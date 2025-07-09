@@ -2,38 +2,56 @@
 
 <body class="bg-gray-100">
   <div class="container mx-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
-    <aside class="w-full md:w-1/4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+    <!-- error fixing -->
+  <aside class="w-full md:w-1/4 bg-white p-4 rounded-lg shadow-lg border border-gray-200 fixed inset-y-0 left-0 z-50 transform -translate-x-full md:transform-none transition-transform duration-300 ease-in-out" id="filter-sidebar">
+    <div class="flex justify-between items-center mb-4 md:mb-0">
       <h2 class="text-lg font-bold mb-4">FILTER</h2>
-      <form id="filter-form" method="GET" action="/productFilter">
-        <div class="mb-6">
-          <h3 class="font-semibold mb-2">BRANDS</h3>
-          <select name="brand" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400">
-            <option value="">Select Brand</option>
-            <% brand.forEach(b => { %>
-              <option value="<%= b._id %>" <%= (selectedBrand || '') === b._id.toString() ? 'selected' : '' %>><%= b.brandName %></option>
-            <% }) %>
-          </select>
+      <button id="close-filter" class="md:hidden p-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <form id="filter-form" method="GET" action="/productFilter">
+      <div class="mb-6">
+        <h3 class="font-semibold mb-2">BRANDS</h3>
+        <select name="brand" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400">
+          <option value="">Select Brand</option>
+          <% brand.forEach(b => { %>
+            <option value="<%= b._id %>" <%= (selectedBrand || '') === b._id.toString() ? 'selected' : '' %>><%= b.brandName %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="mb-6">
+        <h3 class="font-semibold mb-2">CATEGORIES</h3>
+        <select name="category" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400">
+          <option value="">Select Category</option>
+          <% category.forEach(c => { %>
+            <option value="<%= c._id %>" <%= (selectedCategory || '') === c._id.toString() ? 'selected' : '' %>><%= c.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="mb-6 text-black">
+        <h3 class="font-semibold mb-2">PRICE RANGE</h3>
+        <div class="space-y-2">
+          <input name="minPrice" type="number" placeholder="Min Price" value="<%= minPrice || '' %>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" min="0">
+          <input name="maxPrice" type="number" placeholder="Max Price" value="<%= maxPrice || '' %>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" min="0">
         </div>
-        <div class="mb-6">
-          <h3 class="font-semibold mb-2">CATEGORIES</h3>
-          <select name="category" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400">
-            <option value="">Select Category</option>
-            <% category.forEach(c => { %>
-              <option value="<%= c._id %>" <%= (selectedCategory || '') === c._id.toString() ? 'selected' : '' %>><%= c.name %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div class="mb-6 text-black">
-          <h3 class="font-semibold mb-2">PRICE RANGE</h3>
-          <div class="space-y-2">
-            <input name="minPrice" type="number" placeholder="Min Price" value="<%= minPrice || '' %>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" min="0">
-            <input name="maxPrice" type="number" placeholder="Max Price" value="<%= maxPrice || '' %>" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400" min="0">
-          </div>
-        </div>
-        <div class="mb-6">
+      </div>
+      <div class="mb-6">
         <button type="submit" class="w-full bg-yellow-400 text-white rounded-lg px-4 py-2 hover:bg-yellow-500 transition-all duration-300">Apply Filters</button>
-      </form>
-    </aside>
+      </div>
+      <div class="mb-6">
+        <button type="button" id="clear-filter" class="w-full bg-gray-300 text-black rounded-lg px-4 py-2 hover:bg-gray-400 transition-all duration-300">Clear Filters</button>
+      </div>
+    </form>
+  </aside>
+
+    <button id="toggle-filter" class="md:hidden fixed top-4 left-4 z-50 p-2 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 transition-all duration-300">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+      </svg>
+    </button>
 
     <main class="w-full md:w-3/4">
       <div class="flex flex-col md:flex-row justify-between items-center mb-6">
@@ -69,8 +87,7 @@
         </div>
       </div>
 
-      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <% if (!products || products.length === 0) { %>
+        <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">        <% if (!products || products.length === 0) { %>
           <p class="text-center text-gray-500 col-span-full">No products found matching your criteria.</p>
         <% } else { %>
           <% products.forEach(product => { %>
@@ -115,264 +132,300 @@
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const filterForm = document.getElementById('filter-form');
-      const productGrid = document.getElementById('product-grid');
-      const paginationContainer = document.getElementById('pagination-container');
-      const searchInput = document.querySelector('input[name="search"]');
-      const sortSelect = document.querySelector('select[name="sort"]');
-      const searchButton = document.getElementById('search-button');
-      const clearSearchButton = document.getElementById('clear-search');
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const filterForm = document.getElementById('filter-form');
+  const productGrid = document.getElementById('product-grid');
+  const paginationContainer = document.getElementById('pagination-container');
+  const searchInput = document.querySelector('input[name="search"]');
+  const sortSelect = document.querySelector('select[name="sort"]');
+  const searchButton = document.getElementById('search-button');
+  const clearSearchButton = document.getElementById('clear-search');
+  const clearFilterButton = document.getElementById('clear-filter');
+  const toggleFilterButton = document.getElementById('toggle-filter');
+  const closeFilterButton = document.getElementById('close-filter');
+  const filterSidebar = document.getElementById('filter-sidebar');
 
-      const escapeHTML = (str) => {
-        if (typeof str !== 'string') return str || '';
-        return str.replace(/[&<>"']/g, (match) => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[match]));
-      };
+  const escapeHTML = (str) => {
+    if (typeof str !== 'string') return str || '';
+    return str.replace(/[&<>"']/g, (match) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[match]));
+  };
 
-      const fetchProducts = async (params = {}) => {
-        try {
-          const queryString = new URLSearchParams();
-          for (const [key, value] of Object.entries(params)) {
-            if (Array.isArray(value)) {
-              value.forEach(val => queryString.append(key, val));
-            } else {
-              queryString.append(key, value);
-            }
-          }
-          queryString.append('ajax', 'true');
-          const url = `/productFilter?${queryString.toString()}`;
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const data = await response.json();
-
-          productGrid.innerHTML = '';
-          if (!data.products || data.products.length === 0) {
-            productGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No products found matching your criteria.</p>';
-          } else {
-            data.products.forEach(product => {
-              const productCard = `
-                <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-yellow-400 hover:bg-gray-200">
-                  <div class="relative overflow-hidden rounded-lg mb-3 h-48 bg-gray-100 flex items-center justify-center group">
-                    ${product.appliedOffer > 0 ? `<p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10 block opacity-100">${product.appliedOffer}% off</p>` : ''}
-                    <img src="/uploads/re-image/${escapeHTML(product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg')}" alt="${escapeHTML(product.productName || 'Product')}" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
-                    <button onclick="addToWishlist('${product._id}')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
-                  </div>
-                  <h3 class="font-semibold text-lg mb-1 transition-colors duration-200 hover:text-yellow-600">
-                    <a href="/productDetails?id=${product._id}">${escapeHTML(product.productName || 'N/A')}</a>
-                  </h3>
-                  <p class="text-xs text-gray-500 mb-2">${escapeHTML(product.brand && product.brand.brandName ? product.brand.brandName : 'N/A')}</p>
-                  <div class="flex justify-between items-center">
-                    <p class="text-lg font-bold text-yellow-600">₹${product.salePrice || 'N/A'}</p>
-                    <p class="text-sm text-gray-500 line-through">₹${product.regularPrice || 'N/A'}</p>
-                  </div>
-                </div>
-              `;
-              productGrid.innerHTML += productCard;
-            });
-          }
-
-          paginationContainer.innerHTML = '';
-          if (data.currentPage > 1) {
-            let prevLink = `?page=${data.currentPage - 1}&brand=${encodeURIComponent(data.selectedBrand || '')}&category=${encodeURIComponent(data.selectedCategory || '')}&minPrice=${encodeURIComponent(data.minPrice || '')}&maxPrice=${encodeURIComponent(data.maxPrice || '')}`;
-            (data.selectedOnFire || []).forEach(fire => {
-              prevLink += `&onFire[]=${encodeURIComponent(fire)}`;
-            });
-            prevLink += `&search=${encodeURIComponent(data.search || '')}&sort=${encodeURIComponent(data.sort || '')}`;
-            paginationContainer.innerHTML += `<a href="${prevLink}" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${data.currentPage - 1}">« Previous</a>`;
-          }
-          for (let i = 1; i <= data.totalPages; i++) {
-            if (i === data.currentPage) {
-              paginationContainer.innerHTML += `<span class="current-page px-3 py-1 bg-yellow-500 text-white rounded">${i}</span>`;
-            } else {
-              let pageLink = `?page=${i}&brand=${encodeURIComponent(data.selectedBrand || '')}&category=${encodeURIComponent(data.selectedCategory || '')}&minPrice=${encodeURIComponent(data.minPrice || '')}&maxPrice=${encodeURIComponent(data.maxPrice || '')}`;
-              (data.selectedOnFire || []).forEach(fire => {
-                pageLink += `&onFire[]=${encodeURIComponent(fire)}`;
-              });
-              pageLink += `&search=${encodeURIComponent(data.search || '')}&sort=${encodeURIComponent(data.sort || '')}`;
-              paginationContainer.innerHTML += `<a href="${pageLink}" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${i}">${i}</a>`;
-            }
-          }
-          if (data.currentPage < data.totalPages) {
-            let nextLink = `?page=${data.currentPage + 1}&brand=${encodeURIComponent(data.selectedBrand || '')}&category=${encodeURIComponent(data.selectedCategory || '')}&minPrice=${encodeURIComponent(data.minPrice || '')}&maxPrice=${encodeURIComponent(data.maxPrice || '')}`;
-            (data.selectedOnFire || []).forEach(fire => {
-              nextLink += `&onFire[]=${encodeURIComponent(fire)}`;
-            });
-            nextLink += `&search=${encodeURIComponent(data.search || '')}&sort=${encodeURIComponent(data.sort || '')}`;
-            paginationContainer.innerHTML += `<a href="${nextLink}" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${data.currentPage + 1}">Next »</a>`;
-          }
-
-          attachPaginationListeners();
-          searchInput.value = data.search || '';
-        } catch (error) {
-          productGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">Error loading products. Please try again.</p>';
-        }
-      };
-
-      const clearSearch = async () => {
-        try {
-          const params = getFormData();
-          delete params.search;
-          searchInput.value = '';
-          await fetchProducts(params);
-        } catch (error) {
-          productGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">Error clearing search. Please try again.</p>';
-        }
-      };
-
-      const getFormData = () => {
-        const formData = new FormData(filterForm);
-        const params = {};
-        formData.forEach((value, key) => {
-          if (key === 'onFire[]') {
-            if (!params.onFire) params.onFire = [];
-            params.onFire.push(value);
-          } else {
-            params[key] = value;
-          }
-        });
-        if (searchInput.value) params.search = searchInput.value;
-        if (sortSelect.value) params.sort = sortSelect.value;
-        return params;
-      };
-
-      const attachPaginationListeners = () => {
-        const paginationLinks = document.querySelectorAll('.pagination-link');
-        paginationLinks.forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = link.getAttribute('data-page');
-            const params = { ...getFormData(), page };
-            fetchProducts(params);
-          });
-        });
-      };
-
-      filterForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const params = getFormData();
-        fetchProducts(params);
-      });
-
-      const filterInputs = filterForm.querySelectorAll('select, input[type="number"], input[type="checkbox"]');
-      filterInputs.forEach(input => {
-        input.addEventListener('change', () => {
-          const params = getFormData();
-          fetchProducts(params);
-        });
-      });
-
-      sortSelect.addEventListener('change', () => {
-        const params = getFormData();
-        fetchProducts(params);
-      });
-
-      searchButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        const params = getFormData();
-        fetchProducts(params);
-      });
-
-      clearSearchButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        clearSearch();
-      });
-
-      attachPaginationListeners();
-    });
-
-    async function addToWishlist(productId) {
-      try {
-        const response = await fetch('/addToWishlist', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({ productId })
-        }); 
-        const text = await response.text();
-
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (error) {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Invalid server response. Please try again.',
-            showConfirmButton: true
-          });
-          return;
-        }
-
-        if (!data.status && data.message?.toLowerCase().includes('login')) {
-          Swal.fire({
-            toast: true,
-            icon: 'info',
-            title: 'Login Required',
-            text: data.message,
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true 
-          });
-          return;
-        }
-
-        if (data.status) {
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: data.message,
-            html: `<img src="/images/shoes.gif" alt="Shoes GIF" style="margin-top: 10px; width: auto; height: auto;" />`,
-            showConfirmButton: false,
-            timer: 3500,
-            timerProgressBar: true,
-            width: 400,
-            padding: '1.5em',
-            color: '#ffffff',
-            background: '#000'
-          });
+  const fetchProducts = async (params = {}) => {
+    try {
+      const queryString = new URLSearchParams();
+      for (const [key, value] of Object.entries(params)) {
+        if (Array.isArray(value)) {
+          value.forEach(val => queryString.append(key, val));
         } else {
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: data.message,
-            showConfirmButton: false,
-            timer: 2000,
-            timerProgressBar: true
-          });
+          queryString.append(key, value);
         }
-      } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to add to wishlist. Please try again.',
-          showConfirmButton: true
+      }
+      queryString.append('ajax', 'true');
+      const url = `/productFilter?${queryString.toString()}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      productGrid.innerHTML = '';
+      if (!data.products || data.products.length === 0) {
+        productGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No products found matching your criteria.</p>';
+      } else {
+        data.products.forEach(product => {
+          const productCard = `
+            <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200 transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-yellow-400 hover:bg-gray-200">
+              <div class="relative overflow-hidden rounded-lg mb-3 h-48 bg-gray-100 flex items-center justify-center group">
+                ${product.appliedOffer > 0 ? `<p class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full transform rotate-12 shadow-md z-10 block opacity-100">${product.appliedOffer}% off</p>` : ''}
+                <img src="/Uploads/re-image/${escapeHTML(product.productImage && product.productImage[0] ? product.productImage[0] : 'default.jpg')}" alt="${escapeHTML(product.productName || 'Product')}" class="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110">
+                <button onclick="addToWishlist('${product._id}')" class="absolute top-2 left-2 p-2 bg-white rounded-full shadow hover:bg-red-600 transition-transform duration-200 hover:scale-110">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </button>
+              </div>
+              <h3 class="font-semibold text-lg mb-1 transition-colors duration-200 hover:text-yellow-600">
+                <a href="/productDetails?id=${product._id}">${escapeHTML(product.productName || 'N/A')}</a>
+              </h3>
+              <p class="text-xs text-gray-500 mb-2">${escapeHTML(product.brand && product.brand.brandName ? product.brand.brandName : 'N/A')}</p>
+              <div class="flex justify-between items-center">
+                <p class="text-lg font-bold text-yellow-600">₹${product.salePrice || 'N/A'}</p>
+                <p class="text-sm text-gray-500 line-through">₹${product.regularPrice || 'N/A'}</p>
+              </div>
+            </div>
+          `;
+          productGrid.innerHTML += productCard;
         });
       }
+
+      paginationContainer.innerHTML = '';
+      if (data.currentPage > 1) {
+        let prevLink = `?page=${data.currentPage - 1}&brand=${encodeURIComponent(data.selectedBrand || '')}&category=${encodeURIComponent(data.selectedCategory || '')}&minPrice=${encodeURIComponent(data.minPrice || '')}&maxPrice=${encodeURIComponent(data.maxPrice || '')}`;
+        (data.selectedOnFire || []).forEach(fire => {
+          prevLink += `&onFire[]=${encodeURIComponent(fire)}`;
+        });
+        prevLink += `&search=${encodeURIComponent(data.search || '')}&sort=${encodeURIComponent(data.sort || '')}`;
+        paginationContainer.innerHTML += `<a href="${prevLink}" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${data.currentPage - 1}">« Previous</a>`;
+      }
+      for (let i = 1; i <= data.totalPages; i++) {
+        if (i === data.currentPage) {
+          paginationContainer.innerHTML += `<span class="current-page px-3 py-1 bg-yellow-500 text-white rounded">${i}</span>`;
+        } else {
+          let pageLink = `?page=${i}&brand=${encodeURIComponent(data.selectedBrand || '')}&category=${encodeURIComponent(data.selectedCategory || '')}&minPrice=${encodeURIComponent(data.minPrice || '')}&maxPrice=${encodeURIComponent(data.maxPrice || '')}`;
+          (data.selectedOnFire || []).forEach(fire => {
+            pageLink += `&onFire[]=${encodeURIComponent(fire)}`;
+          });
+          pageLink += `&search=${encodeURIComponent(data.search || '')}&sort=${encodeURIComponent(data.sort || '')}`;
+          paginationContainer.innerHTML += `<a href="${pageLink}" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${i}">${i}</a>`;
+        }
+      }
+      if (data.currentPage < data.totalPages) {
+        let nextLink = `?page=${data.currentPage + 1}&brand=${encodeURIComponent(data.selectedBrand || '')}&category=${encodeURIComponent(data.selectedCategory || '')}&minPrice=${encodeURIComponent(data.minPrice || '')}&maxPrice=${encodeURIComponent(data.maxPrice || '')}`;
+        (data.selectedOnFire || []).forEach(fire => {
+          nextLink += `&onFire[]=${encodeURIComponent(fire)}`;
+        });
+        nextLink += `&search=${encodeURIComponent(data.search || '')}&sort=${encodeURIComponent(data.sort || '')}`;
+        paginationContainer.innerHTML += `<a href="${nextLink}" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${data.currentPage + 1}">Next »</a>`;
+      }
+
+      attachPaginationListeners();
+      searchInput.value = data.search || '';
+    } catch (error) {
+      productGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">Error loading products. Please try again.</p>';
     }
-  </script>
+  };
+
+  const clearSearch = async () => {
+    try {
+      const params = getFormData();
+      delete params.search;
+      searchInput.value = '';
+      await fetchProducts(params);
+    } catch (error) {
+      productGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">Error clearing search. Please try again.</p>';
+    }
+  };
+
+  const clearFilters = async () => {
+    try {
+      const params = getFormData();
+      // Keep only page and sort, reset other filters
+      const clearedParams = {
+        page: params.page || '<%= currentPage %>',
+        sort: params.sort || '<%= sort || "" %>'
+      };
+      // Reset form inputs
+      filterForm.querySelector('select[name="brand"]').value = '';
+      filterForm.querySelector('select[name="category"]').value = '';
+      filterForm.querySelector('input[name="minPrice"]').value = '';
+      filterForm.querySelector('input[name="maxPrice"]').value = '';
+      await fetchProducts(clearedParams);
+    } catch (error) {
+      productGrid.innerHTML = '<p class="text-center text-red-500 col-span-full">Error clearing filters. Please try again.</p>';
+    }
+  };
+
+  const getFormData = () => {
+    const formData = new FormData(filterForm);
+    const params = {};
+    formData.forEach((value, key) => {
+      if (key === 'onFire[]') {
+        if (!params.onFire) params.onFire = [];
+        params.onFire.push(value);
+      } else {
+        params[key] = value;
+      }
+    });
+    if (searchInput.value) params.search = searchInput.value;
+    if (sortSelect.value) params.sort = sortSelect.value;
+    return params;
+  };
+
+  const attachPaginationListeners = () => {
+    const paginationLinks = document.querySelectorAll('.pagination-link');
+    paginationLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = link.getAttribute('data-page');
+        const params = { ...getFormData(), page };
+        fetchProducts(params);
+      });
+    });
+  };
+
+  filterForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const params = getFormData();
+    fetchProducts(params);
+  });
+
+  const filterInputs = filterForm.querySelectorAll('select, input[type="number"], input[type="checkbox"]');
+  filterInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      const params = getFormData();
+      fetchProducts(params);
+    });
+  });
+
+  sortSelect.addEventListener('change', () => {
+    const params = getFormData();
+    fetchProducts(params);
+  });
+
+  searchButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    const params = getFormData();
+    fetchProducts(params);
+  });
+
+  clearSearchButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearSearch();
+  });
+
+  clearFilterButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    clearFilters();
+  });
+
+  toggleFilterButton.addEventListener('click', () => {
+    filterSidebar.classList.toggle('-translate-x-full');
+  });
+
+  closeFilterButton.addEventListener('click', () => {
+    filterSidebar.classList.add('-translate-x-full');
+  });
+
+  attachPaginationListeners();
+});
+
+async function addToWishlist(productId) {
+  try {
+    const response = await fetch('/addToWishlist', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ productId })
+    }); 
+    const text = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Invalid server response. Please try again.',
+        showConfirmButton: true
+      });
+      return;
+    }
+
+    if (!data.status && data.message?.toLowerCase().includes('login')) {
+      Swal.fire({
+        toast: true,
+        icon: 'info',
+        title: 'Login Required',
+        text: data.message,
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true
+      });
+      return;
+    }
+
+    if (data.status) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: data.message,
+        html: `<img src="/images/shoes.gif" alt="Shoes GIF" style="margin-top: 10px; width: auto; height: auto;" />`,
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+        width: 400,
+        padding: '1.5em',
+        color: '#ffffff',
+        background: '#000'
+      });
+    } else {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'warning',
+        title: 'data.message',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true
+      });
+    }
+  } catch (error) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to add to wishlist. Please try again.',
+      showConfirmButton: true
+    });
+  }
+}
+</script>
 </body>
 
 <%- include('../../views/partials/user/footer') %>
