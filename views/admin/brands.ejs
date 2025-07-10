@@ -144,7 +144,7 @@
     alertBox.classList.remove('hidden');
     setTimeout(() => {
       alertBox.classList.add('hidden');
-    }, 3000); // Hide after 3 seconds
+    }, 3000); 
   }
 
   function validateBrandForm() {
@@ -185,7 +185,65 @@
 
     return true;
   }
+
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get('error');
+  const success = params.get('success')
+  if(error) {
+    const toast = document.createElement("div");
+    toast.textContent = decodeURIComponent(error);
+    toast.className =  `
+      fixed top-5 right-5 z-50 
+      bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg 
+      animate-slide-in
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.remove(), 500)
+    }, 3000)
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (success) {
+    const toast = document.createElement("div");
+    toast.textContent = decodeURIComponent(success);
+    toast.className =  `
+      fixed top-5 right-5 z-50 
+      bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg 
+      animate-slide-in
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.remove(), 500)
+    }, 3000)
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
       
     </script>
 
+    <style>
+      @keyframes slide-in {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .animate-slide-in {
+        animation: slide-in 0.3s ease-out;
+      }
+    </style>
+
 <%- include('../../views/partials/admin/footer') %>
+
+

@@ -79,6 +79,10 @@
     function showError(element, message) {
         element.style.display = "block";
         element.innerHTML = message;
+
+        setTimeout(() => {
+            hideError(element)
+        }, 2200)
     }
 
     function hideError(element) {
@@ -223,12 +227,12 @@
             }
         });
 
-        // Hide server error message after 6 seconds
+        // Hide server error message after 2 seconds
         const alertMessage = document.getElementById('alert-message');
         if (alertMessage) {
             setTimeout(() => {
                 alertMessage.style.display = 'none';
-            }, 6000);
+            }, 2300);
         }
     });
 </script>

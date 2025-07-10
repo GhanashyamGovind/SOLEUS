@@ -176,9 +176,7 @@ function handleFormSubmit(event) {
                 title: "Oops...",
                 text: "An error occurred while adding the category",
                 confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.href = '/admin/pageerror?statusCode=500';
-            });
+            })
         }
     });
 }
@@ -276,9 +274,7 @@ async function removeOffer(categoryId) {
             })
         });
 
-        const data = await response
-
-.json();
+        const data = await response.json();
         if (response.ok && data.status === true) {
             await Swal.fire({
                 toast: true,
@@ -333,7 +329,6 @@ async function toggleListStatus(categoryId, isListed) {
             window.location.href = '/admin/pageerror?statusCode=500';
         });
     }
-}
 
 function getCurrentPage() {
     const currentPageElement = document.querySelector('.current-page');

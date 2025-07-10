@@ -31,8 +31,12 @@ const getBrandPage = async (req, res, next) => {
 const addBrand = async (req, res, next) => {
     try {
 
-        const brand = req.body.name;
-        const findBrand = await Brand.findOne({brand});
+        const {name} = req.body
+        const brand = name.trim()
+
+        const findBrand = await Brand.findOne({
+            brandName: { $regex: `^${brand}$`, $options: 'i'}
+        });
 
         if(!findBrand){
             const image = req.file.filename;
@@ -41,13 +45,11 @@ const addBrand = async (req, res, next) => {
                 brandImage: image,
             });
             await newBrand.save();
-            return res.redirect('/admin/brands')
+            return res.redirect('/admin/brands?success=' + encodeURIComponent('Brand added'))
         } else {
-            return res.render('admin/brands', {error: 'Brand already exists'})
+            return res.redirect('/admin/brands?error=' + encodeURIComponent('Brand is already exists'))
         }
 
-        
-        
     } catch (error) {
         next(error)
     }

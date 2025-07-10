@@ -229,23 +229,23 @@ const removeFromCart = async (req, res, next) => {
             return res.status(404).json({ message: 'Item not found in cart' });
         }
 
-        const cartItem = cart.items[cartItemIndex];
-        const quantityToReturn = cartItem.quantity;
+        // const cartItem = cart.items[cartItemIndex];
+        // const quantityToReturn = cartItem.quantity;
 
-        const product = await Product.findById(productId)
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
+        // const product = await Product.findById(productId)
+        // if (!product) {
+        //     return res.status(404).json({ message: 'Product not found' });
+        // }
 
 
-        const variant = product.variants.find(v => v.size === size && v.sku === sku);
-        if (!variant) {
-            return res.status(404).json({ message: 'Product variant not found' });
-        }
+        // const variant = product.variants.find(v => v.size === size && v.sku === sku);
+        // if (!variant) {
+        //     return res.status(404).json({ message: 'Product variant not found' });
+        // }
 
         // return quantity to stock
-        variant.stock += quantityToReturn;
-        await product.save();
+        // variant.stock += quantityToReturn;
+        // await product.save();
 
         // remove the item from the cart
         cart.items.splice(cartItemIndex, 1);
@@ -317,5 +317,3 @@ module.exports = {
     removeFromCart,
     buyNow,
 }
-
-
