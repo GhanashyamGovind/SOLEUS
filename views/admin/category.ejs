@@ -91,7 +91,7 @@
             </td>
             <td class="p-2 md:p-3">
               <button class="toggle-list-btn px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm <%= category.isListed ? 'bg-red-500 text-white' : 'bg-green-500 text-white' %>"
-                      onclick="toggleListStatus('<%= category._id %>', <%= category.isListed %>)">
+                      onclick="toggleListStatus('<%= category._id %>', '<%= category.isListed %>')">
                 <%= category.isListed ? 'UNLIST' : 'LIST' %>
               </button>
             </td>
@@ -145,7 +145,7 @@ function handleFormSubmit(event) {
     .then(response => {
         if (!response.ok) {
             return response.json().then(err => {
-                throw new Error(err.error);
+                throw new Error(err.message || 'Unkown error');
             });
         }
         return response.json();
@@ -330,6 +330,8 @@ async function toggleListStatus(categoryId, isListed) {
         });
     }
 
+}  
+
 function getCurrentPage() {
     const currentPageElement = document.querySelector('.current-page');
     return currentPageElement ? parseInt(currentPageElement.textContent) : 1;
@@ -428,13 +430,13 @@ document.getElementById('searchButton').addEventListener('click', () => {
 
 
 
-document.querySelectorAll('.pagination-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const page = parseInt(e.target.getAttribute('data-page'));
-        loadCategories(page, document.getElementById('searchInput').value);
-    });
-});
+// document.querySelectorAll('.pagination-link').forEach(link => {
+//     link.addEventListener('click', (e) => {
+//         e.preventDefault();
+//         const page = parseInt(e.target.getAttribute('data-page'));
+//         loadCategories(page, document.getElementById('searchInput').value);
+//     });
+// });
 </script>
 
 <%- include('../../views/partials/admin/footer') %>
