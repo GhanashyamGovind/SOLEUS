@@ -7,47 +7,120 @@
     const sidebar = document.getElementById('sidebar');
     const sidebarTexts = document.querySelectorAll('.sidebar-text');
     const sidebarItems = document.querySelectorAll('.sidebar-item');
+    const mainContent = document.querySelector('.main-content') || document.body; // Fallback to body if main-content not found
 
-    // Toggle sidebar
-    hamburgerButton.addEventListener('click', () => {
-        sidebar.classList.toggle('w-64');
-        sidebar.classList.toggle('w-16');
-        
-        sidebarTexts.forEach(text => {
-            text.classList.toggle('hidden');
-        });
-    });
-
-    // Highlight the active sidebar item based on the current URL
-    document.addEventListener('DOMContentLoaded', () => {
-        // Normalize the current URL path (remove trailing slash for consistency)
-        let currentPath = window.location.pathname;
-        if (currentPath.endsWith('/')) {
-            currentPath = currentPath.slice(0, -1); // Remove trailing slash
-        }
-
-        // Remove active class from all sidebar items
-        sidebarItems.forEach(item => {
-            item.classList.remove('active');
-        });
-
-        // Find the matching sidebar item and apply the active class
-        sidebarItems.forEach(item => {
-            let itemPath = item.getAttribute('href');
-            if (itemPath.endsWith('/')) {
-                itemPath = itemPath.slice(0, -1); // Remove trailing slash from href
-            }
-
-            // Special handling for dashboard route
-            if (currentPath === '' || currentPath === '/admin') {
-                if (itemPath === '/admin') {
-                    item.classList.add('active');
+            // Function to toggle sidebar state and save to localStorage
+            function toggleSidebar() {
+                if (window.innerWidth < 768) {
+                    // Mobile: Toggle visibility
+                    sidebar.classList.toggle('hidden');
+                    localStorage.setItem('sidebarStateMobile', sidebar.classList.contains('hidden') ? 'closed' : 'open');
+                } else {
+                    // Large screens: Toggle between collapsed and expanded
+                    sidebar.classList.toggle('collapsed');
+                    sidebar.classList.toggle('expanded');
+                    localStorage.setItem('sidebarStateLarge', sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded');
+                    // Adjust main content margin
+                    mainContent.classList.toggle('collapsed', sidebar.classList.contains('collapsed'));
+                    mainContent.classList.toggle('expanded', sidebar.classList.contains('expanded'));
                 }
-            } else if (currentPath === itemPath) {
-                item.classList.add('active');
             }
-        });
-    });
+
+            // Toggle sidebar on hamburger click
+            hamburgerButton.addEventListener('click', toggleSidebar);
+
+            // Restore sidebar state on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                // Normalize the current URL path
+                let currentPath = window.location.pathname;
+                if (currentPath.endsWith('/')) {
+                    currentPath = currentPath.slice(0, -1);
+                }
+
+                // Remove active class from all sidebar items
+                sidebarItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // Find the matching sidebar item and apply the active class
+                sidebarItems.forEach(item => {
+                    let itemPath = item.getAttribute('href');
+                    if (itemPath.endsWith('/')) {
+                        itemPath = itemPath.slice(0, -1);
+                    }
+
+                    if (currentPath === '' || currentPath === '/admin') {
+                        if (itemPath === '/admin') {
+                            item.classList.add('active');
+                        }
+                    } else if (currentPath === itemPath) {
+                        item.classList.add('active');
+                    }
+                });
+
+                // Restore sidebar state
+                if (window.innerWidth < 768) {
+                    // Mobile: Restore hidden/open state
+                    const sidebarStateMobile = localStorage.getItem('sidebarStateMobile') || 'closed'; // Default to closed
+                    if (sidebarStateMobile === 'closed') {
+                        sidebar.classList.add('hidden');
+                    } else {
+                        sidebar.classList.remove('hidden');
+                    }
+                    // Ensure large screen classes are not applied
+                    sidebar.classList.remove('collapsed', 'expanded');
+                    mainContent.classList.remove('collapsed', 'expanded');
+                } else {
+                    // Large screens: Restore collapsed/expanded state
+                    const sidebarStateLarge = localStorage.getItem('sidebarStateLarge') || 'collapsed'; // Default to collapsed
+                    if (sidebarStateLarge === 'collapsed') {
+                        sidebar.classList.add('collapsed');
+                        sidebar.classList.remove('expanded');
+                        mainContent.classList.add('collapsed');
+                        mainContent.classList.remove('expanded');
+                    } else {
+                        sidebar.classList.add('expanded');
+                        sidebar.classList.remove('collapsed');
+                        mainContent.classList.add('expanded');
+                        mainContent.classList.remove('collapsed');
+                    }
+                    // Ensure sidebar is visible on large screens
+                    sidebar.classList.remove('hidden');
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    // Large screens: Restore collapsed/expanded state
+                    const sidebarStateLarge = localStorage.getItem('sidebarStateLarge') || 'collapsed'; // Default to collapsed
+                    if (sidebarStateLarge === 'collapsed') {
+                        sidebar.classList.add('collapsed');
+                        sidebar.classList.remove('expanded');
+                        mainContent.classList.add('collapsed');
+                        mainContent.classList.remove('expanded');
+                    } else {
+                        sidebar.classList.add('expanded');
+                        sidebar.classList.remove('collapsed');
+                        mainContent.classList.add('expanded');
+                        mainContent.classList.remove('collapsed');
+                    }
+                    sidebar.classList.remove('hidden');
+                    localStorage.setItem('sidebarStateLarge', sidebarStateLarge);
+                } else {
+                    // Mobile: Restore hidden/open state
+                    const sidebarStateMobile = localStorage.getItem('sidebarStateMobile') || 'closed'; // Default to closed
+                    if (sidebarStateMobile === 'closed') {
+                        sidebar.classList.add('hidden');
+                    } else {
+                        sidebar.classList.remove('hidden');
+                    }
+                    sidebar.classList.remove('collapsed', 'expanded');
+                    mainContent.classList.remove('collapsed', 'expanded');
+                    localStorage.setItem('sidebarStateMobile', sidebarStateMobile);
+                }
+            });
+
 
     //logout
 document.getElementById('logoutButton').addEventListener('click', function () {

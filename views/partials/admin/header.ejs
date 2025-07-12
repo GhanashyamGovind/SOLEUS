@@ -47,6 +47,27 @@
         .main-content {
             min-height: calc(100vh - 68px); 
         }
+
+        .sticky-sidebar.collapsed {
+            width: 64px; 
+        }
+
+        .sticky-sidebar.expanded {
+            width: 256px;
+        }
+
+        .sticky-sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+
+        .main-content {
+            min-height: calc(100vh - 68px); 
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.collapsed {
+            margin-left: 64px;
+        }
     </style>
 </head>
 <body class="bg-white text-white">

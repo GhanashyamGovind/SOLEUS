@@ -15,7 +15,7 @@ function generateOtp(){
     return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-const sendVerificationEamil = async (email, otp) => {
+const sendVerificationEmail = async (email, otp) => {
     try {
 
         const transporter = nodemailer.createTransport({
@@ -77,7 +77,7 @@ const forgotpassEmailValid = async (req, res, next) => {
 
         if(findUser && findUser.isBlocked === false){
             const otp = generateOtp();
-            const emailSent = await sendVerificationEamil(email, otp);
+            const emailSent = await sendVerificationEmail(email, otp);
 
             if(emailSent){
                 req.session.userOtp = otp;
@@ -157,7 +157,7 @@ const resendOtp = async (req, res, next) => {
         const email = req.session.email;
 
         if (!email) {
-            const error = new Error("No emial found in the session. Please try agian")
+            const error = new Error("No email found in the session. Please try agian")
             error.statusCode = 400;
             throw error;
         }
@@ -165,7 +165,7 @@ const resendOtp = async (req, res, next) => {
         req.session.userOtp = otp;
         req.session.otpGeneratedAt = Date.now(); // Store new OTP generation timestamp
 
-        const emailSent = await sendVerificationEamil(email, otp);
+        const emailSent = await sendVerificationEmail(email, otp);
         if(emailSent){
             console.log("Resend otp", otp);
             res.status(200).json({success: true, message: "Resend OTP Successful"})
@@ -359,7 +359,7 @@ const emailValid = async (req, res, next) => {
         const findUser = await User.findOne({ email: email });
         if (findUser) {
             const otp = generateOtp();
-            const emailSent = await sendVerificationEamil(email, otp);
+            const emailSent = await sendVerificationEmail(email, otp);
             if (emailSent) {
                 req.session.userOtp = otp;
                 req.session.email = email;
@@ -532,7 +532,7 @@ const deletePage = async (req, res, next) => {
         if(!req.session.pendingDelete){
             return res.redirect('/getProfileDetails')
         }
-        return res.render('user/delete-profile');    
+        return res.render('user/delete-profile');
     } catch (error) {
         next(error)
     }

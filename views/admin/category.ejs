@@ -5,9 +5,9 @@
   body {
     font-family: 'Quantico', sans-serif;
   }
-  .hidden {
+  /* .hidden {
     display: none;
-  }
+  } */
 </style>
 
 <!-- Main Content -->
@@ -64,7 +64,7 @@
         </tr>
       </thead>
       <tbody id="categoryTableBody">
-        <% cat.reverse().forEach((category, index) => { %>
+        <% cat.forEach((category, index) => { %>
           <tr data-category-id="<%= category._id %>">
             <td class="p-2 md:p-3 text-sm md:text-base"><%= category.name %></td>
             <td class="p-2 md:p-3 text-sm md:text-base"><%= category.description %></td>
@@ -77,7 +77,7 @@
             </td>
             <td class="p-2 md:p-3">
               <div class="flex justify-center space-x-1 md:space-x-2">
-                <% if (category.categoryOffer === 0) { %>
+                <% if (!category.categoryOffer || category.categoryOffer === 0) { %>
                   <button class="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); addOffer('<%= category._id %>')">Add</button>
                 <% } else { %>
                   <button class="bg-gray-300 text-black px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm" onclick="event.preventDefault(); removeOffer('<%= category._id %>')">Remove</button>
@@ -91,7 +91,7 @@
             </td>
             <td class="p-2 md:p-3">
               <button class="toggle-list-btn px-2 py-1 md:px-3 md:py-1 rounded text-xs md:text-sm <%= category.isListed ? 'bg-red-500 text-white' : 'bg-green-500 text-white' %>"
-                      onclick="toggleListStatus('<%= category._id %>', '<%= category.isListed %>')">
+                      onclick="toggleListStatus('<%= category._id %>', <%= category.isListed %>)">
                 <%= category.isListed ? 'UNLIST' : 'LIST' %>
               </button>
             </td>
@@ -124,7 +124,6 @@
   </div>
 </div>
 
-<!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> -->
 <script>
 function handleFormSubmit(event) {
     event.preventDefault();
@@ -414,29 +413,28 @@ function updatePagination(currentPage, totalPage) {
     if (currentPage < totalPage) {
         container.innerHTML += `<a href="#" class="pagination-link px-3 py-1 bg-gray-200 rounded" data-page="${currentPage + 1}">Next »</a>`;
     }
-
-    document.querySelectorAll('.pagination-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const page = parseInt(e.target.getAttribute('data-page'));
-            loadCategories(page, document.getElementById('searchInput').value);
-        });
-    });
 }
 
-document.getElementById('searchButton').addEventListener('click', () => {
-    loadCategories(1, document.getElementById('searchInput').value);
+document.addEventListener("DOMContentLoaded", function () {
+    const paginationContainer = document.getElementById('paginationContainer');
+    if (paginationContainer) {
+        paginationContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('pagination-link')) {
+                e.preventDefault();
+                const page = parseInt(e.target.getAttribute('data-page'));
+                loadCategories(page, document.getElementById('searchInput').value);
+            }
+        });
+    }
+
+    const searchButton = document.getElementById('searchButton');
+    if (searchButton) {
+        searchButton.addEventListener('click', () => {
+            loadCategories(1, document.getElementById('searchInput').value);
+        });
+    }
 });
 
-
-
-// document.querySelectorAll('.pagination-link').forEach(link => {
-//     link.addEventListener('click', (e) => {
-//         e.preventDefault();
-//         const page = parseInt(e.target.getAttribute('data-page'));
-//         loadCategories(page, document.getElementById('searchInput').value);
-//     });
-// });
 </script>
 
 <%- include('../../views/partials/admin/footer') %>

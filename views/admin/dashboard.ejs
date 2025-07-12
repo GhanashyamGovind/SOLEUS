@@ -5,6 +5,7 @@
     <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
         <p class="text-lg font-medium text-gray-700">Loading dashboard data...</p>
+        <button id="closeLoadingOverlay" class="mt-4 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">Close</button>
     </div>
 </div>
 
@@ -364,24 +365,80 @@
 // Global chart instances
 let categorySalesChartInstance = null;
 let incomeChartInstance = null;
+let isFetching = false;
 
 // Initial chart data from server
 const initialCategorySalesData = <%- JSON.stringify(categorySalesData || []) %>;
 const initialIncomeData = <%- JSON.stringify(incomeData || []) %>;
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Show loading overlay while initializing
   document.getElementById('loadingOverlay').style.display = 'flex';
-  
-  // Check if we have initial data
+
+  // Handle close button for loading overlay
+  document.getElementById('closeLoadingOverlay')?.addEventListener('click', () => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Loading interrupted. Please refresh the page or try again.</p>`;
+  });
+
+  // Global error handler for unhandled promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    document.getElementById('loadingOverlay').style.display = 'none';
+    document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">An unexpected error occurred. Please refresh the page.</p>`;
+  });
+
   if (initialCategorySalesData && initialCategorySalesData.length > 0) {
     updateCharts(initialCategorySalesData, initialIncomeData);
     document.getElementById('loadingOverlay').style.display = 'none';
   } else {
-    // If no data, trigger a default report load
-    document.getElementById('salesReportForm').dispatchEvent(new Event('submit'));
+    const salesReportForm = document.getElementById('salesReportForm');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    salesReportForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (isFetching) return;
+      isFetching = true;
+      document.getElementById('loadingOverlay').style.display = 'flex';
+
+      try {
+        const formData = new FormData(salesReportForm);
+        const data = {
+          period: formData.get('period'),
+          startDate: formData.get('startDate'),
+          endDate: formData.get('endDate'),
+          page: 1,
+          limit: 5
+        };
+
+        const response = await fetch('/admin/sales-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        const result = await response.json();
+        if (result.success) {
+          updateDashboard(result);
+          document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">${result.message}</p>`;
+        } else {
+          document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
+        }
+      } catch (error) {
+        console.error('Error in initial data load:', error);
+        document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to load initial data: ${error.message}</p>`;
+      } finally {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        isFetching = false;
+      }
+    });
+
+    salesReportForm.dispatchEvent(new Event('submit'));
   }
-  
+
   setupEventListeners();
 });
 
@@ -390,23 +447,20 @@ function setupEventListeners() {
   const customRange = document.getElementById('customDateRange');
   const salesReportForm = document.getElementById('salesReportForm');
 
-  // Toggle custom date range visibility
   reportPeriod.addEventListener('change', function() {
     customRange.classList.toggle('hidden', this.value !== 'custom');
   });
 
-  // Show custom range if already selected
   if (reportPeriod.value === 'custom') {
     customRange.classList.remove('hidden');
   }
 
-  // Handle form submission
   salesReportForm.addEventListener('submit', async function(e) {
     e.preventDefault();
-    
-    // Show loading overlay
+    if (isFetching) return;
+    isFetching = true;
     document.getElementById('loadingOverlay').style.display = 'flex';
-    
+
     const formData = new FormData(salesReportForm);
     const data = {
       period: formData.get('period'),
@@ -417,16 +471,19 @@ function setupEventListeners() {
     };
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch('/admin/sales-report', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        signal: controller.signal
       });
 
-      const result = await response.json();
+      clearTimeout(timeoutId);
 
+      const result = await response.json();
       if (result.success) {
         updateDashboard(result);
         document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">${result.message}</p>`;
@@ -434,30 +491,36 @@ function setupEventListeners() {
         document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
       }
     } catch (error) {
+      console.error('Error in form submission:', error);
       document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
     } finally {
-      // Hide loading overlay
       document.getElementById('loadingOverlay').style.display = 'none';
+      isFetching = false;
     }
   });
 }
 
 async function downloadReport(type) {
+  if (isFetching) return;
+  isFetching = true;
+  document.getElementById('loadingOverlay').style.display = 'flex';
+
   const period = document.getElementById('reportPeriod').value;
   const startDate = document.getElementById('startDate').value;
   const endDate = document.getElementById('endDate').value;
 
   try {
-    // Show loading overlay
-    document.getElementById('loadingOverlay').style.display = 'flex';
-    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     const response = await fetch(`/admin/download-${type}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ period, startDate, endDate })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period, startDate, endDate }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const result = await response.json();
@@ -479,25 +542,22 @@ async function downloadReport(type) {
   } catch (error) {
     document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to download ${type.toUpperCase()}: ${error.message}</p>`;
   } finally {
-    // Hide loading overlay
     document.getElementById('loadingOverlay').style.display = 'none';
+    isFetching = false;
   }
 }
 
 function updateDashboard(data) {
   try {
-    // Update Overview Cards
     document.getElementById('totalSale').textContent = (data.totalSale || 0).toLocaleString();
     document.getElementById('totalOrders').textContent = data.totalOrders || 0;
     document.getElementById('totalCustomers').textContent = data.totalCustomers || 0;
     document.getElementById('totalIncome').textContent = (data.totalIncome || 0).toLocaleString();
 
-    // Update Summary Cards
     document.getElementById('summarySalesCount').textContent = data.summary.salesCount || 0;
     document.getElementById('summaryOrderAmount').textContent = (data.summary.orderAmount || 0).toLocaleString();
     document.getElementById('summaryDiscount').textContent = (data.summary.discount || 0).toLocaleString();
 
-    // Update Sales Report Table
     const salesReportBody = document.getElementById('salesReportBody');
     salesReportBody.innerHTML = '';
     if (data.salesReport && data.salesReport.length > 0) {
@@ -518,7 +578,6 @@ function updateDashboard(data) {
       salesReportBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No sales data available for the selected period.</td></tr>';
     }
 
-    // Update Pagination
     const pagination = document.getElementById('pagination');
     if (data.pagination && data.pagination.totalPages > 1) {
       const { currentPage, totalPages, limit, totalRecords } = data.pagination;
@@ -553,7 +612,6 @@ function updateDashboard(data) {
       pagination.innerHTML = '';
     }
 
-    // Update Top Categories
     const topCategories = document.getElementById('topCategories');
     const topCategoriesEmpty = document.getElementById('topCategoriesEmpty');
     if (data.topCategories && data.topCategories.length > 0) {
@@ -579,7 +637,6 @@ function updateDashboard(data) {
       }
     }
 
-    // Update Top Brands
     const topBrands = document.getElementById('topBrands');
     const topBrandsEmpty = document.getElementById('topBrandsEmpty');
     if (data.topBrands && data.topBrands.length > 0) {
@@ -604,7 +661,6 @@ function updateDashboard(data) {
       }
     }
 
-    // Update Top Products
     const topProducts = document.getElementById('topProducts');
     const topProductsEmpty = document.getElementById('topProductsEmpty');
     if (data.topProducts && data.topProducts.length > 0) {
@@ -629,52 +685,55 @@ function updateDashboard(data) {
       }
     }
 
-    // Update Charts
     updateCharts(data.categorySalesData, data.incomeData);
   } catch (error) {
     console.error('Error updating dashboard:', error);
-    document.getElementById('reportMessage').innerHTML = 
-      `<p class="text-red-600">Error loading data: ${error.message}</p>`;
+    document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Error loading data: ${error.message}</p>`;
+    document.getElementById('loadingOverlay').style.display = 'none';
   }
 }
 
-function fetchPage(page) {
-  const period = document.getElementById('reportPeriod').value;
-  const startDate = document.getElementById('startDate').value;
-  const endDate = document.getElementById('endDate').value;
-  const limit = 5;
-
-  // Show loading overlay
+async function fetchPage(page) {
+  if (isFetching) return;
+  isFetching = true;
   document.getElementById('loadingOverlay').style.display = 'flex';
 
-  fetch('/admin/sales-report', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ period, startDate, endDate, page, limit })
-  })
-    .then(response => response.json())
-    .then(result => {
-      if (result.success) {
-        updateDashboard(result);
-        document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">${result.message}</p>`;
-      } else {
-        document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
-      }
-    })
-    .catch(error => {
-      document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
-    })
-    .finally(() => {
-      // Hide loading overlay
-      document.getElementById('loadingOverlay').style.display = 'none';
+  try {
+    const period = document.getElementById('reportPeriod').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const limit = 5;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    const response = await fetch('/admin/sales-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ period, startDate, endDate, page, limit }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
+
+    const result = await response.json();
+    if (result.success) {
+      updateDashboard(result);
+      document.getElementById('reportMessage').innerHTML = `<p class="text-green-600">${result.message}</p>`;
+    } else {
+      document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">${result.message}</p>`;
+    }
+  } catch (error) {
+    console.error('Error fetching page:', error);
+    document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Failed to generate report: ${error.message}</p>`;
+  } finally {
+    document.getElementById('loadingOverlay').style.display = 'none';
+    isFetching = false;
+  }
 }
 
 function updateCharts(categorySalesData, incomeData) {
   try {
-    // Destroy existing charts to prevent memory leaks
     if (categorySalesChartInstance) {
       categorySalesChartInstance.destroy();
       categorySalesChartInstance = null;
@@ -684,7 +743,6 @@ function updateCharts(categorySalesData, incomeData) {
       incomeChartInstance = null;
     }
 
-    // Category Sales Pie Chart
     const categorySalesCtx = document.getElementById('categorySalesChart')?.getContext('2d');
     const categorySalesChartContainer = document.getElementById('categorySalesChartContainer');
     if (categorySalesData && categorySalesData.length > 0 && categorySalesCtx) {
@@ -749,7 +807,6 @@ function updateCharts(categorySalesData, incomeData) {
       categorySalesChartContainer.innerHTML = '<p class="text-center text-gray-500 h-full flex items-center justify-center" id="categorySalesEmpty">No category sales data available.</p>';
     }
 
-    // Income Over Time Line Graph
     const incomeCtx = document.getElementById('incomeChart')?.getContext('2d');
     const incomeChartContainer = document.getElementById('incomeChartContainer');
     if (incomeData && incomeData.length > 0 && incomeCtx) {
@@ -814,6 +871,8 @@ function updateCharts(categorySalesData, incomeData) {
     }
   } catch (error) {
     console.error('Error updating charts:', error);
+    document.getElementById('reportMessage').innerHTML = `<p class="text-red-600">Error updating charts: ${error.message}</p>`;
+    document.getElementById('loadingOverlay').style.display = 'none';
   }
 }
 </script>

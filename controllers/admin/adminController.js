@@ -57,9 +57,11 @@ const loadDashboard = async (req, res, next) => {
             limit: parseInt(req.query.limit) || 5
         };
 
-        // Clear session filter if it's the first load
-        if (!req.session.filter && !req.query.period) {
-            req.session.filter = { period: 'monthly' };
+        // Validate filter inputs
+        if (filter.period === 'custom' && (!filter.startDate || !filter.endDate || !moment(filter.startDate).isValid() || !moment(filter.endDate).isValid())) {
+            filter.period = 'monthly';
+            filter.startDate = null;
+            filter.endDate = null;
         }
 
         const data = await getSalesData(filter);
@@ -72,7 +74,24 @@ const loadDashboard = async (req, res, next) => {
         });
         delete req.session.message;
     } catch (error) {
-        next(error);
+        console.error('Error loading dashboard:', error);
+        res.render('admin/dashboard', {
+            totalSale: 0,
+            totalOrders: 0,
+            totalCustomers: 0,
+            totalIncome: 0,
+            summary: { salesCount: 0, orderAmount: 0, discount: 0 },
+            salesReport: [],
+            pagination: { currentPage: 1, totalPages: 1, limit: 5, totalRecords: 0 },
+            categorySalesData: [],
+            incomeData: [],
+            topProducts: [],
+            topBrands: [],
+            topCategories: [],
+            message: 'Failed to load dashboard data. Please try again.',
+            selectedPeriod: 'monthly',
+            filter: { period: 'monthly', page: 1, limit: 5 }
+        });
     }
 };
 
@@ -80,13 +99,18 @@ const loadDashboard = async (req, res, next) => {
 const saleReport = async (req, res, next) => { 
     try {
         if (!req.session.admin) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
         const { period, startDate, endDate, page = 1, limit = 5 } = req.body;
         const filter = { period, startDate, endDate, page: parseInt(page), limit: parseInt(limit) };
-        req.session.filter = { period, startDate, endDate };
 
+        // Validate filter inputs
+        if (period === 'custom' && (!startDate || !endDate || !moment(startDate).isValid() || !moment(filter.endDate).isValid())) {
+            return res.status(400).json({ success: false, message: 'Invalid custom date range' });
+        }
+
+        req.session.filter = { period, startDate, endDate };
         const data = await getSalesData(filter);
 
         res.json({
@@ -105,11 +129,16 @@ const saleReport = async (req, res, next) => {
 const downloadPDF = async (req, res, next) => {
     try {
         if (!req.session.admin) {
-            return res.redirect('/admin/login');
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
         const { period, startDate, endDate } = req.body;
         const filter = { period, startDate, endDate, page: 1, limit: Infinity };
+
+        // Validate inputs
+        if (period === 'custom' && (!startDate || !endDate || !moment(startDate).isValid() || !moment(endDate).isValid())) {
+            return res.status(400).json({ success: false, message: 'Invalid custom date range' });
+        }
 
         const data = await getSalesData(filter);
 
@@ -202,11 +231,16 @@ const downloadPDF = async (req, res, next) => {
 const downloadExcel = async (req, res, next) => {
     try {
         if (!req.session.admin) {
-            return res.status(401).json({ error: 'Unauthorized' });
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
         const { period, startDate, endDate } = req.body;
         const filter = { period, startDate, endDate, page: 1, limit: Infinity };
+
+        // Validate inputs
+        if (period === 'custom' && (!startDate || !endDate || !moment(startDate).isValid() || !moment(endDate).isValid())) {
+            return res.status(400).json({ success: false, message: 'Invalid custom date range' });
+        }
 
         const data = await getSalesData(filter);
 
@@ -260,8 +294,14 @@ const getSalesData = async (filter) => {
 
     try {
         if (period === 'custom' && startDate && endDate) {
+            if (!moment(startDate).isValid() || !moment(endDate).isValid()) {
+                throw new Error('Invalid date format');
+            }
             const start = moment(startDate).startOf('day').toDate();
             const end = moment(endDate).endOf('day').toDate();
+            if (moment(end).isBefore(start)) {
+                throw new Error('End date cannot be before start date');
+            }
             match.createdOn = { $gte: start, $lte: end };
         } else {
             const now = moment();
@@ -270,196 +310,123 @@ const getSalesData = async (filter) => {
             } else if (period === 'weekly') {
                 match.createdOn = { $gte: now.startOf('week').toDate(), $lte: now.endOf('week').toDate() };
             } else if (period === 'monthly') {
-match.createdOn = { 
-        $gte: moment().startOf('month').toDate(), 
-        $lte: moment().endOf('month').toDate() 
-    };            } else if (period === 'yearly') {
+                match.createdOn = { $gte: now.startOf('month').toDate(), $lte: now.endOf('month').toDate() };
+            } else if (period === 'yearly') {
                 match.createdOn = { $gte: now.startOf('year').toDate(), $lte: now.endOf('year').toDate() };
             }
         }
-    } catch (error) {
-    }
 
-    // Fetch paginated sales report
-    const skip = (page - 1) * limit;
-    const totalSalesRecords = await Order.countDocuments(match);
-    const totalPages = Math.ceil(totalSalesRecords / limit);
+        const skip = (page - 1) * limit;
+        const totalSalesRecords = await Order.countDocuments(match).catch(err => {
+            console.error('Error counting sales records:', err);
+            return 0;
+        });
+        const totalPages = Math.ceil(totalSalesRecords / limit);
 
-    const salesReport = await Order.find(match)
-        .populate('user', 'name')
-        .sort({ createdOn: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean()
+        const salesReport = await Order.find(match)
+            .populate('user', 'name')
+            .sort({ createdOn: -1 })
+            .skip(skip)
+            .limit(limit)
+            .lean()
+            .catch(err => {
+                console.error('Error fetching sales report:', err);
+                return [];
+            });
 
-    const formattedSalesReport = salesReport.map(order => ({
-        orderId: order.orderId || 'N/A',
-        orderDate: order.createdOn ? moment(order.createdOn).format('DD/MM/YYYY') : moment().format('DD/MM/YYYY'),
-        userName: order.user?.name || 'Unknown',
-        finalAmount: order.finalAmount || 0,
-        discount: order.discount || 0,
-        couponCode: order.couponCode || 'None',
-        orderedItems: order.orderedItems || []
-    }));
+        const formattedSalesReport = salesReport.map(order => ({
+            orderId: order.orderId || 'N/A',
+            orderDate: order.createdOn ? moment(order.createdOn).format('DD/MM/YYYY') : moment().format('DD/MM/YYYY'),
+            userName: order.user?.name || 'Unknown',
+            finalAmount: order.finalAmount || 0,
+            discount: order.discount || 0,
+            couponCode: order.couponCode || 'None',
+            orderedItems: order.orderedItems || []
+        }));
 
-    // Fetch all orders for charts and aggregates (no pagination)
-    const allOrdersForCharts = await Order.find(match)
-        .populate({
-            path: 'orderedItems.product',
-            populate: [
-                { path: 'category', select: 'name' },
-                { path: 'brand', select: 'brandName brandImage' }
-            ]
-        })
-        .sort({ createdOn: 1 })
-        .lean()
-        .catch(err => {
-            return [];
+        const allOrdersForCharts = await Order.find(match)
+            .populate({
+                path: 'orderedItems.product',
+                populate: [
+                    { path: 'category', select: 'name' },
+                    { path: 'brand', select: 'brandName brandImage' }
+                ]
+            })
+            .sort({ createdOn: 1 })
+            .lean()
+            .catch(err => {
+                console.error('Error fetching orders for charts:', err);
+                return [];
+            });
+
+        const categorySales = {};
+        allOrdersForCharts.forEach(order => {
+            order.orderedItems.forEach(item => {
+                const categoryName = item.product?.category?.name || 'Unknown';
+                const quantity = item.quantity || 0;
+                categorySales[categoryName] = (categorySales[categoryName] || 0) + quantity;
+            });
         });
 
-    // Category-wise sales for pie chart (Top 10)
-    const categorySales = {};
-    allOrdersForCharts.forEach(order => {
-        order.orderedItems.forEach(item => {
-            const categoryName = item.product?.category?.name || 'Unknown';
-            const quantity = item.quantity || 0;
-            categorySales[categoryName] = (categorySales[categoryName] || 0) + quantity;
-        });
-    });
+        const topCategories = Object.keys(categorySales)
+            .map(category => ({
+                category,
+                totalSold: categorySales[category]
+            }))
+            .sort((a, b) => b.totalSold - a.totalSold)
+            .slice(0, 10);
 
-    const topCategories = Object.keys(categorySales)
-        .map(category => ({
-            category,
-            totalSold: categorySales[category]
-        }))
-        .sort((a, b) => b.totalSold - a.totalSold)
-        .slice(0, 10);
-
-    // Brand-wise sales (Top 10)
-    const brandSales = {};
-    allOrdersForCharts.forEach(order => {
-        order.orderedItems.forEach(item => {
-            const brandName = item.product?.brand?.brandName || 'Unknown';
-            const brandImage = item.product?.brand?.brandImage || '/images/placeholder.jpg';
-            const quantity = item.quantity || 0;
-            if (!brandSales[brandName]) {
-                brandSales[brandName] = {
-                    name: brandName,
-                    image: brandImage,
-                    totalSold: 0
-                };
-            }
-            brandSales[brandName].totalSold += quantity;
-        });
-    });
-
-    const topBrands = Object.values(brandSales)
-        .sort((a, b) => b.totalSold - a.totalSold)
-        .slice(0, 10);
-
-    // Top 10 best-selling products
-    const productSales = {};
-    allOrdersForCharts.forEach(order => {
-        order.orderedItems.forEach(item => {
-            const productId = item.product?._id?.toString();
-            const quantity = item.quantity || 0;
-            if (productId) {
-                if (!productSales[productId]) {
-                    productSales[productId] = {
-                        name: item.product?.productName || 'Unknown Product',
-                        image: item.product?.productImage?.[0] || '/images/placeholder.jpg',
+        const brandSales = {};
+        allOrdersForCharts.forEach(order => {
+            order.orderedItems.forEach(item => {
+                const brandName = item.product?.brand?.brandName || 'Unknown';
+                const brandImage = item.product?.brand?.brandImage || '/images/placeholder.jpg';
+                const quantity = item.quantity || 0;
+                if (!brandSales[brandName]) {
+                    brandSales[brandName] = {
+                        name: brandName,
+                        image: brandImage,
                         totalSold: 0
                     };
                 }
-                productSales[productId].totalSold += quantity;
-            }
+                brandSales[brandName].totalSold += quantity;
+            });
         });
-    });
 
-    const topProducts = Object.entries(productSales)
-        .map(([productId, data]) => ({
-            productId,
-            name: data.name,
-            image: data.image,
-            totalSold: data.totalSold
-        }))
-        .sort((a, b) => b.totalSold - a.totalSold)
-        .slice(0, 10);
+        const topBrands = Object.values(brandSales)
+            .sort((a, b) => b.totalSold - a.totalSold)
+            .slice(0, 10);
 
-    // Aggregate income data based on period
-    const incomeData = [];
-    if (period === 'daily') {
-        // For daily, aggregate by hour if you have granular data, else just one point
-        const dailyIncome = {};
+        const productSales = {};
         allOrdersForCharts.forEach(order => {
-            const hour = moment(order.createdOn).format('HH:00');
-            const income = (order.finalAmount || 0) - (order.discount || 0);
-            dailyIncome[hour] = (dailyIncome[hour] || 0) + income;
+            order.orderedItems.forEach(item => {
+                const productId = item.product?._id?.toString();
+                const quantity = item.quantity || 0;
+                if (productId) {
+                    if (!productSales[productId]) {
+                        productSales[productId] = {
+                            name: item.product?.productName || 'Unknown Product',
+                            image: item.product?.productImage?.[0] || '/images/placeholder.jpg',
+                            totalSold: 0
+                        };
+                    }
+                    productSales[productId].totalSold += quantity;
+                }
+            });
         });
-        incomeData.push(...Object.keys(dailyIncome).map(hour => ({
-            date: hour,
-            income: dailyIncome[hour]
-        })).sort((a, b) => a.date.localeCompare(b.date)));
-    } else if (period === 'weekly') {
-        // For weekly, aggregate by day (last 7 days)
-        const dailyIncome = {};
-        const start = moment().startOf('week');
-        for (let i = 0; i < 7; i++) {
-            const date = moment(start).add(i, 'days').format('DD/MM/YYYY');
-            dailyIncome[date] = 0;
-        }
-        allOrdersForCharts.forEach(order => {
-            const date = moment(order.createdOn).format('DD/MM/YYYY');
-            const income = (order.finalAmount || 0) - (order.discount || 0);
-            dailyIncome[date] = (dailyIncome[date] || 0) + income;
-        });
-        incomeData.push(...Object.keys(dailyIncome).map(date => ({
-            date,
-            income: dailyIncome[date]
-        })).sort((a, b) => moment(a.date, 'DD/MM/YYYY').unix() - moment(b.date, 'DD/MM/YYYY').unix()));
-    } else if (period === 'monthly') {
-        // For monthly, aggregate by week (last 4 weeks)
-        const weeklyIncome = {};
-        const start = moment().startOf('month').subtract(3, 'weeks');
-        for (let i = 0; i < 4; i++) {
-            const weekStart = moment(start).add(i, 'weeks').format('DD/MM/YYYY');
-            weeklyIncome[`Week ${i + 1}`] = 0;
-        }
-        allOrdersForCharts.forEach(order => {
-            const orderDate = moment(order.createdOn);
-            const weeksDiff = Math.floor(orderDate.diff(start, 'days') / 7);
-            const weekLabel = weeksDiff >= 0 && weeksDiff < 4 ? `Week ${weeksDiff + 1}` : null;
-            if (weekLabel) {
-                const income = (order.finalAmount || 0) - (order.discount || 0);
-                weeklyIncome[weekLabel] = (weeklyIncome[weekLabel] || 0) + income;
-            }
-        });
-        incomeData.push(...Object.keys(weeklyIncome).map(week => ({
-            date: week,
-            income: weeklyIncome[week]
-        })).sort((a, b) => a.date.localeCompare(b.date)));
-    } else if (period === 'yearly') {
-        // For yearly, aggregate by month (last 12 months)
-        const monthlyIncome = {};
-        const start = moment().startOf('year');
-        for (let i = 0; i < 12; i++) {
-            const month = moment(start).add(i, 'months').format('MMM YYYY');
-            monthlyIncome[month] = 0;
-        }
-        allOrdersForCharts.forEach(order => {
-            const month = moment(order.createdOn).format('MMM YYYY');
-            const income = (order.finalAmount || 0) - (order.discount || 0);
-            monthlyIncome[month] = (monthlyIncome[month] || 0) + income;
-        });
-        incomeData.push(...Object.keys(monthlyIncome).map(month => ({
-            date: month,
-            income: monthlyIncome[month]
-        })).sort((a, b) => moment(a.date, 'MMM YYYY').unix() - moment(b.date, 'MMM YYYY').unix()));
-    } else if (period === 'custom' && startDate && endDate) {
-        // For custom range, aggregate based on duration
-        const durationDays = moment(endDate).diff(moment(startDate), 'days');
-        if (durationDays <= 1) {
-            // Treat as daily (by hour)
+
+        const topProducts = Object.entries(productSales)
+            .map(([productId, data]) => ({
+                productId,
+                name: data.name,
+                image: data.image,
+                totalSold: data.totalSold
+            }))
+            .sort((a, b) => b.totalSold - a.totalSold)
+            .slice(0, 10);
+
+        const incomeData = [];
+        if (period === 'daily') {
             const dailyIncome = {};
             allOrdersForCharts.forEach(order => {
                 const hour = moment(order.createdOn).format('HH:00');
@@ -470,11 +437,10 @@ match.createdOn = {
                 date: hour,
                 income: dailyIncome[hour]
             })).sort((a, b) => a.date.localeCompare(b.date)));
-        } else if (durationDays <= 31) {
-            // Treat as weekly/daily (by day)
+        } else if (period === 'weekly') {
             const dailyIncome = {};
-            const start = moment(startDate).startOf('day');
-            for (let i = 0; i <= durationDays; i++) {
+            const start = moment().startOf('week');
+            for (let i = 0; i < 7; i++) {
                 const date = moment(start).add(i, 'days').format('DD/MM/YYYY');
                 dailyIncome[date] = 0;
             }
@@ -487,13 +453,30 @@ match.createdOn = {
                 date,
                 income: dailyIncome[date]
             })).sort((a, b) => moment(a.date, 'DD/MM/YYYY').unix() - moment(b.date, 'DD/MM/YYYY').unix()));
-        } else {
-            // Treat as monthly (by month)
+        } else if (period === 'monthly') {
+            const weeklyIncome = {};
+            const start = moment().startOf('month').subtract(3, 'weeks');
+            for (let i = 0; i < 4; i++) {
+                const weekStart = moment(start).add(i, 'weeks').format('DD/MM/YYYY');
+                weeklyIncome[`Week ${i + 1}`] = 0;
+            }
+            allOrdersForCharts.forEach(order => {
+                const orderDate = moment(order.createdOn);
+                const weeksDiff = Math.floor(orderDate.diff(start, 'days') / 7);
+                const weekLabel = weeksDiff >= 0 && weeksDiff < 4 ? `Week ${weeksDiff + 1}` : null;
+                if (weekLabel) {
+                    const income = (order.finalAmount || 0) - (order.discount || 0);
+                    weeklyIncome[weekLabel] = (weeklyIncome[weekLabel] || 0) + income;
+                }
+            });
+            incomeData.push(...Object.keys(weeklyIncome).map(week => ({
+                date: week,
+                income: weeklyIncome[week]
+            })).sort((a, b) => a.date.localeCompare(b.date)));
+        } else if (period === 'yearly') {
             const monthlyIncome = {};
-            const start = moment(startDate).startOf('month');
-            const end = moment(endDate).endOf('month');
-            const monthsDiff = end.diff(start, 'months') + 1;
-            for (let i = 0; i < monthsDiff; i++) {
+            const start = moment().startOf('year');
+            for (let i = 0; i < 12; i++) {
                 const month = moment(start).add(i, 'months').format('MMM YYYY');
                 monthlyIncome[month] = 0;
             }
@@ -506,46 +489,110 @@ match.createdOn = {
                 date: month,
                 income: monthlyIncome[month]
             })).sort((a, b) => moment(a.date, 'MMM YYYY').unix() - moment(b.date, 'MMM YYYY').unix()));
+        } else if (period === 'custom' && startDate && endDate) {
+            const durationDays = moment(endDate).diff(moment(startDate), 'days');
+            if (durationDays <= 1) {
+                const dailyIncome = {};
+                allOrdersForCharts.forEach(order => {
+                    const hour = moment(order.createdOn).format('HH:00');
+                    const income = (order.finalAmount || 0) - (order.discount || 0);
+                    dailyIncome[hour] = (dailyIncome[hour] || 0) + income;
+                });
+                incomeData.push(...Object.keys(dailyIncome).map(hour => ({
+                    date: hour,
+                    income: dailyIncome[hour]
+                })).sort((a, b) => a.date.localeCompare(b.date)));
+            } else if (durationDays <= 31) {
+                const dailyIncome = {};
+                const start = moment(startDate).startOf('day');
+                for (let i = 0; i <= durationDays; i++) {
+                    const date = moment(start).add(i, 'days').format('DD/MM/YYYY');
+                    dailyIncome[date] = 0;
+                }
+                allOrdersForCharts.forEach(order => {
+                    const date = moment(order.createdOn).format('DD/MM/YYYY');
+                    const income = (order.finalAmount || 0) - (order.discount || 0);
+                    dailyIncome[date] = (dailyIncome[date] || 0) + income;
+                });
+                incomeData.push(...Object.keys(dailyIncome).map(date => ({
+                    date,
+                    income: dailyIncome[date]
+                })).sort((a, b) => moment(a.date, 'DD/MM/YYYY').unix() - moment(b.date, 'DD/MM/YYYY').unix()));
+            } else {
+                const monthlyIncome = {};
+                const start = moment(startDate).startOf('month');
+                const end = moment(endDate).endOf('month');
+                const monthsDiff = end.diff(start, 'months') + 1;
+                for (let i = 0; i < monthsDiff; i++) {
+                    const month = moment(start).add(i, 'months').format('MMM YYYY');
+                    monthlyIncome[month] = 0;
+                }
+                allOrdersForCharts.forEach(order => {
+                    const month = moment(order.createdOn).format('MMM YYYY');
+                    const income = (order.finalAmount || 0) - (order.discount || 0);
+                    monthlyIncome[month] = (monthlyIncome[month] || 0) + income;
+                });
+                incomeData.push(...Object.keys(monthlyIncome).map(month => ({
+                    date: month,
+                    income: monthlyIncome[month]
+                })).sort((a, b) => moment(a.date, 'MMM YYYY').unix() - moment(b.date, 'MMM YYYY').unix()));
+            }
         }
+
+        const totalOrders = await Order.countDocuments().catch(err => {
+            console.error('Error counting total orders:', err);
+            return 0;
+        });
+
+        const totalCustomers = await User.countDocuments({ isAdmin: false }).catch(err => {
+            console.error('Error counting total customers:', err);
+            return 0;
+        });
+
+        const summary = {
+            salesCount: totalSalesRecords,
+            orderAmount: allOrdersForCharts.reduce((sum, order) => sum + (order.finalAmount || 0), 0),
+            discount: allOrdersForCharts.reduce((sum, order) => sum + (order.discount || 0), 0)
+        };
+
+        const totalSale = summary.orderAmount;
+        const totalIncome = summary.orderAmount - summary.discount;
+
+        return {
+            totalSale,
+            totalOrders,
+            totalCustomers,
+            totalIncome,
+            summary,
+            salesReport: formattedSalesReport,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                limit,
+                totalRecords: totalSalesRecords
+            },
+            categorySalesData: topCategories,
+            incomeData,
+            topProducts,
+            topBrands,
+            topCategories
+        };
+    } catch (error) {
+        return {
+            totalSale: 0,
+            totalOrders: 0,
+            totalCustomers: 0,
+            totalIncome: 0,
+            summary: { salesCount: 0, orderAmount: 0, discount: 0 },
+            salesReport: [],
+            pagination: { currentPage: 1, totalPages: 1, limit: 5, totalRecords: 0 },
+            categorySalesData: [],
+            incomeData: [],
+            topProducts: [],
+            topBrands: [],
+            topCategories: []
+        };
     }
-
-    const totalOrders = await Order.countDocuments().catch(err => {
-        return 0;
-    });
-
-    const totalCustomers = await User.countDocuments({ isAdmin: false }).catch(err => {
-        console.error('totalCustomers Error:', err);
-        return 0;
-    });
-
-    const summary = {
-        salesCount: totalSalesRecords,
-        orderAmount: allOrdersForCharts.reduce((sum, order) => sum + (order.finalAmount || 0), 0),
-        discount: allOrdersForCharts.reduce((sum, order) => sum + (order.discount || 0), 0)
-    };
-
-    const totalSale = summary.orderAmount;
-    const totalIncome = summary.orderAmount - summary.discount;
-
-    return {
-        totalSale,
-        totalOrders,
-        totalCustomers,
-        totalIncome,
-        summary,
-        salesReport: formattedSalesReport,
-        pagination: {
-            currentPage: page,
-            totalPages,
-            limit,
-            totalRecords: totalSalesRecords
-        },
-        categorySalesData: topCategories,
-        incomeData,
-        topProducts,
-        topBrands,
-        topCategories
-    };
 };
 
 // Logout
