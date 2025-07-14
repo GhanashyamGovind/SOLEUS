@@ -339,6 +339,19 @@
     const modal = document.getElementById('profileModal');
     const cancelModalBtn = document.getElementById('cancelModal');
     const profileImageInput = document.getElementById('profileImageInput');
+    const profilePictureForm = document.getElementById('profilePictureForm');
+
+    profilePictureForm.addEventListener("submit", function(e) {
+        if(!profileImageInput.files || profileImageInput.files.length === 0) {
+            e.preventDefault()
+            Swal.fire({
+                toast: true,
+                icon: 'warning',
+                title: 'No File Selected',
+                text: 'Please choose an image befor submitting.',
+            })
+        }
+    })
 
     // Open modal
     openModalBtn.addEventListener('click', () => {
