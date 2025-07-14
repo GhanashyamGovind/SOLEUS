@@ -406,7 +406,7 @@ async function proceedToPayment(isBuyNow) {
                         <p class="text-sm text-gray-700">Please use Razorpay or Wallet payment</p>
                     </div>
                 `,
-                confirmButtonText: 'Choose Payment',
+                confirmButtonText: 'Choose Other Payment',
                 confirmButtonColor: '#eab308',
                 customClass: {
                     popup: 'rounded-lg shadow-xl',
@@ -569,7 +569,7 @@ async function proceedToPayment(isBuyNow) {
                             <p class="text-sm text-gray-700">Please use Razorpay or Wallet payment</p>
                         </div>
                     `,
-                    confirmButtonText: 'Choose Payment',
+                    confirmButtonText: 'Choose Other Payment',
                     confirmButtonColor: '#eab308',
                     customClass: {
                         popup: 'rounded-lg shadow-xl',
@@ -580,6 +580,32 @@ async function proceedToPayment(isBuyNow) {
                     padding: '1.5rem'
                 });
                 return;
+
+            }else if (data.message.includes('Insufficient wallet balance')) {
+                await Swal.fire({
+                    iconHtml: '<i class="fas fa-wallet text-red-600" style="font-size: 2rem;"></i>',
+                    title: '<span class="text-lg font-semibold text-gray-900">Insufficient Balance</span>',
+                    html: `
+                        <div class="text-center py-2 px-2">
+                            <div class="bg-red-100 border border-red-300 rounded-lg p-3">
+                                <p class="mt-2 text-red-700 font-bold text-base">
+                                    ${data.message}
+                                </p>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'Choose Other Payment',
+                    confirmButtonColor: '#dc2626',
+                    customClass: {
+                        popup: 'rounded-xl shadow-2xl',
+                        confirmButton: 'px-4 py-2 text-sm font-semibold rounded'
+                    },
+                    backdrop: 'rgba(0, 0, 0, 0.55)',
+                    width: '24rem',
+                    padding: '1.2rem'
+                });
+                return;
+
             } else {
                 await Swal.fire({
                     icon: 'error',

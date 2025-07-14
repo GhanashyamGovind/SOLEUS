@@ -10,7 +10,6 @@ const { render } = require('ejs');
 
 const loadOrder = async (req, res, next) => {
     try {
-
         const userId = req.session.user;
         if (!userId) {
             const error = new Error('User not authenticated');
@@ -18,17 +17,26 @@ const loadOrder = async (req, res, next) => {
             throw error;
         }
 
-        if(req.session.failedOrder) {
+        if (req.session.failedOrder) {
             delete req.session.failedOrder;
         }
 
-        const {cart} = req.query;
-        if(cart && cart == 'fromProductFailure'){
-            const newCart = await Cart.findOneAndUpdate(
-                {userId},
+        const { cart, page = 1, limit = 5 } = req.query;
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+
+        if (isNaN(pageNum) || pageNum < 1 || isNaN(limitNum) || limitNum < 1) {
+            const error = new Error('Invalid page or limit parameters');
+            error.statusCode = 400;
+            throw error;
+        }
+
+        if (cart && cart === 'fromProductFailure') {
+            await Cart.findOneAndUpdate(
+                { userId },
                 { $set: { items: [], totalPrice: 0 } },
-                {new: true}
-            )
+                { new: true }
+            );
         }
 
         // Get user
@@ -41,29 +49,45 @@ const loadOrder = async (req, res, next) => {
 
         const orderHistory = user.orderHistory || [];
         if (!orderHistory.length) {
-            return res.render('user/order', {
+            const response = {
                 orders: [],
-                totalOrders: 0
-            });
+                totalOrders: 0,
+                totalPages: 0,
+                currentPage: pageNum
+            };
+            return req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest'
+                ? res.json(response)
+                : res.render('user/order', response);
         }
 
-        // Fetch all orders in orderHistory
-        const orders = await Order.find({ _id: { $in: orderHistory } })
+        // Calculate pagination
+        const totalOrders = orderHistory.length;
+        const totalPages = Math.ceil(totalOrders / limitNum);
+        if (pageNum > totalPages && totalPages > 0) {
+            const error = new Error('Page not found');
+            error.statusCode = 404;
+            throw error;
+        }
+
+        const reversedOrderHistory = [...orderHistory].reverse()
+        const skip = (pageNum - 1) * limitNum;
+        const paginatedOrderIds = reversedOrderHistory.slice(skip, skip + limitNum);
+
+        // Fetch paginated orders
+        const orders = await Order.find({ _id: { $in: paginatedOrderIds } })
             .populate('orderedItems.product')
             .lean();
-
-        const totalOrders = orders.length;
 
         const formattedOrders = orders.map(order => {
             const savedAddress = order.address || {};
 
-            //images
+            // Images
             const productImages = order.orderedItems.map(item => {
                 const product = item.product;
                 return product?.productImage?.[0]
-                ? `/uploads/re-image/${product.productImage[0]}`
-                : 'https://via.placeholder.com/80x80?text=Product';
-            })
+                    ? `/uploads/re-image/${product.productImage[0]}`
+                    : 'https://via.placeholder.com/80x80?text=Product';
+            });
 
             // Calculate total quantity of items in this order
             const totalItems = order.orderedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -89,11 +113,27 @@ const loadOrder = async (req, res, next) => {
             return new Date(orderB.createdOn || orderB.createdAt) - new Date(orderA.createdOn || orderA.createdAt);
         });
 
-        return res.render('user/order', {
+        const response = {
             orders: formattedOrders,
-            totalOrders
-        });
+            totalOrders,
+            totalPages,
+            currentPage: pageNum
+        };
+
+        // If request is from AJAX (fetch), return JSON
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.json(response);
+        }
+
+        // Otherwise, render the page
+        return res.render('user/order', response);
     } catch (error) {
+        console.error('Error in loadOrder:', error);
+        const statusCode = error.statusCode || 500;
+        const message = error.message || 'Internal server error';
+        if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+            return res.status(statusCode).json({ success: false, message });
+        }
         next(error);
     }
 };

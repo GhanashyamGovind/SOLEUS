@@ -1,240 +1,237 @@
 <%- include('../../views/partials/user/header', {title: 'Order'}) %>
-    <style>
-        body {
-            font-family: 'Quantico', sans-serif;
-        }
-        .header-bg {
-            background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
-            backdrop-filter: blur(10px);
-        }
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #000;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .track-btn {
-            background: linear-gradient(135deg, #000 0%, #374151 100%);
-            color: #FFF;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .track-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        .track-btn:hover::before {
-            left: 100%;
-        }
-        .track-btn:hover {
-            background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-        .order-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-        .order-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #FFC107, #FF9800, #F57C00);
-        }
-        .order-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border-color: rgba(255, 193, 7, 0.3);
-        }
-        .product-image {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        .order-card:hover .product-image {
-            transform: scale(1.05);
-        }
-        
-        .status-badge {
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .status-badge[data-status="Cancelled"],
-        .status-badge[data-status="Payment-Failed"] {
-            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-        }
-        .status-badge[data-status="Delivered"] {
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-        }
-        .status-badge:not([data-status="Cancelled"]):not([data-status="Payment-Failed"]):not([data-status="Delivered"]) {
-            background: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
-        }
-        .back-btn {
-            background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
-        }
-        .back-btn:hover {
-            background: linear-gradient(135deg, #FFD54F 0%, #FFEB3B 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
-        }
-        .icon-btn {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 12px;
-            padding: 8px;
-        }
-        .icon-btn:hover {
-            background-color: rgba(0, 0, 0, 0.1);
-            transform: scale(1.1);
-        }
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .slide-in {
-            animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-30px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .price-highlight {
-            background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-weight: 700;
-        }
-        .mobile-menu {
-            background: rgba(255, 193, 7, 0.95);
-            backdrop-filter: blur(10px);
-            transform: translateX(-100%);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .mobile-menu.open {
-            transform: translateX(0);
-        }
-        .cancel-btn {
-            background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-            color: #FFF;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .cancel-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        .cancel-btn:hover::before {
-            left: 100%;
-        }
-        .cancel-btn:hover {
-            background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
+<style>
+    body {
+        font-family: 'Quantico', sans-serif;
+    }
+    .header-bg {
+        background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
+        backdrop-filter: blur(10px);
+    }
+    .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #000;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .track-btn {
+        background: linear-gradient(135deg, #000 0%, #374151 100%);
+        color: #FFF;
+        font-weight: 700;
+        text-transform: uppercase;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .track-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    .track-btn:hover::before {
+        left: 100%;
+    }
+    .track-btn:hover {
+        background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .order-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    .order-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #FFC107, #FF9800, #F57C00);
+    }
+    .order-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border-color: rgba(255, 193, 7, 0.3);
+    }
+    .product-image {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .order-card:hover .product-image {
+        transform: scale(1.05);
+    }
+    .status-badge {
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .status-badge[data-status="Cancelled"],
+    .status-badge[data-status="Payment-Failed"] {
+        background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+    }
+    .status-badge[data-status="Delivered"] {
+        background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    }
+    .status-badge:not([data-status="Cancelled"]):not([data-status="Payment-Failed"]):not([data-status="Delivered"]) {
+        background: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
+    }
+    .back-btn {
+        background: linear-gradient(135deg, #FFC107 0%, #FFD54F 100%);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+    }
+    .back-btn:hover {
+        background: linear-gradient(135deg, #FFD54F 0%, #FFEB3B 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
+    }
+    .icon-btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        padding: 8px;
+    }
+    .icon-btn:hover {
+        background-color: rgba(0, 0, 0, 0.1);
+        transform: scale(1.1);
+    }
+    .fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .slide-in {
+        animation: slideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .price-highlight {
+        background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+    }
+    .mobile-menu {
+        background: rgba(255, 193, 7, 0.95);
+        backdrop-filter: blur(10px);
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mobile-menu.open {
+        transform: translateX(0);
+    }
+    .cancel-btn {
+        background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+        color: #FFF;
+        font-weight: 700;
+        text-transform: uppercase;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .cancel-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    .cancel-btn:hover::before {
+        left: 100%;
+    }
+    .cancel-btn:hover {
+        background: linear-gradient(135deg, #F87171 0%, #FCA5A5 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .deliver-btn {
+        background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+        color: #FFF;
+        font-weight: 700;
+        text-transform: uppercase;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    .deliver-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    .deliver-btn:hover::before {
+        left: 100%;
+    }
+    .deliver-btn:hover {
+        background: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+    .product-image {
+        transition: opacity 0.2s ease-in-out;
+    }
+    .pagination-btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pagination-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+</style>
 
-        .deliver-btn {
-            background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-            color: #FFF;
-            font-weight: 700;
-            text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            overflow: hidden;
-        }
-        .deliver-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-        .deliver-btn:hover::before {
-            left: 100%;
-        }
-        .deliver-btn:hover {
-            background: linear-gradient(135deg, #34D399 0%, #6EE7B7 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-        }
-
-        .product-image {
-            transition: opacity 0.2s ease-in-out;
-        }
-    </style>
-
-    <!-- Main Content -->
 <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-    <!-- Orders Header -->
     <div class="flex justify-between items-center mb-6">
         <div>
             <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 uppercase">Your Orders</h1>
-            <p class="text-lg text-gray-600">Total Orders: <%= totalOrders %></p>
+            <p class="text-lg text-gray-600">Total Orders: <span id="totalOrders"><%= totalOrders %></span></p>
         </div>
         <a href="/profile" class="back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Back</a>
     </div>
 
-    <!-- Orders List -->
-    <div class="space-y-6">
+    <div id="ordersContainer" class="space-y-6">
         <% if (orders && orders.length > 0) { %>
             <% orders.forEach(order => { %>
                 <div class="order-card bg-white shadow-md rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 celeb">
-                    <!-- Order Info -->
                     <div class="flex-1">
                         <p class="text-lg font-bold text-gray-900"><b>Order ID:</b> #<%= order.orderId %></p>
                         <p class="text-gray-600">User: <%= order.userName %></p>
                         <p class="text-gray-600">Delivery Address: <%= order.address %></p>
                         <p class="text-gray-600">Total Items: <%= order.totalItems %></p>
                         <p class="text-gray-600">Total Amount: <span class="price-highlight">₹<%= order.totalAmount.toFixed(2) %></span></p>
-                        <p class="text-gray-600 ">Status: 
+                        <p class="text-gray-600">Status: 
                             <span class="status-badge text-white" data-status="<%= order.status %>">
                                 <%= order.status %>
                             </span>
                         </p>
-
                     </div>
-
-                    <!-- Product Image -->
                     <div class="flex-1 flex items-center gap-4">
                         <img 
                             src="<%= order.productImages[0] %>" 
@@ -245,33 +242,40 @@
                             onmouseleave="stopFlipbook(this)" 
                         />
                     </div>
-
-                    <!-- Actions -->
                     <div class="flex flex-col sm:flex-row gap-3">
-                        <button onclick="cancelOrder('<%= order.orderId %>')" id="btn-cancel-<%= order.orderId %>" data-status="<%= order.status %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
-                           <% if (order.status !== 'Pending' && order.status !== 'Processing') { %>disabled<% } %>>
+                        <button 
+                            onclick="cancelOrder('<%= order.orderId %>')" 
+                            id="btn-cancel-<%= order.orderId %>" 
+                            data-status="<%= order.status %>" 
+                            class="cancel-btn py-2 px-4 rounded-lg text-center"
+                            <% if (order.status !== 'Pending' && order.status !== 'Processing') { %>disabled<% } %>
+                        >
                             Cancel Order
                         </button>
                         <% if (order.status === 'Cancelled' || order.status === 'Returned') { %>
-                         <a href="/ordeTracking/<%= order.orderId %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
-                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
-                            View
-                        </a>
+                            <a href="/ordeTracking/<%= order.orderId %>" 
+                               class="cancel-btn py-2 px-4 rounded-lg text-center"
+                               <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                                View
+                            </a>
                         <% } else if (order.status === 'Delivered') { %>
-                        <a href="/ordeTracking/<%= order.orderId %>" class="deliver-btn py-2 px-4 rounded-lg text-center"
-                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
-                            View
-                        </a>
+                            <a href="/ordeTracking/<%= order.orderId %>" 
+                               class="deliver-btn py-2 px-4 rounded-lg text-center"
+                               <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                                View
+                            </a>
                         <% } else if (order.status === 'Payment-Failed') { %>
-                        <a href="/check-out?orderId=<%= order.orderId %>" class="cancel-btn py-2 px-4 rounded-lg text-center"
-                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
-                            Retry-Payment
-                        </a>
+                            <a href="/check-out?orderId=<%= order.orderId %>" 
+                               class="cancel-btn py-2 px-4 rounded-lg text-center"
+                               <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                                Retry-Payment
+                            </a>
                         <% } else { %>
-                        <a href="/ordeTracking/<%= order.orderId %>" class="track-btn py-2 px-4 rounded-lg text-center"
-                           <% if (!order.trackingAvailable) { %>disabled<% } %>>
-                            Track Order
-                        </a>
+                            <a href="/ordeTracking/<%= order.orderId %>" 
+                               class="track-btn py-2 px-4 rounded-lg text-center"
+                               <% if (!order.trackingAvailable) { %>disabled<% } %>>
+                                Track Order
+                            </a>
                         <% } %>
                     </div>
                 </div>
@@ -284,12 +288,18 @@
         <% } %>
     </div>
 
-<div id="pagination-controls" class="text-center mt-6">
-  <button id="loadMoreBtn" onclick="loadMoreOrders()" class="back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">
-    Load More
-  </button>
-</div>
-
+    <div id="pagination-controls" class="text-center mt-6 flex justify-center gap-2">
+        <% if (totalPages > 1) { %>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <button 
+                    onclick="loadOrders(<%= i %>)" 
+                    class="pagination-btn py-2 px-4 rounded-lg text-black font-bold uppercase 
+                    <%= currentPage === i ? 'bg-yellow-500 text-white' : 'bg-gray-200 hover:bg-yellow-300' %>">
+                    <%= i %>
+                </button>
+            <% } %>
+        <% } %>
+    </div>
 </main>
 
 <%- include('../../views/partials/user/footer') %>
@@ -304,10 +314,9 @@
     });
 
     async function cancelOrder(orderId) {
-        // Show SweetAlert2 confirmation dialog
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: `Do you want to cancel Order ?`,
+            text: `Do you want to cancel Order #${orderId}?`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#EF4444',
@@ -318,7 +327,6 @@
 
         if (result.isConfirmed) {
             try {
-                // Make the fetch PUT request to cancel the order
                 const response = await fetch(`/orders/cancel/${orderId}`, {
                     method: 'PUT',
                     headers: {
@@ -329,7 +337,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Show success message
                     await Swal.fire({
                         title: 'Cancelled!',
                         text: 'Your order has been cancelled successfully.',
@@ -337,15 +344,14 @@
                         confirmButtonColor: '#10B981'
                     });
 
-                    // Update the UI: disable the cancel button and update status
                     const cancelButton = document.getElementById(`btn-cancel-${orderId}`);
-                    const statusBadge = document.querySelector(`#btn-cancel-${orderId}`).closest('.order-card').querySelector('.status-badge');
+                    const statusBadge = cancelButton.closest('.order-card').querySelector('.status-badge');
                     cancelButton.disabled = true;
                     cancelButton.classList.add('hidden');
                     statusBadge.textContent = 'Cancelled';
+                    statusBadge.setAttribute('data-status', 'Cancelled');
                     statusBadge.style.background = 'linear-gradient(135deg, #EF4444 0%, #F87171 100%)';
                 } else {
-                    // Show error message
                     await Swal.fire({
                         title: 'Error!',
                         text: data.message || 'Failed to cancel the order.',
@@ -354,10 +360,9 @@
                     });
                 }
             } catch (error) {
-                // Handle network or other errors
                 await Swal.fire({
                     title: 'Error!',
-                    text: 'An error occurred while cancelling the order.',
+                    text: 'An error occurred while cancelling the order: ' + error.message,
                     icon: 'error',
                     confirmButtonColor: '#EF4444'
                 });
@@ -365,76 +370,168 @@
         }
     }
 
-    function trackOrder(orderId) {
-        // Create a more sophisticated tracking modal
-        const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 fade-in';
-        modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-8 max-w-md mx-4 transform scale-95 transition-transform duration-300">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+    async function loadOrders(page) {
+        try {
+            const response = await fetch(`/getOrders?page=${page}&limit=5`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}, message: ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            // Update total orders
+            const totalOrdersElement = document.getElementById('totalOrders');
+            if (totalOrdersElement) {
+                totalOrdersElement.textContent = data.totalOrders || 0;
+            }
+
+            // Update orders container
+            const ordersContainer = document.getElementById('ordersContainer');
+            if (!ordersContainer) {
+                throw new Error('Orders container not found');
+            }
+            ordersContainer.innerHTML = '';
+
+            if (data.orders && data.orders.length > 0) {
+                data.orders.forEach(order => {
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'order-card bg-white shadow-md rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 celeb';
+                    orderCard.style.opacity = '0';
+                    orderCard.style.transform = 'translateY(20px)';
+                    orderCard.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+
+                    orderCard.innerHTML = `
+                        <div class="flex-1">
+                            <p class="text-lg font-bold text-gray-900"><b>Order ID:</b> #${order.orderId}</p>
+                            <p class="text-gray-600">User: ${order.userName}</p>
+                            <p class="text-gray-600">Delivery Address: ${order.address}</p>
+                            <p class="text-gray-600">Total Items: ${order.totalItems}</p>
+                            <p class="text-gray-600">Total Amount: <span class="price-highlight">₹${order.totalAmount.toFixed(2)}</span></p>
+                            <p class="text-gray-600">Status: 
+                                <span class="status-badge text-white" data-status="${order.status}">
+                                    ${order.status}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="flex-1 flex items-center gap-4">
+                            <img 
+                                src="${order.productImages[0]}" 
+                                alt="Product Image"
+                                class="product-image w-20 h-20 object-cover rounded-lg border-2 border-white shadow-lg transition-all duration-300"
+                                data-images='${JSON.stringify(order.productImages)}'
+                                onmouseover="startFlipbook(this)"
+                                onmouseleave="stopFlipbook(this)"
+                            />
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button 
+                                onclick="cancelOrder('${order.orderId}')" 
+                                id="btn-cancel-${order.orderId}" 
+                                data-status="${order.status}" 
+                                class="cancel-btn py-2 px-4 rounded-lg text-center"
+                                ${order.status !== 'Pending' && order.status !== 'Processing' ? 'disabled' : ''}>
+                                Cancel Order
+                            </button>
+                            ${order.status === 'Cancelled' || order.status === 'Returned' ? `
+                                <a href="/ordeTracking/${order.orderId}" 
+                                   class="cancel-btn py-2 px-4 rounded-lg text-center"
+                                   ${!order.trackingAvailable ? 'disabled' : ''}>
+                                    View
+                                </a>
+                            ` : order.status === 'Delivered' ? `
+                                <a href="/ordeTracking/${order.orderId}" 
+                                   class="deliver-btn py-2 px-4 rounded-lg text-center"
+                                   ${!order.trackingAvailable ? 'disabled' : ''}>
+                                    View
+                                </a>
+                            ` : order.status === 'Payment-Failed' ? `
+                                <a href="/check-out?orderId=${order.orderId}" 
+                                   class="cancel-btn py-2 px-4 rounded-lg text-center"
+                                   ${!order.trackingAvailable ? 'disabled' : ''}>
+                                    Retry-Payment
+                                </a>
+                            ` : `
+                                <a href="/ordeTracking/${order.orderId}" 
+                                   class="track-btn py-2 px-4 rounded-lg text-center"
+                                   ${!order.trackingAvailable ? 'disabled' : ''}>
+                                    Track Order
+                                </a>
+                            `}
+                        </div>
+                    `;
+
+                    ordersContainer.appendChild(orderCard);
+
+                    // Trigger animation
+                    setTimeout(() => {
+                        orderCard.style.opacity = '1';
+                        orderCard.style.transform = 'translateY(0)';
+                    }, 100);
+                });
+            } else {
+                ordersContainer.innerHTML = `
+                    <div class="order-card bg-white shadow-md rounded-lg p-6 text-center">
+                        <p class="text-gray-600 text-lg">You have no orders yet. Start shopping now!</p>
+                        <a href="/allproducts" class="mt-4 inline-block back-btn py-2 px-4 rounded-lg text-black font-bold uppercase">Browse Products</a>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Tracking Order #${orderId}</h3>
-                    <p class="text-gray-600 mb-6">Redirecting to tracking page...</p>
-                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                            class="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-6 rounded-lg transition">
-                        Close
-                    </button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            if (modal.parentElement) {
-                modal.remove();
+                `;
             }
-        }, 3000);
-    }
 
-    function toggleMobileMenu() {
-        const menu = document.getElementById('mobileMenu');
-        const overlay = document.getElementById('mobileOverlay');
-        
-        menu.classList.toggle('open');
-        overlay.classList.toggle('hidden');
-    }
+            // Update pagination controls
+            const paginationControls = document.getElementById('pagination-controls');
+            if (paginationControls) {
+                paginationControls.innerHTML = '';
 
-    // Add scroll effects
-    window.addEventListener('scroll', () => {
-        const header = document.querySelector('header');
-        if (window.scrollY > 10) {
-            header.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
-        } else {
-            header.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
+                if (data.totalPages > 1) {
+                    for (let i = 1; i <= data.totalPages; i++) {
+                        const button = document.createElement('button');
+                        button.className = `pagination-btn py-2 px-4 rounded-lg text-black font-bold uppercase ${
+                            data.currentPage === i ? 'bg-yellow-500 text-white' : 'bg-gray-200 hover:bg-yellow-300'
+                        }`;
+                        button.textContent = i;
+                        button.onclick = () => loadOrders(i);
+                        paginationControls.appendChild(button);
+                    }
+                }
+            }
+
+            // Reapply cancel button visibility
+            document.querySelectorAll('[id^="btn-cancel-"]').forEach(button => {
+                const status = button.getAttribute('data-status');
+                if (status !== 'Pending' && status !== 'Processing') {
+                    button.classList.add('hidden');
+                }
+            });
+
+            // Reapply scroll animation observer
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            document.querySelectorAll('.order-card').forEach(card => {
+                observer.observe(card);
+            });
+        } catch (error) {
+            console.error('Error loading orders:', error);
+            await Swal.fire({
+                title: 'Error!',
+                text: 'Failed to load orders: ' + error.message,
+                icon: 'error',
+                confirmButtonColor: '#EF4444'
+            });
         }
-    });
-
-    // Animate cards on scroll
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.order-card').forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(card);
-    });
+    }
 
     let flipInterval = null;
 
@@ -458,5 +555,4 @@
             imgElement.src = images[0];
         }
     }
-
 </script>
